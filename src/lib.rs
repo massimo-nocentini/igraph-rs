@@ -1,6 +1,5 @@
-//! # igraph-rs
-//!
-//! Rust bindings for the igraph C library for creating and manipulating graphs.
+
+#![doc = include_str!("../README.md")]
 
 #![allow(non_upper_case_globals)]
 #![allow(non_camel_case_types)]

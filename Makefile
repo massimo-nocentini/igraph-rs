@@ -8,7 +8,7 @@ compile:
 
 doc:
 	cargo doc --document-private-items --release
-	cp -r target/doc ./docs
+	rm -rf docs && mv target/doc docs
 
 docker-build:
 	docker build -t ghcr.io/massimo-nocentini/igraph-rs:master .

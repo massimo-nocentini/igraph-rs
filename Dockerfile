@@ -1,12 +1,15 @@
 
+
 FROM --platform=$BUILDPLATFORM rust:latest
+
+LABEL org.opencontainers.image.description="Rust bindings for the igraph library"
 
 WORKDIR /usr/src/igraph-rs
 
 COPY . .
 
 RUN apt-get update \
-    && apt-get install -y sudo libglpk-dev liblapack-dev cmake build-essential wget clang \
+    && apt-get install -y sudo libglpk-dev liblapack-dev cmake build-essential wget clang flex bison \
     && rustup component add rustfmt \
     && cargo install bindgen-cli
 
@@ -19,6 +22,8 @@ RUN rm -rf target \
     && cd igraph-1.0.0 \
     && mkdir build \
     && cd build \
+    && export CXX=clang++ \
+    && export CC=clang \
     && cmake -DBUILD_SHARED_LIBS=ON .. \
     && cmake --build . \
     && sudo cmake --install . \
