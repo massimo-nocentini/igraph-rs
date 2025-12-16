@@ -6,6 +6,10 @@ compile:
 	cargo build --release
 	cargo test --release -- --nocapture
 
+doc:
+	cargo doc --document-private-items --release
+	cp -r target/doc ./docs
+
 docker-build:
 	docker build -t ghcr.io/massimo-nocentini/igraph-rs:master .
 
