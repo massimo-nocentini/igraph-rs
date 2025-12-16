@@ -1,5 +1,5 @@
 
-FROM rust:latest
+FROM --platform=$BUILDPLATFORM rust:latest
 
 WORKDIR /usr/src/igraph-rs
 
