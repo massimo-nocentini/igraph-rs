@@ -1,3 +1,7 @@
+//! # igraph-rs
+//!
+//! Rust bindings for the igraph C library for creating and manipulating graphs.
+
 #![allow(non_upper_case_globals)]
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
@@ -6,6 +10,8 @@ include!("../bindings.rs");
 
 #[cfg(test)]
 mod tests {
+    //! Test that the igraph version constants are correct.
+
     use super::*;
     use std::mem;
 
@@ -20,6 +26,7 @@ mod tests {
     }
 
     #[test]
+    /// A simple test that creates a random graph and computes its diameter and mean degree.
     fn test_igraph_first_example() {
         let num_vertices = 1000;
         let num_edges = 1000;
