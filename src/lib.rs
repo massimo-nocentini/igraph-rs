@@ -7,16 +7,18 @@ use std::mem;
 
 include!("../bindings.rs");
 
+/// # Introduction
+/// 
 /// A simple test that creates a random graph and computes its diameter and mean degree.
 /// It is a translation of the first example from the igraph C library documentation,
-/// that can be found [here](https://igraph.org/c/html/latest/igraph-Tutorial.html#tut-lesson-1).
+/// that can be found [in the first lesson](https://igraph.org/c/html/latest/igraph-Tutorial.html#tut-lesson-1).
 ///
-/// # Example
+/// # C code
 ///
 /// ```c
 /// #include <igraph.h>
 ///
-///int main(void) {
+/// int main(void) {
 ///    igraph_int_t num_vertices = 1000;
 ///    igraph_int_t num_edges = 1000;
 ///    igraph_real_t diameter, mean_degree;
@@ -46,7 +48,7 @@ include!("../bindings.rs");
 ///    igraph_destroy(&graph);
 ///
 ///    return 0;
-///}
+/// }
 /// ```
 fn example_1() {
     let num_vertices: i64 = 1000;

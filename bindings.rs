@@ -15224,6 +15224,8 @@ unsafe extern "C" {
     ) -> igraph_error_t;
 }
 unsafe extern "C" {
+    /// Generates a random (Erdős-Rényi) graph with a fixed number of edges. 
+    /// See also the [official doc](https://igraph.org/c/html/main/igraph-Games.html#igraph_erdos_renyi_game_gnm).
     pub fn igraph_erdos_renyi_game_gnm(
         graph: *mut igraph_t,
         n: igraph_int_t,
