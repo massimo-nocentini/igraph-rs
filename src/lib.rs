@@ -1,3 +1,4 @@
+
 #![doc = include_str!("../README.md")]
 #![allow(non_upper_case_globals)]
 #![allow(non_camel_case_types)]
@@ -202,7 +203,8 @@ fn example_2() {
 /// In our next example we will calculate various centrality measures in a friendship graph. 
 /// The friendship graph is from the famous Zachary karate club study. 
 /// (Do a web search on "Zachary karate" if you want to know more about this.) 
-/// Centrality measures quantify how central is the position of individual vertices in the graph. 
+/// Centrality measures quantify how central is the position of individual vertices in the graph.
+/// 
 fn example_3() {
     /*
         int main(void) {
