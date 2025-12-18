@@ -161,6 +161,12 @@ impl igraph_t {
         }
     }
 
+    pub fn add_edges_from_vector(&mut self, edges: &igraph_vector_int_t) {
+        unsafe {
+            igraph_add_edges(self, edges, std::ptr::null());
+        }
+    }
+
     pub fn diameter(&self) -> f64 {
         let mut diameter = 0.0;
         unsafe {
