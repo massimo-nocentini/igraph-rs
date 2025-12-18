@@ -24,8 +24,8 @@ impl Drop for igraph_vector_int_t {
 }
 
 impl igraph_vector_int_t {
-    pub fn size(&self) -> i64 {
-        unsafe { igraph_vector_int_size(self) }
+    pub fn size(&self) -> usize {
+        unsafe { igraph_vector_int_size(self) as usize }
     }
 
     pub fn with_capacity(size: usize) -> Self {
@@ -54,6 +54,17 @@ impl From<&[i64]> for igraph_vector_int_t {
             igraph_vec.set(i, value);
         }
         igraph_vec
+    }
+}
+
+impl Into<Vec<i64>> for igraph_vector_int_t {
+    fn into(self) -> Vec<i64> {
+        let size = self.size();
+        let mut vec = Vec::with_capacity(size);
+        for i in 0..size {
+            vec.push(self.get(i));
+        }
+        vec
     }
 }
 
@@ -91,18 +102,19 @@ impl igraph_t {
     /// In the `G(n, m)` Erdős-Rényi model, a graph with `n` vertices and `m` edges is generated uniformly at random;
     /// for the sake of clarity, it binds the [igraph_erdos_renyi_game_gnm](https://igraph.org/c/html/latest/igraph-Games.html#igraph_erdos_renyi_game_gnm) function.
     pub fn erdos_renyi_game_gnm(
-        num_vertices: i64,
-        num_edges: i64,
+        num_vertices: usize,
+        num_edges: usize,
         directed: bool,
         mode: edge_type_sw_t,
         edge_attr: bool,
     ) -> Self {
         unsafe {
-            let mut graph = mem::zeroed::<igraph_t>();
+            let mut graph = Self::new(0, directed);
+
             igraph_erdos_renyi_game_gnm(
                 &mut graph,
-                num_vertices,
-                num_edges,
+                num_vertices as i64,
+                num_edges as i64,
                 directed,
                 match mode {
                     edge_type_sw_t::SIMPLE => IGRAPH_SIMPLE_SW,
@@ -167,6 +179,12 @@ impl igraph_t {
         }
     }
 
+    /// [Calculates the diameter of a graph (longest geodesic)](https://igraph.org/c/html/0.10.2/igraph-Structural.html#igraph_diameter):
+    ///
+    /// The diameter of a graph is the length of the longest shortest path it has.
+    /// This function computes both the diameter, as well as the corresponding path.
+    /// The diameter of the null graph is considered be infinity by convention.
+    /// If the graph has no vertices, IGRAPH_NAN is returned.
     pub fn diameter(&self) -> f64 {
         let mut diameter = 0.0;
         unsafe {
@@ -191,6 +209,21 @@ impl igraph_t {
             igraph_mean_degree(self, &mut mean_degree, loops);
         }
         mean_degree
+    }
+
+    pub fn community_multilevel(&self, resolution: f64) -> Vec<i64> {
+        unsafe {
+            let mut membership = igraph_vector_int_t::with_capacity(self.num_vertices() as usize);
+            igraph_community_multilevel(
+                self,
+                std::ptr::null(),
+                resolution,
+                &mut membership,
+                std::ptr::null_mut(),
+                std::ptr::null_mut(),
+            );
+            membership.into()
+        }
     }
 }
 
