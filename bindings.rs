@@ -49,11 +49,7 @@ where
             index % 8
         };
         let mask = 1 << bit_index;
-        if val {
-            byte | mask
-        } else {
-            byte & !mask
-        }
+        if val { byte | mask } else { byte & !mask }
     }
     #[inline]
     pub fn set_bit(&mut self, index: usize, val: bool) {
@@ -6139,7 +6135,7 @@ const _: () = {
 };
 #[doc = " Vector, dealing with arrays efficiently.\n \\ingroup types"]
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct igraph_vector_int_t {
     pub stor_begin: *mut igraph_int_t,
     pub stor_end: *mut igraph_int_t,
@@ -6485,7 +6481,7 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn igraph_vector_reserve(v: *mut igraph_vector_t, capacity: igraph_int_t)
-        -> igraph_error_t;
+    -> igraph_error_t;
 }
 unsafe extern "C" {
     pub fn igraph_vector_push_back(v: *mut igraph_vector_t, e: igraph_real_t) -> igraph_error_t;
@@ -8706,7 +8702,7 @@ unsafe extern "C" {
     ) -> igraph_error_t;
 }
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct igraph_matrix_int_t {
     pub data: igraph_vector_int_t,
     pub nrow: igraph_int_t,
@@ -10773,7 +10769,7 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn igraph_stack_int_fprint(s: *const igraph_stack_int_t, file: *mut FILE)
-        -> igraph_error_t;
+    -> igraph_error_t;
 }
 #[doc = " Stack data type.\n \\ingroup internal"]
 #[repr(C)]
@@ -11792,7 +11788,7 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn igraph_vector_int_list_pop_back(v: *mut igraph_vector_int_list_t)
-        -> igraph_vector_int_t;
+    -> igraph_vector_int_t;
 }
 unsafe extern "C" {
     pub fn igraph_vector_int_list_remove(
@@ -12709,11 +12705,11 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn igraph_sparsemat_add_rows(A: *mut igraph_sparsemat_t, n: igraph_int_t)
-        -> igraph_error_t;
+    -> igraph_error_t;
 }
 unsafe extern "C" {
     pub fn igraph_sparsemat_add_cols(A: *mut igraph_sparsemat_t, n: igraph_int_t)
-        -> igraph_error_t;
+    -> igraph_error_t;
 }
 unsafe extern "C" {
     pub fn igraph_sparsemat_resize(
@@ -12863,7 +12859,7 @@ pub const igraph_cached_property_t_IGRAPH_PROP_I_SIZE: igraph_cached_property_t 
 pub type igraph_cached_property_t = ::std::os::raw::c_uint;
 #[doc = " \\ingroup internal\n \\struct igraph_t\n \\brief The internal data structure for storing graphs.\n\n It is simple and efficient. It has the following members:\n - <b>n</b> The number of vertices, redundant.\n - <b>directed</b> Whether the graph is directed.\n - <b>from</b> The first column of the edge list.\n - <b>to</b> The second column of the edge list.\n - <b>oi</b> The index of the edge list by the first column. Thus\n   the first edge according to this order goes from\n   \\c from[oi[0]] to \\c to[oi[0]]. The length of\n   this vector is the same as the number of edges in the graph.\n - <b>ii</b> The index of the edge list by the second column.\n   The length of this vector is the same as the number of edges.\n - <b>os</b> Contains pointers to the edgelist (\\c from\n   and \\c to for every vertex. The first edge \\em from\n   vertex \\c v is edge no. \\c from[oi[os[v]]] if\n   \\c os[v]<os[v+1]. If \\c os[v]==os[v+1] then\n   there are no edges \\em from node \\c v. Its length is\n   the number of vertices plus one, the last element is always the\n   same as the number of edges and is contained only to ease the\n   queries.\n - <b>is</b> This is basically the same as <b>os</b>, but this time\n   for the incoming edges.\n\n For undirected graphs, the same edge list is stored, i.e. an\n undirected edge is stored only once. Currently, undirected edges\n are canonicalized so that the index of the 'from' vertex is not greater\n than the index of the 'to' vertex. Thus, if v1 <= v2, only the edge (v1, v2)\n needs to be searched for, not (v2, v1), to determine if v1 and v2 are connected.\n However, this fact is NOT guaranteed by the documented public API,\n and should not be relied upon by the implementation of any functions,\n except those belonging to the minimal API in type_indexededgelist.c.\n\n The storage requirements for a graph with \\c |V| vertices\n and \\c |E| edges is \\c O(|E|+|V|)."]
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct igraph_t {
     pub n: igraph_int_t,
     pub directed: igraph_bool_t,
@@ -15224,8 +15220,6 @@ unsafe extern "C" {
     ) -> igraph_error_t;
 }
 unsafe extern "C" {
-    /// Generates a random (Erdős-Rényi) graph with a fixed number of edges. 
-    /// See also the [official doc](https://igraph.org/c/html/main/igraph-Games.html#igraph_erdos_renyi_game_gnm).
     pub fn igraph_erdos_renyi_game_gnm(
         graph: *mut igraph_t,
         n: igraph_int_t,
@@ -16457,7 +16451,7 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn igraph_is_perfect(graph: *const igraph_t, perfect: *mut igraph_bool_t)
-        -> igraph_error_t;
+    -> igraph_error_t;
 }
 unsafe extern "C" {
     pub fn igraph_is_complete(graph: *const igraph_t, res: *mut igraph_bool_t) -> igraph_error_t;
@@ -18115,7 +18109,7 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn igraph_write_graph_pajek(graph: *const igraph_t, outstream: *mut FILE)
-        -> igraph_error_t;
+    -> igraph_error_t;
 }
 unsafe extern "C" {
     pub fn igraph_write_graph_dimacs_flow(
@@ -18878,7 +18872,7 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn igraph_adjlist_fprint(al: *const igraph_adjlist_t, outfile: *mut FILE)
-        -> igraph_error_t;
+    -> igraph_error_t;
 }
 unsafe extern "C" {
     pub fn igraph_adjlist_has_edge(
@@ -18930,7 +18924,7 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn igraph_inclist_fprint(il: *const igraph_inclist_t, outfile: *mut FILE)
-        -> igraph_error_t;
+    -> igraph_error_t;
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -19355,7 +19349,7 @@ unsafe extern "C" {
 }
 #[doc = " \\struct igraph_hrg_t\n \\brief Data structure to store a hierarchical random graph.\n\n A hierarchical random graph (HRG) can be given as a binary tree,\n where the internal vertices are labeled with real numbers.\n\n </para><para>Note that you don't necessarily have to know this\n internal representation for using the HRG functions, just pass the\n HRG objects created by one igraph function, to another igraph\n function.\n\n </para><para>\n It has the following members:\n\n \\member left Vector that contains the left children of the internal\n    tree vertices. The first vertex is always the root vertex, so\n    the first element of the vector is the left child of the root\n    vertex. Internal vertices are denoted with negative numbers,\n    starting from -1 and going down, i.e. the root vertex is\n    -1. Leaf vertices are denoted by non-negative number, starting\n    from zero and up.\n \\member right Vector that contains the right children of the\n    vertices, with the same encoding as the \\c left vector.\n \\member prob The connection probabilities attached to the internal\n    vertices, the first number belongs to the root vertex\n    (i.e. internal vertex -1), the second to internal vertex -2,\n    etc.\n \\member edges The number of edges in the subtree below the given\n    internal vertex.\n \\member vertices The number of vertices in the subtree below the\n    given internal vertex, including itself."]
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct igraph_hrg_t {
     pub left: igraph_vector_int_t,
     pub right: igraph_vector_int_t,
@@ -19622,7 +19616,7 @@ unsafe extern "C" {
 }
 #[doc = " \\struct igraph_sir_t\n \\brief The result of one SIR model simulation.\n\n Data structure to store the results of one simulation\n of the SIR (susceptible-infected-recovered) model on a graph.\n\n It has the following members. They are all (real or integer)\n vectors, and they are of the same length.\n\n \\member times A vector, the times of the events are stored here.\n \\member no_s An integer vector, the number of susceptibles in\n              each time step is stored here.\n \\member no_i An integer vector, the number of infected individuals\n              at each time step, is stored here.\n \\member no_r An integer vector, the number of recovered individuals\n              is stored here at each time step."]
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct igraph_sir_t {
     pub times: igraph_vector_t,
     pub no_s: igraph_vector_int_t,

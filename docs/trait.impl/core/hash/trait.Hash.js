@@ -1,9 +1,9 @@
 (function() {
-    var implementors = Object.fromEntries([["igraph_rs",[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.91.1/core/hash/trait.Hash.html\" title=\"trait core::hash::Hash\">Hash</a> for <a class=\"struct\" href=\"igraph_rs/struct.__BindgenFloat16.html\" title=\"struct igraph_rs::__BindgenFloat16\">__BindgenFloat16</a>"],["impl&lt;Storage: <a class=\"trait\" href=\"https://doc.rust-lang.org/1.91.1/core/hash/trait.Hash.html\" title=\"trait core::hash::Hash\">Hash</a>&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/1.91.1/core/hash/trait.Hash.html\" title=\"trait core::hash::Hash\">Hash</a> for <a class=\"struct\" href=\"igraph_rs/struct.__BindgenBitfieldUnit.html\" title=\"struct igraph_rs::__BindgenBitfieldUnit\">__BindgenBitfieldUnit</a>&lt;Storage&gt;"]]]]);
+    var implementors = Object.fromEntries([["igraph",[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.91.1/core/hash/trait.Hash.html\" title=\"trait core::hash::Hash\">Hash</a> for <a class=\"struct\" href=\"igraph/struct.__BindgenFloat16.html\" title=\"struct igraph::__BindgenFloat16\">__BindgenFloat16</a>"],["impl&lt;Storage: <a class=\"trait\" href=\"https://doc.rust-lang.org/1.91.1/core/hash/trait.Hash.html\" title=\"trait core::hash::Hash\">Hash</a>&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/1.91.1/core/hash/trait.Hash.html\" title=\"trait core::hash::Hash\">Hash</a> for <a class=\"struct\" href=\"igraph/struct.__BindgenBitfieldUnit.html\" title=\"struct igraph::__BindgenBitfieldUnit\">__BindgenBitfieldUnit</a>&lt;Storage&gt;"]]]]);
     if (window.register_implementors) {
         window.register_implementors(implementors);
     } else {
         window.pending_implementors = implementors;
     }
 })()
-//{"start":57,"fragment_lengths":[742]}
+//{"start":57,"fragment_lengths":[727]}

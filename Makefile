@@ -11,7 +11,7 @@ doc:
 	rm -rf docs && mv target/doc docs
 
 docker-build:
-	docker build -t ghcr.io/massimo-nocentini/igraph-rs:master .
+	docker build -t ghcr.io/massimo-nocentini/igraph-rs:master . --no-cache
 
 docker-run:
 	docker run -it --rm ghcr.io/massimo-nocentini/igraph-rs:master

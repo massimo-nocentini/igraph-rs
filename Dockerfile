@@ -9,7 +9,7 @@ WORKDIR /usr/src/igraph-rs
 COPY . .
 
 RUN apt-get update \
-    && apt-get install -y sudo libglpk-dev liblapack-dev cmake build-essential wget clang flex bison \
+    && apt-get install -y sudo libglpk-dev liblapack-dev cmake build-essential wget clang flex bison libc++-dev \
     && rustup component add rustfmt \
     && cargo install bindgen-cli
 

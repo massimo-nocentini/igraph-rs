@@ -1,0 +1,37 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="\typedef igraph_error_type_t \brief Error code type. These are the possible values returned by \a igraph functions. Note that these are interesting only if you defined an error handler with \ref igraph_set_error_handler(). Otherwise the program is aborted and the function causing the error never returns."><title>igraph_error_type_t in igraph - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-e56847b5.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="igraph" data-themes="" data-resource-suffix="" data-rustdoc-version="1.91.1 (ed61e7d7e 2025-11-07)" data-channel="1.91.1" data-search-js="search-e256b49e.js" data-stringdex-js="stringdex-c3e638e9.js" data-settings-js="settings-c38705f0.js" ><script src="../static.files/storage-e2aeef58.js"></script><script defer src="sidebar-items.js"></script><script defer src="../static.files/main-6dc2a7f3.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-263c88ec.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-044be391.svg"></head><body class="rustdoc type"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">igraph_error_type_t</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../igraph/index.html">igraph</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><div id="rustdoc-modnav"></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="index.html">igraph</a></div><h1>Type Alias <span class="type">igraph_<wbr>error_<wbr>type_<wbr>t</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/igraph/bindings.rs.html#3971">Source</a> </span></div><pre class="rust item-decl"><code>pub type igraph_error_type_t = <a class="type" href="https://doc.rust-lang.org/1.91.1/std/os/raw/type.c_uint.html" title="type std::os::raw::c_uint">c_uint</a>;</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>\typedef igraph_error_type_t
+\brief Error code type.
+These are the possible values returned by \a igraph functions.
+Note that these are interesting only if you defined an error handler
+with \ref igraph_set_error_handler(). Otherwise the program is aborted
+and the function causing the error never returns.</p>
+<p>\enumval IGRAPH_SUCCESS The function successfully completed its task.
+\enumval IGRAPH_FAILURE Something went wrong. You’ll almost never
+meet this error as normally more specific error codes are used.
+\enumval IGRAPH_ENOMEM There wasn’t enough memory to allocate
+on the heap.
+\enumval IGRAPH_PARSEERROR A parse error was found in a file.
+\enumval IGRAPH_EINVAL A parameter’s value is invalid. E.g. negative
+number was specified as the number of vertices.
+\enumval IGRAPH_EXISTS A graph/vertex/edge attribute is already
+installed with the given name.
+\enumval IGRAPH_EINVVID Invalid vertex ID, negative or too big.
+\enumval IGRAPH_EINVEID Invalid edge ID, negative or too big.
+\enumval IGRAPH_EINVMODE Invalid mode parameter.
+\enumval IGRAPH_EFILE A file operation failed. E.g. a file doesn’t exist,
+or the user has no rights to open it.
+\enumval IGRAPH_UNIMPLEMENTED Attempted to call an unimplemented or
+disabled (at compile-time) function.
+\enumval IGRAPH_DIVERGED A numeric algorithm failed to converge.
+\enumval IGRAPH_ARPACK An error happened inside a calculation implemented
+in ARPACK. The calculation involved is most likely an eigenvector-related
+calculation.
+\enumval IGRAPH_ENEGCYCLE Negative cycle detected while calculating shortest paths.
+\enumval IGRAPH_EINTERNAL Internal error, likely a bug in igraph.
+\enumval IGRAPH_EATTRCOMBINE Unimplemented attribute combination
+method for the given attribute type.
+\enumval IGRAPH_EOVERFLOW Integer or double overflow.
+\enumval IGRAPH_EUNDERFLOW Integer or double underflow.
+\enumval IGRAPH_ERWSTUCK Random walk got stuck.
+\enumval IGRAPH_ERANGE Maximum vertex or edge count exceeded.
+\enumval IGRAPH_ENOSOL Input problem has no solution.</p>
+</div></details></section></div></main></body></html>
