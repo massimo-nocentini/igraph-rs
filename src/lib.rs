@@ -115,10 +115,10 @@ impl igraph_t {
         }
     }
 
-    pub fn new(num_vertices: i64, directed: bool) -> Self {
+    pub fn new(num_vertices: usize, directed: bool) -> Self {
         unsafe {
             let mut graph = mem::zeroed::<igraph_t>();
-            igraph_empty(&mut graph, num_vertices, directed);
+            igraph_empty(&mut graph, num_vertices as i64, directed);
             graph
         }
     }
