@@ -3,7 +3,10 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 
-use std::mem;
+use std::{
+    mem,
+    os::fd::{AsFd, AsRawFd},
+};
 
 include!("../bindings.rs");
 
@@ -223,6 +226,17 @@ impl igraph_t {
                 std::ptr::null_mut(),
             );
             membership.into()
+        }
+    }
+
+    pub fn write_graph_graphml(&self, filename: &str) {
+        use std::ffi::CString;
+        unsafe {
+            let file = fopen(
+                CString::new(filename).unwrap().as_ptr(),
+                CString::new("w").unwrap().as_ptr(),
+            );
+            igraph_write_graph_graphml(self, file, false);
         }
     }
 }
