@@ -138,21 +138,21 @@ impl igraph_t {
         }
     }
 
-    pub fn num_vertices(&self) -> i64 {
-        unsafe { igraph_vcount(self) }
+    pub fn num_vertices(&self) -> usize {
+        unsafe { igraph_vcount(self) as usize }
     }
 
-    pub fn num_edges(&self) -> i64 {
-        unsafe { igraph_ecount(self) }
+    pub fn num_edges(&self) -> usize {
+        unsafe { igraph_ecount(self) as usize }
     }
 
     pub fn is_directed(&self) -> bool {
         unsafe { igraph_is_directed(self) }
     }
 
-    pub fn add_vertices(&mut self, n: i64) {
+    pub fn add_vertices(&mut self, n: usize) {
         unsafe {
-            igraph_add_vertices(self, n, std::ptr::null());
+            igraph_add_vertices(self, n as i64, std::ptr::null());
         }
     }
 
@@ -166,10 +166,10 @@ impl igraph_t {
         unsafe {
             let mut edges = igraph_vector_int_t::with_capacity(edges_slice.len() * 2);
             let mut i = 0;
-            for (from, to) in edges_slice.iter() {
-                edges.set(i, *from);
+            for &(from, to) in edges_slice.iter() {
+                edges.set(i, from);
                 i += 1;
-                edges.set(i, *to);
+                edges.set(i, to);
                 i += 1;
             }
             igraph_add_edges(self, &edges, std::ptr::null());
@@ -216,7 +216,7 @@ impl igraph_t {
 
     pub fn community_multilevel(&self, resolution: f64) -> Vec<i64> {
         unsafe {
-            let mut membership = igraph_vector_int_t::with_capacity(self.num_vertices() as usize);
+            let mut membership = igraph_vector_int_t::with_capacity(self.num_vertices());
             igraph_community_multilevel(
                 self,
                 std::ptr::null(),
