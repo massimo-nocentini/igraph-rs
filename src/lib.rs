@@ -5,7 +5,6 @@
 
 use std::{
     mem,
-    os::fd::{AsFd, AsRawFd},
 };
 
 include!("../bindings.rs");
