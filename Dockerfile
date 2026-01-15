@@ -1,25 +1,30 @@
 
-
 FROM --platform=$BUILDPLATFORM rust:latest
 
 LABEL org.opencontainers.image.description="Rust bindings for the igraph library"
 
 WORKDIR /usr/src/igraph-rs
 
-COPY . .
+COPY src src
+COPY Cargo.toml .
+COPY Cargo.lock .
+COPY build.rs .
+COPY bindings.rs .
+COPY Makefile .
+COPY README.md .
 
 RUN apt-get update \
     && apt-get install -y sudo libglpk-dev liblapack-dev cmake build-essential wget clang flex bison libc++-dev \
     && rustup component add rustfmt \
     && cargo install bindgen-cli
 
-RUN rm -rf target \
+RUN export IGRAPH_VERSION="1.0.1" \
     && cd .. \
     && mkdir igraph \
     && cd igraph \
-    && wget https://github.com/igraph/igraph/releases/download/1.0.0/igraph-1.0.0.tar.gz --no-verbose \
-    && tar -xf igraph-1.0.0.tar.gz \
-    && cd igraph-1.0.0 \
+    && wget https://github.com/igraph/igraph/releases/download/${IGRAPH_VERSION}/igraph-${IGRAPH_VERSION}.tar.gz --no-verbose \
+    && tar -xf igraph-${IGRAPH_VERSION}.tar.gz \
+    && cd igraph-${IGRAPH_VERSION} \
     && mkdir build \
     && cd build \
     && export CXX=clang++ \
@@ -29,6 +34,6 @@ RUN rm -rf target \
     && sudo cmake --install . \
     && sudo ldconfig \
     && cd ../../../ \
-    && rm -rf igraph \
-    && cd igraph-rs \
-    && make compile
+    && rm -rf igraph
+    
+RUN make compile

@@ -1,5 +1,5 @@
 #
-name: igraph Docker image, 1.0.0 on rust:latest.
+name: igraph Docker image based on rust:latest.
 
 # Configures this workflow to run every time a change is pushed to the branch called `release`.
 on:
