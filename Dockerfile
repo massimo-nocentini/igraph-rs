@@ -1,4 +1,3 @@
-ARG IGRAPH_VERSION="1.0.1"
 
 FROM --platform=$BUILDPLATFORM rust:latest
 
@@ -6,14 +5,18 @@ LABEL org.opencontainers.image.description="Rust bindings for the igraph library
 
 WORKDIR /usr/src/igraph-rs
 
-COPY . .
+COPY src src
+COPY Cargo.toml .
+COPY Cargo.lock .
+COPY build.rs .
+COPY bindings.rs .
 
 RUN apt-get update \
     && apt-get install -y sudo libglpk-dev liblapack-dev cmake build-essential wget clang flex bison libc++-dev \
     && rustup component add rustfmt \
     && cargo install bindgen-cli
 
-RUN rm -rf target \
+RUN export IGRAPH_VERSION="1.0.1" \
     && cd .. \
     && mkdir igraph \
     && cd igraph \
