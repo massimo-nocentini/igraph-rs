@@ -11,6 +11,7 @@ COPY Cargo.lock .
 COPY build.rs .
 COPY bindings.rs .
 COPY Makefile .
+COPY README.md .
 
 RUN apt-get update \
     && apt-get install -y sudo libglpk-dev liblapack-dev cmake build-essential wget clang flex bison libc++-dev \
@@ -33,6 +34,6 @@ RUN export IGRAPH_VERSION="1.0.1" \
     && sudo cmake --install . \
     && sudo ldconfig \
     && cd ../../../ \
-    && rm -rf igraph \
-    && cd igraph-rs \
-    && make compile
+    && rm -rf igraph
+    
+RUN make compile
