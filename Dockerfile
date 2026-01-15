@@ -10,6 +10,7 @@ COPY Cargo.toml .
 COPY Cargo.lock .
 COPY build.rs .
 COPY bindings.rs .
+COPY Makefile .
 
 RUN apt-get update \
     && apt-get install -y sudo libglpk-dev liblapack-dev cmake build-essential wget clang flex bison libc++-dev \
