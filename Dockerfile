@@ -1,4 +1,4 @@
-
+ARG IGRAPH_VERSION=1.0.1
 
 FROM --platform=$BUILDPLATFORM rust:latest
 
@@ -17,9 +17,9 @@ RUN rm -rf target \
     && cd .. \
     && mkdir igraph \
     && cd igraph \
-    && wget https://github.com/igraph/igraph/releases/download/1.0.0/igraph-1.0.0.tar.gz --no-verbose \
-    && tar -xf igraph-1.0.0.tar.gz \
-    && cd igraph-1.0.0 \
+    && wget https://github.com/igraph/igraph/releases/download/${IGRAPH_VERSION}/igraph-${IGRAPH_VERSION}.tar.gz --no-verbose \
+    && tar -xf igraph-${IGRAPH_VERSION}.tar.gz \
+    && cd igraph-${IGRAPH_VERSION} \
     && mkdir build \
     && cd build \
     && export CXX=clang++ \
