@@ -1,4 +1,4 @@
-ARG IGRAPH_VERSION=1.0.1
+ARG IGRAPH_VERSION="1.0.1"
 
 FROM --platform=$BUILDPLATFORM rust:latest
 
