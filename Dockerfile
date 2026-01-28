@@ -1,22 +1,11 @@
 
-FROM --platform=$BUILDPLATFORM rust:latest
+FROM --platform=$BUILDPLATFORM alpine:latest
 
 LABEL org.opencontainers.image.description="Rust bindings for the igraph library"
 
 WORKDIR /usr/src/igraph-rs
 
-COPY src src
-COPY Cargo.toml .
-COPY Cargo.lock .
-COPY build.rs .
-COPY bindings.rs .
-COPY Makefile .
-COPY README.md .
-
-RUN apt-get update \
-    && apt-get install -y sudo libglpk-dev liblapack-dev cmake build-essential wget clang flex bison libc++-dev \
-    && rustup component add rustfmt \
-    && cargo install bindgen-cli
+RUN apk add glpk-dev lapack-dev cmake build-base wget clang flex bison libc++-dev rust cargo
 
 RUN export IGRAPH_VERSION="1.0.1" \
     && cd .. \
@@ -31,9 +20,16 @@ RUN export IGRAPH_VERSION="1.0.1" \
     && export CC=clang \
     && cmake -DBUILD_SHARED_LIBS=ON .. \
     && cmake --build . \
-    && sudo cmake --install . \
-    && sudo ldconfig \
+    && cmake --install . \
     && cd ../../../ \
     && rm -rf igraph
-    
+
+COPY src src
+COPY Cargo.toml .
+COPY Cargo.lock .
+COPY build.rs .
+COPY bindings.rs .
+COPY Makefile .
+COPY README.md .
+
 RUN make compile
