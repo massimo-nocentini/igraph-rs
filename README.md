@@ -417,7 +417,9 @@ Runnable use cases live in the `examples/` directory, e.g.
 ## Installation
 
 The crate links against a shared build of igraph **1.0.1**, the latest
-release. Build and install it with CMake:
+release. The crate's version follows the igraph version it binds, so
+`igraph` 1.0.1 on the Rust side wraps igraph 1.0.1 on the C side. Build and
+install it with CMake:
 
 ```sh
 wget https://github.com/igraph/igraph/releases/download/1.0.1/igraph-1.0.1.tar.gz

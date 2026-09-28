@@ -2129,7 +2129,7 @@ impl igraph_t {
     /// number of neighborhoods differs from the number of vertices, or as for
     /// [`local_scan_subset_ecount`](Self::local_scan_subset_ecount).
     #[deprecated(
-        since = "0.1.0",
+        since = "1.0.1",
         note = "deprecated in igraph 0.10: use `local_scan_subset_ecount`"
     )]
     pub fn local_scan_neighborhood_ecount<S: AsRef<[VertexId]>>(
