@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["MAX_NESTED_FINALLY_ENTRIES"],"enum":["ErrorKind"],"fn":["catch_panic","catch_panic_or","check","ensure_init","finally_stack_size","has_pending_panic","is_initialized","resume_panic","strerror","take_warnings"],"struct":["Error"],"type":["Result"]};

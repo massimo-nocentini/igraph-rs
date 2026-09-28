@@ -1,0 +1,114 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Cliques, independent vertex sets and vertex/edge colorings (`igraph_cliques.h`, `igraph_coloring.h`)."><title>igraph::cliques - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-1ed95124.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="igraph" data-themes="" data-resource-suffix="" data-rustdoc-version="1.98.1 (48a229cea 2026-09-01)" data-channel="1.98.1" data-search-js="search-9944d736.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../static.files/main-417ebf0a.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Module cliques</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../igraph/index.html">igraph</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module cliques</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#size-ranges" title="Size ranges">Size ranges</a></li><li><a href="#nesting-searches-in-callbacks" title="Nesting searches in callbacks">Nesting searches in callbacks</a></li><li><a href="#example" title="Example">Example</a></li><li><a href="#provided-functionality" title="Provided functionality">Provided functionality</a></li><li><a href="#see-also" title="See also">See also</a></li></ul><h3><a href="#structs">Module Items</a></h3><ul class="block"><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#enums" title="Enums">Enums</a></li></ul></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="../index.html">In crate igraph</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../index.html">igraph</a></div><h1>Module <span>cliques</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/igraph/cliques.rs.html#1-1495">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Cliques, independent vertex sets and vertex/edge colorings
+(<code>igraph_cliques.h</code>, <code>igraph_coloring.h</code>).</p>
+<p>A <em>clique</em> is a set of vertices that are pairwise adjacent; an
+<em>independent vertex set</em> is a set of vertices no two of which are adjacent
+(i.e. a clique of the complementer graph). A <em>proper vertex coloring</em>
+assigns colors to vertices so that adjacent vertices always differ.
+The clique and independent-set functions ignore edge directions (igraph
+emits a warning for directed graphs), self-loops and multi-edges. The
+coloring checks ignore self-loops too, but
+<a href="../ffi/struct.igraph_t.html#method.is_bipartite_coloring" title="method igraph::ffi::igraph_t::is_bipartite_coloring"><code>is_bipartite_coloring</code></a> reports edge
+directions and <a href="../ffi/struct.igraph_t.html#method.is_edge_coloring" title="method igraph::ffi::igraph_t::is_edge_coloring"><code>is_edge_coloring</code></a> treats
+parallel edges as adjacent.</p>
+<p>Three families of sets are distinguished, both for cliques and for
+independent sets:</p>
+<ul>
+<li><strong>all</strong> sets (every clique, including every subset of a clique);</li>
+<li><strong>maximal</strong> sets, which cannot be extended by adding one more vertex;</li>
+<li><strong>largest</strong> (maximum) sets, those of the largest possible size. The size
+of the largest clique is the <em>clique number</em> ω(G), the size of the
+largest independent set is the <em>independence number</em> α(G).</li>
+</ul>
+<h2 id="size-ranges"><a class="doc-anchor" href="#size-ranges">§</a>Size ranges</h2>
+<p>The enumeration functions take the admissible sizes as a Rust range of
+<a href="https://doc.rust-lang.org/1.98.1/std/primitive.usize.html" title="primitive usize"><code>usize</code></a> (<a href="https://doc.rust-lang.org/1.98.1/core/ops/range/trait.RangeBounds.html" title="trait core::ops::range::RangeBounds"><code>RangeBounds</code></a>): <code>..</code> means “any size”, <code>3..</code> “at least 3”,
+<code>2..=4</code> “between 2 and 4”, <code>..5</code> “fewer than 5”. An empty range (e.g.
+<code>4..=2</code> or <code>..1</code>) is rejected with an <a href="../error/enum.ErrorKind.html#variant.InvalidValue" title="variant igraph::error::ErrorKind::InvalidValue"><code>ErrorKind::InvalidValue</code></a> error,
+since no set could ever satisfy it. A lower bound larger than the number
+of vertices is not an error: the result is simply empty. An optional
+<code>max_results</code> stops the search after that many sets were found (<code>None</code>
+means no limit, <code>Some(0)</code> returns nothing).</p>
+<h2 id="nesting-searches-in-callbacks"><a class="doc-anchor" href="#nesting-searches-in-callbacks">§</a>Nesting searches in callbacks</h2>
+<p>The functions based on the Cliquer library
+(<a href="../ffi/struct.igraph_t.html#method.cliques" title="method igraph::ffi::igraph_t::cliques"><code>cliques</code></a>, <a href="../ffi/struct.igraph_t.html#method.cliques_callback" title="method igraph::ffi::igraph_t::cliques_callback"><code>cliques_callback</code></a>,
+<a href="../ffi/struct.igraph_t.html#method.clique_size_hist" title="method igraph::ffi::igraph_t::clique_size_hist"><code>clique_size_hist</code></a> and the weighted clique
+functions) share per-thread state inside igraph: in igraph 1.0.0 and 1.0.1
+the Cliquer wrapper keeps the options of the running search in a single
+thread-local global that every search overwrites. Calling one of them from
+inside a <a href="../ffi/struct.igraph_t.html#method.cliques_callback" title="method igraph::ffi::igraph_t::cliques_callback"><code>cliques_callback</code></a> closure is therefore
+refused with an <a href="../error/enum.ErrorKind.html#variant.Failure" title="variant igraph::error::ErrorKind::Failure"><code>ErrorKind::Failure</code></a> error instead of corrupting the
+running search. All other functions (for instance
+<a href="../ffi/struct.igraph_t.html#method.maximal_cliques" title="method igraph::ffi::igraph_t::maximal_cliques"><code>maximal_cliques</code></a> or
+<a href="../ffi/struct.igraph_t.html#method.clique_number" title="method igraph::ffi::igraph_t::clique_number"><code>clique_number</code></a>) may be used freely there, and
+<a href="../ffi/struct.igraph_t.html#method.maximal_cliques_callback" title="method igraph::ffi::igraph_t::maximal_cliques_callback"><code>maximal_cliques_callback</code></a> closures may
+call anything. The restriction is per thread: searches running on other
+threads are independent. A nested call that fails only returns its <code>Err</code>
+to the closure: the running search is not affected and can go on.</p>
+<h2 id="example"><a class="doc-anchor" href="#example">§</a>Example</h2>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>igraph::{cliques::ColoringGreedy, prelude::<span class="kw-2">*</span>};
+
+<span class="comment">// Two triangles {0, 1, 2} and {2, 3, 4} sharing vertex 2, plus the edge 4-5.
+</span><span class="kw">let </span>g = Graph::from_edges(<span class="kw-2">&amp;</span>[(<span class="number">0</span>, <span class="number">1</span>), (<span class="number">1</span>, <span class="number">2</span>), (<span class="number">0</span>, <span class="number">2</span>), (<span class="number">2</span>, <span class="number">3</span>), (<span class="number">3</span>, <span class="number">4</span>), (<span class="number">2</span>, <span class="number">4</span>), (<span class="number">4</span>, <span class="number">5</span>)], <span class="number">6</span>, <span class="bool-val">false</span>)
+    .unwrap();
+
+<span class="macro">assert_eq!</span>(g.clique_number().unwrap(), <span class="number">3</span>);
+<span class="kw">let </span><span class="kw-2">mut </span>largest = g.largest_cliques().unwrap();
+largest.iter_mut().for_each(|c| c.sort());
+largest.sort();
+<span class="macro">assert_eq!</span>(largest, <span class="macro">vec!</span>[<span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>], <span class="macro">vec!</span>[<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]]);
+
+<span class="comment">// Maximal cliques by size: none of size 1, one of size 2 (4-5), two triangles.
+</span><span class="macro">assert_eq!</span>(g.maximal_cliques_hist(..).unwrap(), <span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>]);
+
+<span class="comment">// Vertices 0, 3 and 5 are pairwise non-adjacent.
+</span><span class="macro">assert_eq!</span>(g.independence_number().unwrap(), <span class="number">3</span>);
+
+<span class="comment">// A proper coloring needs at least ω(G) = 3 colors.
+</span><span class="kw">let </span>colors = g.vertex_coloring_greedy(ColoringGreedy::DSatur).unwrap();
+<span class="macro">assert!</span>(g.is_vertex_coloring(<span class="kw-2">&amp;</span>colors).unwrap());
+<span class="macro">assert_eq!</span>(colors.iter().max(), <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="number">2</span>));
+
+<span class="comment">// Zachary's karate club: its 45 triangles are its cliques of size 3, and
+// its two largest cliques have 5 members.
+</span><span class="kw">let </span>karate = Graph::famous(<span class="string">"Zachary"</span>).unwrap();
+<span class="macro">assert_eq!</span>(karate.clique_size_hist(<span class="number">3</span>..=<span class="number">3</span>).unwrap(), <span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">0</span>, <span class="number">45</span>]);
+<span class="macro">assert_eq!</span>(karate.count_triangles().unwrap(), <span class="number">45.0</span>);
+<span class="macro">assert_eq!</span>(karate.clique_number().unwrap(), <span class="number">5</span>);</code></pre></div><h2 id="provided-functionality"><a class="doc-anchor" href="#provided-functionality">§</a>Provided functionality</h2><div><table><thead><tr><th>Rust method</th><th>C function</th><th>Computes</th></tr></thead><tbody>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.cliques" title="method igraph::ffi::igraph_t::cliques"><code>cliques</code></a></td><td><code>igraph_cliques</code></td><td>all cliques in a size range</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.cliques_callback" title="method igraph::ffi::igraph_t::cliques_callback"><code>cliques_callback</code></a></td><td><code>igraph_cliques_callback</code></td><td>streams all cliques to a closure</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.clique_size_hist" title="method igraph::ffi::igraph_t::clique_size_hist"><code>clique_size_hist</code></a></td><td><code>igraph_clique_size_hist</code></td><td>number of cliques of each size</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.largest_cliques" title="method igraph::ffi::igraph_t::largest_cliques"><code>largest_cliques</code></a></td><td><code>igraph_largest_cliques</code></td><td>the maximum cliques</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.clique_number" title="method igraph::ffi::igraph_t::clique_number"><code>clique_number</code></a></td><td><code>igraph_clique_number</code></td><td>ω(G)</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.maximal_cliques" title="method igraph::ffi::igraph_t::maximal_cliques"><code>maximal_cliques</code></a></td><td><code>igraph_maximal_cliques</code></td><td>maximal cliques (Bron–Kerbosch)</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.maximal_cliques_callback" title="method igraph::ffi::igraph_t::maximal_cliques_callback"><code>maximal_cliques_callback</code></a></td><td><code>igraph_maximal_cliques_callback</code></td><td>streams maximal cliques to a closure</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.maximal_cliques_count" title="method igraph::ffi::igraph_t::maximal_cliques_count"><code>maximal_cliques_count</code></a></td><td><code>igraph_maximal_cliques_count</code></td><td>number of maximal cliques</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.maximal_cliques_hist" title="method igraph::ffi::igraph_t::maximal_cliques_hist"><code>maximal_cliques_hist</code></a></td><td><code>igraph_maximal_cliques_hist</code></td><td>maximal cliques by size</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.maximal_cliques_subset" title="method igraph::ffi::igraph_t::maximal_cliques_subset"><code>maximal_cliques_subset</code></a></td><td><code>igraph_maximal_cliques_subset</code></td><td>maximal cliques started from some vertices</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.write_maximal_cliques" title="method igraph::ffi::igraph_t::write_maximal_cliques"><code>write_maximal_cliques</code></a></td><td><code>igraph_maximal_cliques_file</code></td><td>writes maximal cliques to an <a href="https://doc.rust-lang.org/1.98.1/std/io/trait.Write.html" title="trait std::io::Write"><code>io::Write</code></a></td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.weighted_cliques" title="method igraph::ffi::igraph_t::weighted_cliques"><code>weighted_cliques</code></a></td><td><code>igraph_weighted_cliques</code></td><td>(maximal) cliques in a weight range</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.largest_weighted_cliques" title="method igraph::ffi::igraph_t::largest_weighted_cliques"><code>largest_weighted_cliques</code></a></td><td><code>igraph_largest_weighted_cliques</code></td><td>heaviest cliques</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.weighted_clique_number" title="method igraph::ffi::igraph_t::weighted_clique_number"><code>weighted_clique_number</code></a></td><td><code>igraph_weighted_clique_number</code></td><td>weight of the heaviest clique</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.independent_vertex_sets" title="method igraph::ffi::igraph_t::independent_vertex_sets"><code>independent_vertex_sets</code></a></td><td><code>igraph_independent_vertex_sets</code></td><td>all independent sets in a size range</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.maximal_independent_vertex_sets" title="method igraph::ffi::igraph_t::maximal_independent_vertex_sets"><code>maximal_independent_vertex_sets</code></a></td><td><code>igraph_maximal_independent_vertex_sets</code></td><td>maximal independent sets</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.largest_independent_vertex_sets" title="method igraph::ffi::igraph_t::largest_independent_vertex_sets"><code>largest_independent_vertex_sets</code></a></td><td><code>igraph_largest_independent_vertex_sets</code></td><td>maximum independent sets</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.independence_number" title="method igraph::ffi::igraph_t::independence_number"><code>independence_number</code></a></td><td><code>igraph_independence_number</code></td><td>α(G)</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.vertex_coloring_greedy" title="method igraph::ffi::igraph_t::vertex_coloring_greedy"><code>vertex_coloring_greedy</code></a></td><td><code>igraph_vertex_coloring_greedy</code></td><td>a proper vertex coloring</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.is_vertex_coloring" title="method igraph::ffi::igraph_t::is_vertex_coloring"><code>is_vertex_coloring</code></a></td><td><code>igraph_is_vertex_coloring</code></td><td>checks a vertex coloring</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.is_bipartite_coloring" title="method igraph::ffi::igraph_t::is_bipartite_coloring"><code>is_bipartite_coloring</code></a></td><td><code>igraph_is_bipartite_coloring</code></td><td>checks a 2-coloring, and edge orientation</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.is_edge_coloring" title="method igraph::ffi::igraph_t::is_edge_coloring"><code>is_edge_coloring</code></a></td><td><code>igraph_is_edge_coloring</code></td><td>checks an edge coloring</td></tr>
+</tbody></table>
+</div>
+<p>Cliques and independent sets are returned as <code>Vec&lt;Vec&lt;VertexId&gt;&gt;</code>; the
+order of the sets, and of the vertices inside each set, is unspecified
+(sort them if you need a canonical form).</p>
+<h2 id="see-also"><a class="doc-anchor" href="#see-also">§</a>See also</h2><div><table><thead><tr><th>Task</th><th>Elsewhere in the crate</th></tr></thead><tbody>
+<tr><td>test whether a <em>given</em> vertex set is a clique / independent set</td><td><a href="../ffi/struct.igraph_t.html#method.is_clique" title="method igraph::ffi::igraph_t::is_clique"><code>Graph::is_clique</code></a>, <a href="../ffi/struct.igraph_t.html#method.is_independent_vertex_set" title="method igraph::ffi::igraph_t::is_independent_vertex_set"><code>Graph::is_independent_vertex_set</code></a> (structural)</td></tr>
+<tr><td>triangles (the 3-cliques) only</td><td><a href="../ffi/struct.igraph_t.html#method.count_triangles" title="method igraph::ffi::igraph_t::count_triangles"><code>Graph::count_triangles</code></a>, <a href="../ffi/struct.igraph_t.html#method.list_triangles" title="method igraph::ffi::igraph_t::list_triangles"><code>Graph::list_triangles</code></a> (isomorphism), <a href="../ffi/struct.igraph_t.html#method.transitivity_undirected" title="method igraph::ffi::igraph_t::transitivity_undirected"><code>Graph::transitivity_undirected</code></a> (mixing)</td></tr>
+<tr><td>switch between cliques and independent sets</td><td><a href="../ffi/struct.igraph_t.html#method.complementer" title="method igraph::ffi::igraph_t::complementer"><code>Graph::complementer</code></a> (operators): α(G) = ω(complement of G)</td></tr>
+<tr><td>degeneracy, which bounds the cost of <a href="../ffi/struct.igraph_t.html#method.maximal_cliques" title="method igraph::ffi::igraph_t::maximal_cliques"><code>maximal_cliques</code></a></td><td><a href="../ffi/struct.igraph_t.html#method.coreness" title="method igraph::ffi::igraph_t::coreness"><code>Graph::coreness</code></a>: the degeneracy is the largest coreness</td></tr>
+<tr><td>2-colorings</td><td><a href="../ffi/struct.igraph_t.html#method.is_bipartite" title="method igraph::ffi::igraph_t::is_bipartite"><code>Graph::is_bipartite</code></a>, <a href="../ffi/struct.igraph_t.html#method.bipartite_types" title="method igraph::ffi::igraph_t::bipartite_types"><code>Graph::bipartite_types</code></a> (bipartite)</td></tr>
+<tr><td>graph classes where χ(G) = ω(G)</td><td><a href="../ffi/struct.igraph_t.html#method.is_perfect" title="method igraph::ffi::igraph_t::is_perfect"><code>Graph::is_perfect</code></a>, <a href="../ffi/struct.igraph_t.html#method.is_chordal" title="method igraph::ffi::igraph_t::is_chordal"><code>Graph::is_chordal</code></a> (structural)</td></tr>
+<tr><td>graphs with known ω, α and χ</td><td><a href="../ffi/struct.igraph_t.html#method.full" title="associated function igraph::ffi::igraph_t::full"><code>Graph::full</code></a>, <a href="../ffi/struct.igraph_t.html#method.turan" title="associated function igraph::ffi::igraph_t::turan"><code>Graph::turan</code></a>, <a href="../ffi/struct.igraph_t.html#method.wheel" title="associated function igraph::ffi::igraph_t::wheel"><code>Graph::wheel</code></a>, <a href="../ffi/struct.igraph_t.html#method.famous" title="associated function igraph::ffi::igraph_t::famous"><code>Graph::famous</code></a> (constructors), <a href="../ffi/struct.igraph_t.html#method.mycielskian" title="method igraph::ffi::igraph_t::mycielskian"><code>Graph::mycielskian</code></a> (operators: triangle-free graphs of growing chromatic number)</td></tr>
+</tbody></table>
+</div></div></details><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.WeightedCliqueOptions.html" title="struct igraph::cliques::WeightedCliqueOptions">Weighted<wbr>Clique<wbr>Options</a></dt><dd>Options of <a href="../ffi/struct.igraph_t.html#method.weighted_cliques" title="method igraph::ffi::igraph_t::weighted_cliques"><code>Graph::weighted_cliques</code></a>.</dd></dl><h2 id="enums" class="section-header">Enums<a href="#enums" class="anchor">§</a></h2><dl class="item-table"><dt><a class="enum" href="enum.ColoringGreedy.html" title="enum igraph::cliques::ColoringGreedy">Coloring<wbr>Greedy</a></dt><dd>Vertex ordering heuristic of <a href="../ffi/struct.igraph_t.html#method.vertex_coloring_greedy" title="method igraph::ffi::igraph_t::vertex_coloring_greedy"><code>Graph::vertex_coloring_greedy</code></a>
+(<code>igraph_coloring_greedy_t</code>).</dd></dl></section></div></main></body></html>

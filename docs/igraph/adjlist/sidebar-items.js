@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["Iter","LazyAdjList","LazyIncList"],"type":["AdjList","IncList"]};

@@ -1,0 +1,146 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Adjacency and incidence lists (`igraph_adjlist.h`)."><title>igraph::adjlist - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-1ed95124.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="igraph" data-themes="" data-resource-suffix="" data-rustdoc-version="1.98.1 (48a229cea 2026-09-01)" data-channel="1.98.1" data-search-js="search-9944d736.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../static.files/main-417ebf0a.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Module adjlist</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../igraph/index.html">igraph</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module adjlist</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#rusty-access" title="Rusty access">Rusty access</a></li><li><a href="#collapsing-multi-edges" title="Collapsing multi-edges">Collapsing multi-edges</a></li><li><a href="#example" title="Example">Example</a></li><li><a href="#functions-of-igraph_adjlisth" title="Functions of `igraph_adjlist.h`">Functions of <code>igraph_adjlist.h</code></a></li><li><a href="#see-also" title="See also">See also</a></li></ul><h3><a href="#structs">Module Items</a></h3><ul class="block"><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#types" title="Type Aliases">Type Aliases</a></li></ul></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="../index.html">In crate igraph</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../index.html">igraph</a></div><h1>Module <span>adjlist</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/igraph/adjlist.rs.html#1-1416">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Adjacency and incidence lists (<code>igraph_adjlist.h</code>).</p>
+<p>Many algorithms visit the neighbors of every vertex over and over again
+(shortest paths from all sources, closeness, triangle counting, rewiring,
+…). For them it pays off to extract the graph <em>once</em> into a list of
+vectors, one per vertex, and work on that. igraph offers four such
+structures, all wrapped here as owned Rust types that free their memory on
+<a href="https://doc.rust-lang.org/1.98.1/core/ops/drop/trait.Drop.html" title="trait core::ops::drop::Drop"><code>Drop</code></a>:</p>
+<div><table><thead><tr><th>Rust type</th><th>C type</th><th>contents of list <code>v</code></th><th>built</th></tr></thead><tbody>
+<tr><td><a href="type.AdjList.html" title="type igraph::adjlist::AdjList"><code>AdjList</code></a></td><td><code>igraph_adjlist_t</code></td><td>neighbor vertex ids of <code>v</code></td><td>eagerly, all vertices</td></tr>
+<tr><td><a href="type.IncList.html" title="type igraph::adjlist::IncList"><code>IncList</code></a></td><td><code>igraph_inclist_t</code></td><td>incident edge ids of <code>v</code></td><td>eagerly, all vertices</td></tr>
+<tr><td><a href="struct.LazyAdjList.html" title="struct igraph::adjlist::LazyAdjList"><code>LazyAdjList</code></a></td><td><code>igraph_lazy_adjlist_t</code></td><td>neighbor vertex ids of <code>v</code></td><td>on first access of <code>v</code></td></tr>
+<tr><td><a href="struct.LazyIncList.html" title="struct igraph::adjlist::LazyIncList"><code>LazyIncList</code></a></td><td><code>igraph_lazy_inclist_t</code></td><td>incident edge ids of <code>v</code></td><td>on first access of <code>v</code></td></tr>
+</tbody></table>
+</div>
+<p><a href="type.AdjList.html" title="type igraph::adjlist::AdjList"><code>AdjList</code></a> and <a href="type.IncList.html" title="type igraph::adjlist::IncList"><code>IncList</code></a> are <em>independent</em> of the graph after creation:
+the graph may be modified or dropped, and the lists may be freely edited
+(each entry is a <a href="../vector/type.VectorInt.html" title="type igraph::vector::VectorInt"><code>VectorInt</code></a>, so it can grow and shrink) without
+affecting the graph. This makes them the ideal scratch representation for
+heavy structural edits: extract with <a href="../ffi/struct.igraph_t.html#method.adjlist_init" title="method igraph::ffi::igraph_t::adjlist_init"><code>Graph::adjlist_init</code></a>, edit the
+lists in O(1) or O(d) per operation, then rebuild a graph with
+<a href="../ffi/struct.igraph_adjlist_t.html#method.to_graph" title="method igraph::ffi::igraph_adjlist_t::to_graph"><code>AdjList::to_graph</code></a> (<code>igraph_adjlist</code>), paying O(|V|+|E|) only once.</p>
+<p>The <em>lazy</em> variants instead borrow the graph (the borrow checker enforces
+that the graph outlives them and is not mutated meanwhile) and query the
+neighbors of a vertex only the first time it is asked for, caching the
+result. They are handy for algorithms that may visit only a small part of
+a large graph.</p>
+<h2 id="rusty-access"><a class="doc-anchor" href="#rusty-access">§</a>Rusty access</h2>
+<ul>
+<li><code>al[v]</code> gives the neighbors of vertex <code>v</code> as a <code>&amp;[i64]</code> slice
+(<a href="https://doc.rust-lang.org/1.98.1/core/ops/index/trait.Index.html" title="trait core::ops::index::Index"><code>Index</code></a>), <code>al[v][i] = x</code> edits in place (<a href="https://doc.rust-lang.org/1.98.1/core/ops/index/trait.IndexMut.html" title="trait core::ops::index::IndexMut"><code>IndexMut</code></a>);</li>
+<li><a href="../ffi/struct.igraph_adjlist_t.html#method.get_mut" title="method igraph::ffi::igraph_adjlist_t::get_mut"><code>AdjList::get_mut</code></a> gives the underlying <a href="../vector/type.VectorInt.html" title="type igraph::vector::VectorInt"><code>VectorInt</code></a> to push, pop,
+sort or resize a list;</li>
+<li><a href="../ffi/struct.igraph_adjlist_t.html#method.iter" title="method igraph::ffi::igraph_adjlist_t::iter"><code>AdjList::iter</code></a> / <code>for list in &amp;al</code> iterate over the lists;</li>
+<li><a href="../ffi/struct.igraph_adjlist_t.html#method.to_vecs" title="method igraph::ffi::igraph_adjlist_t::to_vecs"><code>AdjList::to_vecs</code></a> and <code>Vec::&lt;Vec&lt;i64&gt;&gt;::from(al)</code> convert to nested
+vectors, and <code>AdjList::from(vec![...])</code> / <code>.collect()</code> build one from
+Rust data;</li>
+<li><a href="https://doc.rust-lang.org/1.98.1/core/fmt/trait.Display.html" title="trait core::fmt::Display"><code>Display</code></a> prints one line per vertex, exactly like
+igraph’s <code>igraph_adjlist_print</code>.</li>
+</ul>
+<h2 id="collapsing-multi-edges"><a class="doc-anchor" href="#collapsing-multi-edges">§</a>Collapsing multi-edges</h2>
+<p>With <code>multiple = false</code>, <a href="../ffi/struct.igraph_t.html#method.adjlist_init" title="method igraph::ffi::igraph_t::adjlist_init"><code>Graph::adjlist_init</code></a> and
+<a href="../ffi/struct.igraph_t.html#method.lazy_adjlist_init" title="method igraph::ffi::igraph_t::lazy_adjlist_init"><code>Graph::lazy_adjlist_init</code></a> list each neighbor once. In igraph 1.0.0 and
+1.0.1 this is buggy when neighbors are gathered in both directions (mode
+<code>All</code>, or undirected graphs): mutual pairs <code>u -&gt; w</code>, <code>w -&gt; u</code> and single
+self-loops are mistaken for multi-edges, which corrupts the graph’s cached
+<a href="../ffi/struct.igraph_t.html#method.has_multiple" title="method igraph::ffi::igraph_t::has_multiple"><code>Graph::has_multiple</code></a> answer, and the lists themselves depend on that
+cache. These wrappers collapse such lists on the Rust side instead, so the
+result always matches <a href="../ffi/struct.igraph_t.html#method.neighbors_with" title="method igraph::ffi::igraph_t::neighbors_with"><code>Graph::neighbors_with</code></a> and the cache stays
+correct.</p>
+<h2 id="example"><a class="doc-anchor" href="#example">§</a>Example</h2>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>igraph::prelude::<span class="kw-2">*</span>;
+<span class="kw">use </span>igraph::adjlist::AdjList;
+
+<span class="comment">// A directed triangle 0 -&gt; 1 -&gt; 2 -&gt; 0 with an extra edge 0 -&gt; 2.
+</span><span class="kw">let </span>g = Graph::from_edges(<span class="kw-2">&amp;</span>[(<span class="number">0</span>, <span class="number">1</span>), (<span class="number">1</span>, <span class="number">2</span>), (<span class="number">2</span>, <span class="number">0</span>), (<span class="number">0</span>, <span class="number">2</span>)], <span class="number">3</span>, <span class="bool-val">true</span>).unwrap();
+
+<span class="kw">let </span>out = g.adjlist_init(NeighborMode::Out, Loops::Twice, <span class="bool-val">true</span>).unwrap();
+<span class="macro">assert_eq!</span>(out.len(), <span class="number">3</span>);
+<span class="macro">assert_eq!</span>(<span class="kw-2">&amp;</span>out[<span class="number">0</span>], <span class="kw-2">&amp;</span>[<span class="number">1</span>, <span class="number">2</span>]);
+<span class="macro">assert_eq!</span>(out.to_vecs(), <span class="macro">vec!</span>[<span class="macro">vec!</span>[<span class="number">1</span>, <span class="number">2</span>], <span class="macro">vec!</span>[<span class="number">2</span>], <span class="macro">vec!</span>[<span class="number">0</span>]]);
+
+<span class="comment">// Incoming neighbors, then the edge ids incident to each vertex.
+</span><span class="kw">let </span>inc = g.adjlist_init(NeighborMode::In, Loops::Twice, <span class="bool-val">true</span>).unwrap();
+<span class="macro">assert_eq!</span>(<span class="kw-2">&amp;</span>inc[<span class="number">2</span>], <span class="kw-2">&amp;</span>[<span class="number">0</span>, <span class="number">1</span>]);
+<span class="kw">let </span>il = g.inclist_init(NeighborMode::Out, Loops::Twice).unwrap();
+<span class="macro">assert_eq!</span>(<span class="kw-2">&amp;</span>il[<span class="number">0</span>], <span class="kw-2">&amp;</span>[<span class="number">0</span>, <span class="number">3</span>]);
+
+<span class="comment">// Edit the adjacency list and turn it back into a graph: drop 2 -&gt; 0.
+</span><span class="kw">let </span><span class="kw-2">mut </span>al: AdjList = out.clone();
+al.get_mut(<span class="number">2</span>).unwrap().clear();
+al.get_mut(<span class="number">0</span>).unwrap().push(<span class="number">0</span>); <span class="comment">// and add a self-loop on 0
+</span><span class="kw">let </span>h = al.to_graph(NeighborMode::Out, <span class="bool-val">false</span>).unwrap();
+<span class="macro">assert_eq!</span>(h.ecount(), <span class="number">4</span>);
+<span class="macro">assert_eq!</span>(h.neighbors(<span class="number">0</span>, NeighborMode::Out).unwrap(), <span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>]);
+
+<span class="comment">// Lazy lists query the graph only when asked to.
+</span><span class="kw">let </span><span class="kw-2">mut </span>lazy = g.lazy_adjlist_init(NeighborMode::All, Loops::Twice, <span class="bool-val">false</span>).unwrap();
+<span class="macro">assert!</span>(!lazy.has(<span class="number">0</span>));
+<span class="macro">assert_eq!</span>(lazy.get(<span class="number">0</span>).unwrap(), <span class="kw-2">&amp;</span>[<span class="number">1</span>, <span class="number">2</span>]);
+<span class="macro">assert!</span>(lazy.has(<span class="number">0</span>));
+
+<span class="comment">// Zachary's karate club: the handshake lemma, and the two hubs.
+</span><span class="kw">let </span>karate = Graph::famous(<span class="string">"Zachary"</span>).unwrap();
+<span class="kw">let </span>al = karate.adjlist_init(NeighborMode::All, Loops::Twice, <span class="bool-val">true</span>).unwrap();
+<span class="macro">assert_eq!</span>(al.total_len(), <span class="number">2 </span>* karate.ecount());
+<span class="macro">assert_eq!</span>((al[<span class="number">0</span>].len(), al[<span class="number">33</span>].len()), (<span class="number">16</span>, <span class="number">17</span>));</code></pre></div><h2 id="functions-of-igraph_adjlisth"><a class="doc-anchor" href="#functions-of-igraph_adjlisth">§</a>Functions of <code>igraph_adjlist.h</code></h2><div><table><thead><tr><th>C function</th><th>Rust</th></tr></thead><tbody>
+<tr><td><code>igraph_adjlist_init</code></td><td><a href="../ffi/struct.igraph_t.html#method.adjlist_init" title="method igraph::ffi::igraph_t::adjlist_init"><code>Graph::adjlist_init</code></a>, <a href="../ffi/struct.igraph_adjlist_t.html#method.new" title="associated function igraph::ffi::igraph_adjlist_t::new"><code>AdjList::new</code></a></td></tr>
+<tr><td><code>igraph_adjlist_init_empty</code></td><td><a href="../ffi/struct.igraph_adjlist_t.html#method.init_empty" title="associated function igraph::ffi::igraph_adjlist_t::init_empty"><code>AdjList::init_empty</code></a></td></tr>
+<tr><td><code>igraph_adjlist_init_complementer</code></td><td><a href="../ffi/struct.igraph_t.html#method.adjlist_init_complementer" title="method igraph::ffi::igraph_t::adjlist_init_complementer"><code>Graph::adjlist_init_complementer</code></a>, <a href="../ffi/struct.igraph_adjlist_t.html#method.complementer" title="associated function igraph::ffi::igraph_adjlist_t::complementer"><code>AdjList::complementer</code></a></td></tr>
+<tr><td><code>igraph_adjlist_init_from_inclist</code></td><td><a href="../ffi/struct.igraph_t.html#method.adjlist_init_from_inclist" title="method igraph::ffi::igraph_t::adjlist_init_from_inclist"><code>Graph::adjlist_init_from_inclist</code></a>, <a href="../ffi/struct.igraph_adjlist_t.html#method.from_inclist" title="associated function igraph::ffi::igraph_adjlist_t::from_inclist"><code>AdjList::from_inclist</code></a></td></tr>
+<tr><td><code>igraph_adjlist_destroy</code></td><td><a href="https://doc.rust-lang.org/1.98.1/core/ops/drop/trait.Drop.html" title="trait core::ops::drop::Drop"><code>Drop</code></a></td></tr>
+<tr><td><code>igraph_adjlist_size</code></td><td><a href="../ffi/struct.igraph_adjlist_t.html#method.len" title="method igraph::ffi::igraph_adjlist_t::len"><code>AdjList::len</code></a></td></tr>
+<tr><td><code>igraph_adjlist_clear</code></td><td><a href="../ffi/struct.igraph_adjlist_t.html#method.clear" title="method igraph::ffi::igraph_adjlist_t::clear"><code>AdjList::clear</code></a></td></tr>
+<tr><td><code>igraph_adjlist_sort</code></td><td><a href="../ffi/struct.igraph_adjlist_t.html#method.sort" title="method igraph::ffi::igraph_adjlist_t::sort"><code>AdjList::sort</code></a></td></tr>
+<tr><td><code>igraph_adjlist_simplify</code></td><td><a href="../ffi/struct.igraph_adjlist_t.html#method.simplify" title="method igraph::ffi::igraph_adjlist_t::simplify"><code>AdjList::simplify</code></a></td></tr>
+<tr><td><code>igraph_adjlist_print</code> / <code>_fprint</code></td><td><a href="../ffi/struct.igraph_adjlist_t.html#method.print" title="method igraph::ffi::igraph_adjlist_t::print"><code>AdjList::print</code></a>, <a href="../ffi/struct.igraph_adjlist_t.html#method.fprint" title="method igraph::ffi::igraph_adjlist_t::fprint"><code>AdjList::fprint</code></a>, <a href="https://doc.rust-lang.org/1.98.1/core/fmt/trait.Display.html" title="trait core::fmt::Display"><code>Display</code></a></td></tr>
+<tr><td><code>igraph_adjlist_has_edge</code></td><td><a href="../ffi/struct.igraph_adjlist_t.html#method.has_edge" title="method igraph::ffi::igraph_adjlist_t::has_edge"><code>AdjList::has_edge</code></a></td></tr>
+<tr><td><code>igraph_adjlist_replace_edge</code></td><td><a href="../ffi/struct.igraph_adjlist_t.html#method.replace_edge" title="method igraph::ffi::igraph_adjlist_t::replace_edge"><code>AdjList::replace_edge</code></a></td></tr>
+<tr><td><code>igraph_adjlist_get</code> (macro)</td><td><a href="https://doc.rust-lang.org/1.98.1/core/ops/index/trait.Index.html" title="trait core::ops::index::Index"><code>Index</code></a>, <a href="../ffi/struct.igraph_adjlist_t.html#method.get" title="method igraph::ffi::igraph_adjlist_t::get"><code>AdjList::get</code></a>, <a href="../ffi/struct.igraph_adjlist_t.html#method.get_mut" title="method igraph::ffi::igraph_adjlist_t::get_mut"><code>AdjList::get_mut</code></a></td></tr>
+<tr><td><code>igraph_adjlist</code></td><td><a href="../ffi/struct.igraph_t.html#method.adjlist" title="associated function igraph::ffi::igraph_t::adjlist"><code>Graph::adjlist</code></a>, <a href="../ffi/struct.igraph_adjlist_t.html#method.to_graph" title="method igraph::ffi::igraph_adjlist_t::to_graph"><code>AdjList::to_graph</code></a></td></tr>
+<tr><td><code>igraph_inclist_init</code></td><td><a href="../ffi/struct.igraph_t.html#method.inclist_init" title="method igraph::ffi::igraph_t::inclist_init"><code>Graph::inclist_init</code></a>, <a href="../ffi/struct.igraph_inclist_t.html#method.new" title="associated function igraph::ffi::igraph_inclist_t::new"><code>IncList::new</code></a></td></tr>
+<tr><td><code>igraph_inclist_init_empty</code></td><td><a href="../ffi/struct.igraph_inclist_t.html#method.init_empty" title="associated function igraph::ffi::igraph_inclist_t::init_empty"><code>IncList::init_empty</code></a></td></tr>
+<tr><td><code>igraph_inclist_destroy</code></td><td><a href="https://doc.rust-lang.org/1.98.1/core/ops/drop/trait.Drop.html" title="trait core::ops::drop::Drop"><code>Drop</code></a></td></tr>
+<tr><td><code>igraph_inclist_size</code></td><td><a href="../ffi/struct.igraph_inclist_t.html#method.len" title="method igraph::ffi::igraph_inclist_t::len"><code>IncList::len</code></a></td></tr>
+<tr><td><code>igraph_inclist_clear</code></td><td><a href="../ffi/struct.igraph_inclist_t.html#method.clear" title="method igraph::ffi::igraph_inclist_t::clear"><code>IncList::clear</code></a></td></tr>
+<tr><td><code>igraph_inclist_print</code> / <code>_fprint</code></td><td><a href="../ffi/struct.igraph_inclist_t.html#method.print" title="method igraph::ffi::igraph_inclist_t::print"><code>IncList::print</code></a>, <a href="../ffi/struct.igraph_inclist_t.html#method.fprint" title="method igraph::ffi::igraph_inclist_t::fprint"><code>IncList::fprint</code></a>, <a href="https://doc.rust-lang.org/1.98.1/core/fmt/trait.Display.html" title="trait core::fmt::Display"><code>Display</code></a></td></tr>
+<tr><td><code>igraph_inclist_get</code> (macro)</td><td><a href="https://doc.rust-lang.org/1.98.1/core/ops/index/trait.Index.html" title="trait core::ops::index::Index"><code>Index</code></a>, <a href="../ffi/struct.igraph_inclist_t.html#method.get" title="method igraph::ffi::igraph_inclist_t::get"><code>IncList::get</code></a>, <a href="../ffi/struct.igraph_inclist_t.html#method.get_mut" title="method igraph::ffi::igraph_inclist_t::get_mut"><code>IncList::get_mut</code></a></td></tr>
+<tr><td><code>igraph_lazy_adjlist_init</code></td><td><a href="../ffi/struct.igraph_t.html#method.lazy_adjlist_init" title="method igraph::ffi::igraph_t::lazy_adjlist_init"><code>Graph::lazy_adjlist_init</code></a>, <a href="struct.LazyAdjList.html#method.new" title="associated function igraph::adjlist::LazyAdjList::new"><code>LazyAdjList::new</code></a></td></tr>
+<tr><td><code>igraph_lazy_adjlist_destroy</code></td><td><a href="https://doc.rust-lang.org/1.98.1/core/ops/drop/trait.Drop.html" title="trait core::ops::drop::Drop"><code>Drop</code></a></td></tr>
+<tr><td><code>igraph_lazy_adjlist_clear</code></td><td><a href="struct.LazyAdjList.html#method.clear" title="method igraph::adjlist::LazyAdjList::clear"><code>LazyAdjList::clear</code></a></td></tr>
+<tr><td><code>igraph_lazy_adjlist_size</code></td><td><a href="struct.LazyAdjList.html#method.len" title="method igraph::adjlist::LazyAdjList::len"><code>LazyAdjList::len</code></a></td></tr>
+<tr><td><code>igraph_lazy_adjlist_has</code> (macro)</td><td><a href="struct.LazyAdjList.html#method.has" title="method igraph::adjlist::LazyAdjList::has"><code>LazyAdjList::has</code></a></td></tr>
+<tr><td><code>igraph_lazy_adjlist_get</code> (macro)</td><td><a href="struct.LazyAdjList.html#method.get" title="method igraph::adjlist::LazyAdjList::get"><code>LazyAdjList::get</code></a>, <a href="struct.LazyAdjList.html#method.get_mut" title="method igraph::adjlist::LazyAdjList::get_mut"><code>LazyAdjList::get_mut</code></a></td></tr>
+<tr><td><code>igraph_lazy_inclist_init</code></td><td><a href="../ffi/struct.igraph_t.html#method.lazy_inclist_init" title="method igraph::ffi::igraph_t::lazy_inclist_init"><code>Graph::lazy_inclist_init</code></a>, <a href="struct.LazyIncList.html#method.new" title="associated function igraph::adjlist::LazyIncList::new"><code>LazyIncList::new</code></a></td></tr>
+<tr><td><code>igraph_lazy_inclist_destroy</code></td><td><a href="https://doc.rust-lang.org/1.98.1/core/ops/drop/trait.Drop.html" title="trait core::ops::drop::Drop"><code>Drop</code></a></td></tr>
+<tr><td><code>igraph_lazy_inclist_clear</code></td><td><a href="struct.LazyIncList.html#method.clear" title="method igraph::adjlist::LazyIncList::clear"><code>LazyIncList::clear</code></a></td></tr>
+<tr><td><code>igraph_lazy_inclist_size</code></td><td><a href="struct.LazyIncList.html#method.len" title="method igraph::adjlist::LazyIncList::len"><code>LazyIncList::len</code></a></td></tr>
+<tr><td><code>igraph_lazy_inclist_has</code> (macro)</td><td><a href="struct.LazyIncList.html#method.has" title="method igraph::adjlist::LazyIncList::has"><code>LazyIncList::has</code></a></td></tr>
+<tr><td><code>igraph_lazy_inclist_get</code> (macro)</td><td><a href="struct.LazyIncList.html#method.get" title="method igraph::adjlist::LazyIncList::get"><code>LazyIncList::get</code></a>, <a href="struct.LazyIncList.html#method.get_mut" title="method igraph::adjlist::LazyIncList::get_mut"><code>LazyIncList::get_mut</code></a></td></tr>
+</tbody></table>
+</div><h2 id="see-also"><a class="doc-anchor" href="#see-also">§</a>See also</h2>
+<ul>
+<li><a href="../ffi/struct.igraph_t.html#method.neighbors_with" title="method igraph::ffi::igraph_t::neighbors_with"><code>Graph::neighbors_with</code></a> and <a href="../ffi/struct.igraph_t.html#method.incident" title="method igraph::ffi::igraph_t::incident"><code>Graph::incident</code></a> query a single vertex
+directly on the graph, without building a whole list;</li>
+<li><a href="../ffi/struct.igraph_t.html#method.get_adjacency" title="method igraph::ffi::igraph_t::get_adjacency"><code>Graph::get_adjacency</code></a> gives the dense adjacency
+matrix and <a href="../ffi/struct.igraph_t.html#method.adjacency" title="associated function igraph::ffi::igraph_t::adjacency"><code>Graph::adjacency</code></a> builds a graph from
+one, the matrix counterparts of <a href="../ffi/struct.igraph_t.html#method.adjlist_init" title="method igraph::ffi::igraph_t::adjlist_init"><code>Graph::adjlist_init</code></a> and
+<a href="../ffi/struct.igraph_t.html#method.adjlist" title="associated function igraph::ffi::igraph_t::adjlist"><code>Graph::adjlist</code></a>;</li>
+<li><a href="../ffi/struct.igraph_t.html#method.complementer" title="method igraph::ffi::igraph_t::complementer"><code>Graph::complementer</code></a> and <a href="../ffi/struct.igraph_t.html#method.simplify" title="method igraph::ffi::igraph_t::simplify"><code>Graph::simplify</code></a>
+(<a href="../operators/index.html" title="mod igraph::operators"><code>operators</code></a>) are the whole-graph counterparts of
+<a href="../ffi/struct.igraph_t.html#method.adjlist_init_complementer" title="method igraph::ffi::igraph_t::adjlist_init_complementer"><code>Graph::adjlist_init_complementer</code></a> and <a href="../ffi/struct.igraph_adjlist_t.html#method.simplify" title="method igraph::ffi::igraph_adjlist_t::simplify"><code>AdjList::simplify</code></a>;</li>
+<li><a href="../ffi/struct.igraph_t.html#method.rewire" title="method igraph::ffi::igraph_t::rewire"><code>Graph::rewire</code></a> implements degree-preserving rewiring on top of
+<a href="../ffi/struct.igraph_adjlist_t.html#method.has_edge" title="method igraph::ffi::igraph_adjlist_t::has_edge"><code>AdjList::has_edge</code></a> / <a href="../ffi/struct.igraph_adjlist_t.html#method.replace_edge" title="method igraph::ffi::igraph_adjlist_t::replace_edge"><code>AdjList::replace_edge</code></a>;</li>
+<li><a href="../ffi/struct.igraph_t.html#method.bfs_simple" title="method igraph::ffi::igraph_t::bfs_simple"><code>Graph::bfs_simple</code></a> and the other traversals of
+<a href="../visitor/index.html" title="mod igraph::visitor"><code>visitor</code></a> walk the graph for you.</li>
+</ul>
+<p>The igraph C documentation of
+<a href="https://igraph.org/c/html/latest/igraph-Data-structures.html">adjacency lists</a>
+describes the underlying structures.</p>
+</div></details><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.Iter.html" title="struct igraph::adjlist::Iter">Iter</a></dt><dd>Iterator over the per-vertex lists of an <a href="type.AdjList.html" title="type igraph::adjlist::AdjList"><code>AdjList</code></a> or <a href="type.IncList.html" title="type igraph::adjlist::IncList"><code>IncList</code></a>,
+yielding each list as a slice (returned by <a href="../ffi/struct.igraph_adjlist_t.html#method.iter" title="method igraph::ffi::igraph_adjlist_t::iter"><code>AdjList::iter</code></a> and
+<a href="../ffi/struct.igraph_inclist_t.html#method.iter" title="method igraph::ffi::igraph_inclist_t::iter"><code>IncList::iter</code></a>).</dd><dt><a class="struct" href="struct.LazyAdjList.html" title="struct igraph::adjlist::LazyAdjList">Lazy<wbr>AdjList</a></dt><dd>Lazy adjacency list (<code>igraph_lazy_adjlist_t</code>) borrowing a graph: the
+neighbors of each vertex are queried on first access and cached.</dd><dt><a class="struct" href="struct.LazyIncList.html" title="struct igraph::adjlist::LazyIncList">Lazy<wbr>IncList</a></dt><dd>Lazy incidence list (<code>igraph_lazy_inclist_t</code>) borrowing a graph: the
+incident edges of each vertex are queried on first access and cached.</dd></dl><h2 id="types" class="section-header">Type Aliases<a href="#types" class="anchor">§</a></h2><dl class="item-table"><dt><a class="type" href="type.AdjList.html" title="type igraph::adjlist::AdjList">AdjList</a></dt><dd>Owned adjacency list (<code>igraph_adjlist_t</code>): for each vertex, a vector of
+its neighbor vertex ids. See the <a href="index.html" title="mod igraph::adjlist">module docs</a>.</dd><dt><a class="type" href="type.IncList.html" title="type igraph::adjlist::IncList">IncList</a></dt><dd>Owned incidence list (<code>igraph_inclist_t</code>): for each vertex, a vector of
+the ids of its incident edges. See the <a href="index.html" title="mod igraph::adjlist">module docs</a>.</dd></dl></section></div></main></body></html>

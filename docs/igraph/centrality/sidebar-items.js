@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["PageRankAlgo"],"fn":["centralization","centralization_betweenness_tmax","centralization_closeness_tmax","centralization_degree_tmax","centralization_eigenvector_centrality_tmax"],"struct":["Centralization","Closeness","ConvergenceDegree","EigenScores","EigenvectorCentralization","HubAuthority","PageRankOptions"]};

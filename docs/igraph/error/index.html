@@ -1,0 +1,100 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Error handling: turning igraph error codes into Rust `Result`s."><title>igraph::error - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-1ed95124.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="igraph" data-themes="" data-resource-suffix="" data-rustdoc-version="1.98.1 (48a229cea 2026-09-01)" data-channel="1.98.1" data-search-js="search-9944d736.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../static.files/main-417ebf0a.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Module error</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../igraph/index.html">igraph</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module error</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#threads" title="Threads">Threads</a></li><li><a href="#callbacks-that-call-igraph" title="Callbacks that call igraph">Callbacks that call igraph</a></li><li><a href="#example" title="Example">Example</a></li></ul><h3><a href="#structs">Module Items</a></h3><ul class="block"><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#enums" title="Enums">Enums</a></li><li><a href="#constants" title="Constants">Constants</a></li><li><a href="#functions" title="Functions">Functions</a></li><li><a href="#types" title="Type Aliases">Type Aliases</a></li></ul></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="../index.html">In crate igraph</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../index.html">igraph</a></div><h1>Module <span>error</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/igraph/error.rs.html#1-709">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Error handling: turning igraph error codes into Rust <a href="type.Result.html" title="type igraph::error::Result"><code>Result</code></a>s.</p>
+<p>The C library reports failures by returning an <a href="../ffi/type.igraph_error_type_t.html" title="type igraph::ffi::igraph_error_type_t"><code>igraph_error_t</code></a> code and
+by invoking a (thread-local) <em>error handler</em>. The default handler aborts
+the whole process, which is hardly what a Rust program wants. The first time
+a thread calls into this crate, <a href="fn.ensure_init.html" title="fn igraph::error::ensure_init"><code>ensure_init</code></a> installs a handler that
+records the error message (so that it can be reported in an <a href="struct.Error.html" title="struct igraph::error::Error"><code>Error</code></a>) and
+then frees the current level of igraph’s internal cleanup (“finally”)
+stack, exactly like <code>igraph_error_handler_ignore</code> does; the failing
+function then returns its error code, which <a href="fn.check.html" title="fn igraph::error::check"><code>check</code></a> converts into an
+<a href="struct.Error.html" title="struct igraph::error::Error"><code>Error</code></a>.</p>
+<p>Warnings emitted by igraph are collected in a thread-local buffer as well;
+retrieve them with <a href="fn.take_warnings.html" title="fn igraph::error::take_warnings"><code>take_warnings</code></a>.</p>
+<p>Rust callbacks invoked by igraph must never unwind into C: trampolines run
+them inside <a href="fn.catch_panic.html" title="fn igraph::error::catch_panic"><code>catch_panic</code></a> (or <a href="fn.catch_panic_or.html" title="fn igraph::error::catch_panic_or"><code>catch_panic_or</code></a>), which stores the
+panic and returns an error code to igraph; the wrapper’s <a href="fn.check.html" title="fn igraph::error::check"><code>check</code></a> then
+resumes the panic in Rust, after igraph has cleaned up.</p>
+<h2 id="threads"><a class="doc-anchor" href="#threads">§</a>Threads</h2>
+<p>The crate requires igraph to be built in thread-safe mode (the
+<code>IGRAPH_THREAD_SAFE</code> macro of <code>igraph_threading.h</code> must be <code>1</code>, which is
+checked at compile time): every thread then has its own igraph state,
+namely error and warning handlers, “finally” stack (the list of
+temporary objects to free if the running function fails) and default
+random number generator. <a href="fn.ensure_init.html" title="fn igraph::error::ensure_init"><code>ensure_init</code></a> sets them up the first time a
+thread calls into the crate, so igraph can be used from many threads at
+once. Nothing is shared between threads except what the user shares:
+a <a href="../graph/type.Graph.html" title="type igraph::graph::Graph"><code>Graph</code></a> is <a href="https://doc.rust-lang.org/1.98.1/core/marker/trait.Send.html" title="trait core::marker::Send"><code>Send</code></a> but not <a href="https://doc.rust-lang.org/1.98.1/core/marker/trait.Sync.html" title="trait core::marker::Sync"><code>Sync</code></a>, and seeding the
+random number generator (see <a href="../rng/index.html" title="mod igraph::rng"><code>rng</code></a>) affects the calling
+thread only.</p>
+<h2 id="callbacks-that-call-igraph"><a class="doc-anchor" href="#callbacks-that-call-igraph">§</a>Callbacks that call igraph</h2>
+<p>A Rust closure invoked by a running igraph function (a visitor, a clique
+or motif handler, …) may itself call igraph functions, for instance to
+run a nested search. Two consequences of igraph’s per-thread “finally”
+stack are handled here:</p>
+<ul>
+<li><a href="fn.catch_panic.html" title="fn igraph::error::catch_panic"><code>catch_panic</code></a> and <a href="fn.catch_panic_or.html" title="fn igraph::error::catch_panic_or"><code>catch_panic_or</code></a> run the closure in a fresh level
+of the finally stack (<code>IGRAPH_FINALLY_ENTER</code> / <code>IGRAPH_FINALLY_EXIT</code>),
+so an igraph call that fails inside the closure frees only its own
+temporaries, never those of the outer function that is still running;
+the closure receives an ordinary <a href="https://doc.rust-lang.org/1.98.1/core/result/enum.Result.html#variant.Err" title="variant core::result::Result::Err"><code>Err</code></a> and may ignore it.</li>
+<li>The finally stack holds at most 100 entries per thread, and igraph
+aborts the process when it overflows. Each nested call adds its own
+entries on top of the outer ones, so <a href="../macro.igraph_call.html" title="macro igraph::igraph_call"><code>igraph_call!</code></a>
+(and <a href="../ffi/struct.igraph_t.html#method.init_with" title="associated function igraph::ffi::igraph_t::init_with"><code>Graph::init_with</code></a>) refuse to start a C
+call when the stack already holds more than
+<a href="constant.MAX_NESTED_FINALLY_ENTRIES.html" title="constant igraph::error::MAX_NESTED_FINALLY_ENTRIES"><code>MAX_NESTED_FINALLY_ENTRIES</code></a> entries, returning an
+<a href="enum.ErrorKind.html#variant.Failure" title="variant igraph::error::ErrorKind::Failure"><code>ErrorKind::Failure</code></a> error (“igraph calls nested too deeply”) instead;
+in practice this allows a dozen or more levels of nested searches.</li>
+</ul>
+<div><table><thead><tr><th>C (<code>igraph_error.h</code>)</th><th>Rust</th></tr></thead><tbody>
+<tr><td><code>igraph_error_t</code> return codes</td><td><a href="type.Result.html" title="type igraph::error::Result"><code>Result</code></a>, <a href="struct.Error.html" title="struct igraph::error::Error"><code>Error</code></a>, <a href="enum.ErrorKind.html" title="enum igraph::error::ErrorKind"><code>ErrorKind</code></a> (<a href="enum.ErrorKind.html#method.from_raw" title="associated function igraph::error::ErrorKind::from_raw"><code>ErrorKind::from_raw</code></a>, <a href="enum.ErrorKind.html#method.to_raw" title="method igraph::error::ErrorKind::to_raw"><code>ErrorKind::to_raw</code></a>)</td></tr>
+<tr><td><code>igraph_strerror</code></td><td><a href="fn.strerror.html" title="fn igraph::error::strerror"><code>strerror</code></a>, <a href="enum.ErrorKind.html#method.description" title="method igraph::error::ErrorKind::description"><code>ErrorKind::description</code></a>, <a href="https://doc.rust-lang.org/1.98.1/core/fmt/trait.Display.html" title="trait core::fmt::Display"><code>Display</code></a></td></tr>
+<tr><td><code>igraph_set_error_handler</code>, <code>igraph_set_warning_handler</code>, <code>igraph_setup</code></td><td><a href="fn.ensure_init.html" title="fn igraph::error::ensure_init"><code>ensure_init</code></a> (automatic), <a href="fn.is_initialized.html" title="fn igraph::error::is_initialized"><code>is_initialized</code></a></td></tr>
+<tr><td><code>IGRAPH_CHECK</code></td><td><a href="../macro.igraph_call.html" title="macro igraph::igraph_call"><code>igraph_call!</code></a>, <a href="fn.check.html" title="fn igraph::error::check"><code>check</code></a></td></tr>
+<tr><td>warnings (<code>IGRAPH_WARNING</code>)</td><td><a href="fn.take_warnings.html" title="fn igraph::error::take_warnings"><code>take_warnings</code></a></td></tr>
+<tr><td>callbacks returning <code>IGRAPH_INTERRUPTED</code></td><td><a href="fn.catch_panic.html" title="fn igraph::error::catch_panic"><code>catch_panic</code></a>, <a href="fn.catch_panic_or.html" title="fn igraph::error::catch_panic_or"><code>catch_panic_or</code></a>, <a href="fn.resume_panic.html" title="fn igraph::error::resume_panic"><code>resume_panic</code></a>, <a href="fn.has_pending_panic.html" title="fn igraph::error::has_pending_panic"><code>has_pending_panic</code></a></td></tr>
+<tr><td><code>IGRAPH_FINALLY_ENTER</code>, <code>IGRAPH_FINALLY_EXIT</code>, <code>IGRAPH_FINALLY_STACK_SIZE</code></td><td>used by <a href="fn.catch_panic.html" title="fn igraph::error::catch_panic"><code>catch_panic</code></a>, <a href="fn.catch_panic_or.html" title="fn igraph::error::catch_panic_or"><code>catch_panic_or</code></a> and <a href="../macro.igraph_call.html" title="macro igraph::igraph_call"><code>igraph_call!</code></a>; <a href="fn.finally_stack_size.html" title="fn igraph::error::finally_stack_size"><code>finally_stack_size</code></a></td></tr>
+</tbody></table>
+</div>
+<p>Not wrapped: the error and warning <em>reporting</em> functions (<code>igraph_error</code>,
+<code>igraph_errorf</code>, <code>igraph_errorvf</code>, <code>igraph_warning</code>, <code>igraph_warningf</code>,
+<code>igraph_fatal</code>, <code>igraph_fatalf</code>) are meant for C code that raises igraph
+errors, while Rust code returns an <a href="struct.Error.html" title="struct igraph::error::Error"><code>Error</code></a> (see <a href="struct.Error.html#method.new" title="associated function igraph::error::Error::new"><code>Error::new</code></a>).
+<code>igraph_set_fatal_handler</code> is deliberately left alone: a fatal handler
+must not return, and a Rust function cannot unwind through the C frames
+above it, so igraph’s default handler, which aborts the process, stays in
+place. Fatal errors signal broken internal invariants (e.g. a corrupt
+finally stack), not ordinary failures.</p>
+<p>See also <a href="../misc/fn.set_progress_handler.html" title="fn igraph::misc::set_progress_handler"><code>misc::set_progress_handler</code></a>,
+<a href="../misc/fn.set_status_handler.html" title="fn igraph::misc::set_status_handler"><code>misc::set_status_handler</code></a> and
+<a href="../misc/fn.set_interruption_handler.html" title="fn igraph::misc::set_interruption_handler"><code>misc::set_interruption_handler</code></a>
+for igraph’s other (progress, status and interruption) handlers.</p>
+<h2 id="example"><a class="doc-anchor" href="#example">§</a>Example</h2>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>igraph::prelude::<span class="kw-2">*</span>;
+
+<span class="kw">let </span><span class="kw-2">mut </span>g = Graph::new(<span class="number">3</span>, <span class="bool-val">false</span>);
+<span class="comment">// Vertex 7 does not exist: igraph reports an "invalid vertex id" error.
+</span><span class="kw">let </span>err = g.add_edge(<span class="number">0</span>, <span class="number">7</span>).unwrap_err();
+<span class="macro">assert_eq!</span>(err.kind(), ErrorKind::InvalidVertexId);
+<span class="macro">assert!</span>(!err.message().is_empty());
+<span class="comment">// The error names the C source location that raised it.
+</span><span class="macro">assert!</span>(err.file().ends_with(<span class="string">".c"</span>) &amp;&amp; err.line() &gt; <span class="number">0</span>);
+<span class="comment">// Errors compose with `?` and `std::error::Error`.
+</span><span class="kw">fn </span>degree_of_7(g: <span class="kw-2">&amp;</span>Graph) -&gt; <span class="prelude-ty">Result</span>&lt;i64&gt; {
+    g.degree_of(<span class="number">7</span>, NeighborMode::All, Loops::Twice)
+}
+<span class="kw">let </span>boxed: Box&lt;<span class="kw">dyn </span>std::error::Error&gt; = degree_of_7(<span class="kw-2">&amp;</span>g).unwrap_err().into();
+<span class="macro">assert!</span>(boxed.to_string().starts_with(<span class="kw-2">&amp;</span>ErrorKind::InvalidVertexId.description()));</code></pre></div></div></details><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.Error.html" title="struct igraph::error::Error">Error</a></dt><dd>An error reported by the igraph C library, or raised by a wrapper that
+validated its arguments on the Rust side.</dd></dl><h2 id="enums" class="section-header">Enums<a href="#enums" class="anchor">§</a></h2><dl class="item-table"><dt><a class="enum" href="enum.ErrorKind.html" title="enum igraph::error::ErrorKind">Error<wbr>Kind</a></dt><dd>The kind of an igraph error, mirroring the C enumeration
+<a href="https://igraph.org/c/html/latest/igraph-Error.html#igraph_error_type_t"><code>igraph_error_type_t</code></a>.</dd></dl><h2 id="constants" class="section-header">Constants<a href="#constants" class="anchor">§</a></h2><dl class="item-table"><dt><a class="constant" href="constant.MAX_NESTED_FINALLY_ENTRIES.html" title="constant igraph::error::MAX_NESTED_FINALLY_ENTRIES">MAX_<wbr>NESTED_<wbr>FINALLY_<wbr>ENTRIES</a></dt><dd>The number of entries of igraph’s (per-thread) finally stack above which
+<a href="../macro.igraph_call.html" title="macro igraph::igraph_call"><code>igraph_call!</code></a> and
+<a href="../ffi/struct.igraph_t.html#method.init_with" title="associated function igraph::ffi::igraph_t::init_with"><code>Graph::init_with</code></a> refuse to start a C call,
+see the <a href="index.html#callbacks-that-call-igraph" title="mod igraph::error">module docs</a>.</dd></dl><h2 id="functions" class="section-header">Functions<a href="#functions" class="anchor">§</a></h2><dl class="item-table"><dt><a class="fn" href="fn.catch_panic.html" title="fn igraph::error::catch_panic">catch_<wbr>panic</a></dt><dd>Runs a Rust closure invoked <em>from C</em> (a callback), catching panics so that
+they never unwind across the FFI boundary.</dd><dt><a class="fn" href="fn.catch_panic_or.html" title="fn igraph::error::catch_panic_or">catch_<wbr>panic_<wbr>or</a></dt><dd>Like <a href="fn.catch_panic.html" title="fn igraph::error::catch_panic"><code>catch_panic</code></a>, for callbacks whose C signature returns a value
+other than an error code (e.g. a boolean): <code>on_panic</code> is returned to C.</dd><dt><a class="fn" href="fn.check.html" title="fn igraph::error::check">check</a></dt><dd>Converts a raw igraph return code into a <a href="type.Result.html" title="type igraph::error::Result"><code>Result</code></a>, attaching the message
+recorded by the error handler: <code>IGRAPH_SUCCESS</code> gives <code>Ok(())</code>, any
+other code an <a href="struct.Error.html" title="struct igraph::error::Error"><code>Error</code></a> of the corresponding <a href="enum.ErrorKind.html" title="enum igraph::error::ErrorKind"><code>ErrorKind</code></a>.</dd><dt><a class="fn" href="fn.ensure_init.html" title="fn igraph::error::ensure_init">ensure_<wbr>init</a></dt><dd>Initializes igraph for the calling thread, once.</dd><dt><a class="fn" href="fn.finally_stack_size.html" title="fn igraph::error::finally_stack_size">finally_<wbr>stack_<wbr>size</a></dt><dd>The current number of entries of igraph’s finally stack on the calling
+thread (<code>IGRAPH_FINALLY_STACK_SIZE</code>, undocumented in <code>igraph_error.h</code>).</dd><dt><a class="fn" href="fn.has_pending_panic.html" title="fn igraph::error::has_pending_panic">has_<wbr>pending_<wbr>panic</a></dt><dd>Whether a panic caught by <a href="fn.catch_panic.html" title="fn igraph::error::catch_panic"><code>catch_panic</code></a> is waiting to be resumed on the
+calling thread (by the next <a href="fn.check.html" title="fn igraph::error::check"><code>check</code></a> or <a href="fn.resume_panic.html" title="fn igraph::error::resume_panic"><code>resume_panic</code></a>).</dd><dt><a class="fn" href="fn.is_initialized.html" title="fn igraph::error::is_initialized">is_<wbr>initialized</a></dt><dd>Whether <a href="fn.ensure_init.html" title="fn igraph::error::ensure_init"><code>ensure_init</code></a> already ran on the calling thread.</dd><dt><a class="fn" href="fn.resume_panic.html" title="fn igraph::error::resume_panic">resume_<wbr>panic</a></dt><dd>Resumes a panic caught by <a href="fn.catch_panic.html" title="fn igraph::error::catch_panic"><code>catch_panic</code></a> on this thread, if any.</dd><dt><a class="fn" href="fn.strerror.html" title="fn igraph::error::strerror">strerror</a></dt><dd>igraph’s textual description of a raw error code
+(<a href="https://igraph.org/c/html/latest/igraph-Error.html#igraph_strerror"><code>igraph_strerror</code></a>).</dd><dt><a class="fn" href="fn.take_warnings.html" title="fn igraph::error::take_warnings">take_<wbr>warnings</a></dt><dd>Drains and returns the warnings that igraph emitted on the calling thread
+(as <code>"&lt;message&gt; (&lt;file&gt;:&lt;line&gt;)"</code>), oldest first.</dd></dl><h2 id="types" class="section-header">Type Aliases<a href="#types" class="anchor">§</a></h2><dl class="item-table"><dt><a class="type" href="type.Result.html" title="type igraph::error::Result">Result</a></dt><dd>Specialized <a href="https://doc.rust-lang.org/1.98.1/core/result/enum.Result.html" title="enum core::result::Result"><code>Result</code></a> type used throughout the crate.</dd></dl></section></div></main></body></html>

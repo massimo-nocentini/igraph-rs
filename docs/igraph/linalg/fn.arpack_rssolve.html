@@ -1,0 +1,132 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Eigenvalues and eigenvectors of a symmetric linear operator given as a Rust closure, with ARPACK’s implicitly restarted Lanczos method (`igraph_arpack_rssolve`)."><title>arpack_rssolve in igraph::linalg - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-1ed95124.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="igraph" data-themes="" data-resource-suffix="" data-rustdoc-version="1.98.1 (48a229cea 2026-09-01)" data-channel="1.98.1" data-search-js="search-9944d736.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../static.files/main-417ebf0a.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc fn"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">arpack_rssolve</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../igraph/index.html">igraph</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">arpack_<wbr>rssolve</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#singular-operators-the-start-vector-is-multiplied-first" title="Singular operators: the start vector is multiplied first">Singular operators: the start vector is multiplied first</a></li><li><a href="#nesting" title="Nesting">Nesting</a></li><li><a href="#errors" title="Errors">Errors</a></li><li><a href="#examples" title="Examples">Examples</a></li></ul></section><div id="rustdoc-modnav"><h2><a href="index.html">In igraph::<wbr>linalg</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../index.html">igraph</a>::<wbr><a href="index.html">linalg</a></div><h1>Function <span class="fn">arpack_<wbr>rssolve</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/igraph/linalg/arpack.rs.html#829-862">Source</a> </span></div><pre class="rust item-decl"><code>pub fn arpack_rssolve&lt;F: <a class="trait" href="https://doc.rust-lang.org/1.98.1/core/ops/function/trait.FnMut.html" title="trait core::ops::function::FnMut">FnMut</a>(&amp;[<a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.f64.html">f64</a>], &amp;mut [<a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.f64.html">f64</a>])&gt;(
+    n: <a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.usize.html">usize</a>,
+    matvec: F,
+    options: &amp;<a class="struct" href="struct.ArpackOptions.html" title="struct igraph::linalg::ArpackOptions">ArpackOptions</a>,
+    storage: <a class="enum" href="https://doc.rust-lang.org/1.98.1/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;&amp;mut <a class="struct" href="struct.ArpackStorage.html" title="struct igraph::linalg::ArpackStorage">ArpackStorage</a>&gt;,
+) -&gt; <a class="type" href="../error/type.Result.html" title="type igraph::error::Result">Result</a>&lt;<a class="struct" href="struct.ArpackSymmetricResult.html" title="struct igraph::linalg::ArpackSymmetricResult">ArpackSymmetricResult</a>&gt;</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Eigenvalues and eigenvectors of a <strong>symmetric</strong> linear operator given as
+a Rust closure, with ARPACK’s implicitly restarted Lanczos method
+(<code>igraph_arpack_rssolve</code>).</p>
+<p><code>matvec(x, y)</code> must store the product <code>A x</code> into <code>y</code> (which is zeroed
+before each call, so accumulating into it is fine); both slices have
+length <code>n</code>. The matrix is never formed: this is the method of choice for
+large sparse or structured matrices. In
+<a href="enum.ArpackMode.html#variant.ShiftInvert" title="variant igraph::linalg::ArpackMode::ShiftInvert"><code>ArpackMode::ShiftInvert</code></a> the closure must compute <code>(A - sigma I)^-1 x</code>
+instead. A panic in the closure stops ARPACK and is resumed by this
+function; a product containing NaN or infinite values stops it with an
+<a href="../error/enum.ErrorKind.html#variant.InvalidValue" title="variant igraph::error::ErrorKind::InvalidValue"><code>ErrorKind::InvalidValue</code></a> error.</p>
+<p>Time complexity: depends on the matrix-vector product; usually a few
+iterations suffice, so with an O(n) product the eigenvalues are found in
+about O(n) time.</p>
+<p>In regular mode, 1 × 1 and 2 × 2 problems are solved in closed form by
+igraph without running ARPACK. For 2 × 2 problems igraph 1.0.0 and 1.0.1
+confuse the magnitude-based choices with the algebraic ones and return
+unnormalized eigenvectors; this wrapper computes both eigenpairs and
+selects and normalizes the requested ones itself.</p>
+<h2 id="singular-operators-the-start-vector-is-multiplied-first"><a class="doc-anchor" href="#singular-operators-the-start-vector-is-multiplied-first">§</a>Singular operators: the start vector is multiplied first</h2>
+<p>ARPACK does not use the start vector <code>v0</code> itself as the first Krylov
+vector: it first applies the operator and starts from <code>A v0</code> (to force the
+start vector into the range of the operator, see <code>dgetv0</code>). For a
+<strong>singular</strong> symmetric operator the range is orthogonal to the null space,
+so the component of <code>v0</code> along the null vectors is wiped out: when <code>A v0</code>
+has no null component <em>exactly</em> (e.g. integer matrices and start vectors,
+as for graph Laplacians), the eigenvalue <code>0</code> can be invisible to the
+iteration, and ARPACK then silently returns other eigenvalues instead. A start vector
+lying in the null space fails outright with
+<a href="enum.ArpackError.html#variant.ZeroStart" title="variant igraph::linalg::ArpackError::ZeroStart"><code>ArpackError::ZeroStart</code></a>. The random default start vector usually
+recovers the null space through rounding errors, but there is no
+guarantee.</p>
+<p>The robust fix is a shift: solve for <code>A + s I</code> with some <code>s &gt; 0</code> that makes
+the operator non-singular (for a positive semidefinite <code>A</code> such as a
+Laplacian any <code>s &gt; 0</code> works, and “smallest magnitude” becomes “smallest
+algebraic”), then subtract <code>s</code> from the eigenvalues; the eigenvectors are
+unchanged. See the second example below.</p>
+<h2 id="nesting"><a class="doc-anchor" href="#nesting">§</a>Nesting</h2>
+<p>igraph’s ARPACK keeps the state of the running iteration in thread-local
+statics, so it is not re-entrant: <code>matvec</code> (and any interruption or
+progress handler, which igraph calls from inside the ARPACK loop) must not
+start another ARPACK computation on the same thread. The ARPACK-based
+functions of this module (this function, <a href="fn.arpack_rnsolve.html" title="fn igraph::linalg::arpack_rnsolve"><code>arpack_rnsolve</code></a>, the
+<a href="type.SparseMat.html" title="type igraph::linalg::SparseMat"><code>SparseMat</code></a> ARPACK solvers, the ARPACK paths of
+<a href="fn.eigen_matrix_symmetric.html" title="fn igraph::linalg::eigen_matrix_symmetric"><code>eigen_matrix_symmetric</code></a> and
+<a href="fn.eigen_symmetric_fn.html" title="fn igraph::linalg::eigen_symmetric_fn"><code>eigen_symmetric_fn</code></a>,
+<a href="../ffi/struct.igraph_t.html#method.eigen_adjacency" title="method igraph::ffi::igraph_t::eigen_adjacency"><code>Graph::eigen_adjacency</code></a> and the spectral
+embeddings) check this: started while another one of them runs on the
+thread, they fail with an
+<a href="../error/enum.ErrorKind.html#variant.Failure" title="variant igraph::error::ErrorKind::Failure"><code>ErrorKind::Failure</code></a> error instead of
+corrupting the running solver. So do the ARPACK-based functions of other
+modules: <a href="../ffi/struct.igraph_t.html#method.eigenvector_centrality" title="method igraph::ffi::igraph_t::eigenvector_centrality"><code>Graph::eigenvector_centrality</code></a>,
+<a href="../ffi/struct.igraph_t.html#method.hub_and_authority_scores" title="method igraph::ffi::igraph_t::hub_and_authority_scores"><code>Graph::hub_and_authority_scores</code></a>,
+<a href="../ffi/struct.igraph_t.html#method.centralization_eigenvector_centrality" title="method igraph::ffi::igraph_t::centralization_eigenvector_centrality"><code>Graph::centralization_eigenvector_centrality</code></a>,
+PageRank with <a href="../centrality/enum.PageRankAlgo.html#variant.Arpack" title="variant igraph::centrality::PageRankAlgo::Arpack"><code>PageRankAlgo::Arpack</code></a>
+and <a href="../ffi/struct.igraph_t.html#method.community_leading_eigenvector" title="method igraph::ffi::igraph_t::community_leading_eigenvector"><code>Graph::community_leading_eigenvector</code></a>.
+Calling other igraph functions from <code>matvec</code> is fine, even
+failing ones: the closure runs in its own level of igraph’s cleanup stack.</p>
+<p>Binds <a href="https://igraph.org/c/html/latest/igraph-Linalg.html#igraph_arpack_rssolve"><code>igraph_arpack_rssolve</code></a>.</p>
+<p>See also <a href="../ffi/struct.igraph_sparsemat_t.html#method.arpack_rssolve" title="method igraph::ffi::igraph_sparsemat_t::arpack_rssolve"><code>SparseMat::arpack_rssolve</code></a>
+for a stored sparse matrix, <a href="fn.eigen_symmetric_fn.html" title="fn igraph::linalg::eigen_symmetric_fn"><code>eigen_symmetric_fn</code></a>
+for a front-end that can also use LAPACK, and the graph-level spectral
+routines built on ARPACK, e.g.
+<a href="../ffi/struct.igraph_t.html#method.eigenvector_centrality" title="method igraph::ffi::igraph_t::eigenvector_centrality"><code>Graph::eigenvector_centrality</code></a>
+and <a href="../ffi/struct.igraph_t.html#method.eigen_adjacency" title="method igraph::ffi::igraph_t::eigen_adjacency"><code>Graph::eigen_adjacency</code></a>.</p>
+<h2 id="errors"><a class="doc-anchor" href="#errors">§</a>Errors</h2>
+<p>Invalid options (see <a href="struct.ArpackOptions.html" title="struct igraph::linalg::ArpackOptions"><code>ArpackOptions</code></a>) give
+<a href="../error/enum.ErrorKind.html#variant.InvalidValue" title="variant igraph::error::ErrorKind::InvalidValue"><code>ErrorKind::InvalidValue</code></a>; ARPACK
+failures give <a href="../error/enum.ErrorKind.html#variant.Arpack" title="variant igraph::error::ErrorKind::Arpack"><code>ErrorKind::Arpack</code></a>, see
+<a href="enum.ArpackError.html#method.from_error" title="associated function igraph::linalg::ArpackError::from_error"><code>ArpackError::from_error</code></a> for the ARPACK error condition.</p>
+<h2 id="examples"><a class="doc-anchor" href="#examples">§</a>Examples</h2>
+<p>The cycle graph <code>C_n</code> has adjacency eigenvalues <code>2 cos(2 pi k / n)</code>: the
+largest is 2, with the constant eigenvector.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>igraph::linalg::{arpack_rssolve, ArpackOptions, ArpackWhich};
+<span class="kw">let </span>n = <span class="number">12</span>;
+<span class="kw">let </span>cycle = |x: <span class="kw-2">&amp;</span>[f64], y: <span class="kw-2">&amp;mut </span>[f64]| {
+    <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..n {
+        y[i] = x[(i + <span class="number">1</span>) % n] + x[(i + n - <span class="number">1</span>) % n];
+    }
+};
+<span class="kw">let </span>opts = ArpackOptions::default().with_nev(<span class="number">1</span>).with_which(ArpackWhich::LargestAlgebraic);
+<span class="kw">let </span>res = arpack_rssolve(n, cycle, <span class="kw-2">&amp;</span>opts, <span class="prelude-val">None</span>).unwrap();
+<span class="macro">assert!</span>((res.values[<span class="number">0</span>] - <span class="number">2.0</span>).abs() &lt; <span class="number">1e-10</span>);
+<span class="kw">let </span>v = res.vectors.column(<span class="number">0</span>);
+<span class="macro">assert!</span>(v.iter().all(|x| (x.abs() - <span class="number">1.0 </span>/ (n <span class="kw">as </span>f64).sqrt()).abs() &lt; <span class="number">1e-8</span>));</code></pre></div>
+<p>The Laplacian of the path on 10 vertices is singular (eigenvalue 0, with
+the constant eigenvector). The ramp <code>v0 = (0, 1, ..., 9)</code> has a constant
+component, but ARPACK iterates from <code>L v0 = e_9 - e_0</code>, which has exactly
+none (and, by the mirror symmetry of the path, neither have the following
+Krylov vectors): the eigenvalue 0 is missed altogether. Shifting to
+<code>L + I</code> keeps the constant component of <code>v0</code> and finds it:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>igraph::linalg::{arpack_rssolve, ArpackOptions, ArpackWhich};
+<span class="kw">use </span>std::f64::consts::PI;
+<span class="kw">let </span>n = <span class="number">10</span>;
+<span class="comment">// y = (L + shift I) x for the path Laplacian L.
+</span><span class="kw">let </span>laplacian = <span class="kw">move </span>|shift: f64| {
+    <span class="kw">move </span>|x: <span class="kw-2">&amp;</span>[f64], y: <span class="kw-2">&amp;mut </span>[f64]| {
+        <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..n {
+            <span class="kw">let </span>degree = <span class="kw">if </span>i == <span class="number">0 </span>|| i == n - <span class="number">1 </span>{ <span class="number">1.0 </span>} <span class="kw">else </span>{ <span class="number">2.0 </span>};
+            y[i] = (degree + shift) * x[i];
+            <span class="kw">if </span>i &gt; <span class="number">0 </span>{
+                y[i] -= x[i - <span class="number">1</span>];
+            }
+            <span class="kw">if </span>i + <span class="number">1 </span>&lt; n {
+                y[i] -= x[i + <span class="number">1</span>];
+            }
+        }
+    }
+};
+<span class="kw">let </span>ramp: Vec&lt;f64&gt; = (<span class="number">0</span>..n).map(|i| i <span class="kw">as </span>f64).collect();
+<span class="kw">let </span>lambda1 = <span class="number">2.0 </span>- <span class="number">2.0 </span>* (PI / n <span class="kw">as </span>f64).cos(); <span class="comment">// the smallest non-zero eigenvalue
+
+</span><span class="kw">let </span>opts = ArpackOptions::default()
+    .with_nev(<span class="number">2</span>)
+    .with_which(ArpackWhich::SmallestMagnitude)
+    .with_start(ramp);
+<span class="kw">let </span>plain = arpack_rssolve(n, laplacian(<span class="number">0.0</span>), <span class="kw-2">&amp;</span>opts, <span class="prelude-val">None</span>).unwrap();
+<span class="macro">assert!</span>(plain.values.iter().all(|v| v.abs() &gt; <span class="number">0.09</span>)); <span class="comment">// 0 is missed
+</span><span class="macro">assert!</span>(plain.values.iter().any(|v| (v - lambda1).abs() &lt; <span class="number">1e-8</span>));
+
+<span class="kw">let </span>shifted_opts = opts.with_which(ArpackWhich::SmallestAlgebraic);
+<span class="kw">let </span>shifted = arpack_rssolve(n, laplacian(<span class="number">1.0</span>), <span class="kw-2">&amp;</span>shifted_opts, <span class="prelude-val">None</span>).unwrap();
+<span class="kw">let </span>values: Vec&lt;f64&gt; = shifted.values.iter().map(|v| v - <span class="number">1.0</span>).collect();
+<span class="macro">assert!</span>(values[<span class="number">0</span>].abs() &lt; <span class="number">1e-10</span>);
+<span class="macro">assert!</span>((values[<span class="number">1</span>] - lambda1).abs() &lt; <span class="number">1e-8</span>);</code></pre></div></div></details></section></div></main></body></html>

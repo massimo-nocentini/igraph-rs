@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["AttributeCombinationType","AttributeKind","AttributeType","AttributeValue","AttributeValues","CombineFunction"],"fn":["enable","has_attribute_table","is_enabled"],"struct":["AttributeList"],"type":["AttributeCombination","AttributeRecord","BooleanCombineFn","NumericCombineFn"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"type":["Matrix","MatrixBool","MatrixChar","MatrixComplex","MatrixInt"]};

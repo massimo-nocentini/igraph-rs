@@ -1,0 +1,48 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Eigenvalues and eigenvectors of a general (non-symmetric) linear operator given as a Rust closure, with ARPACK’s implicitly restarted Arnoldi method (`igraph_arpack_rnsolve`)."><title>arpack_rnsolve in igraph::linalg - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-1ed95124.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="igraph" data-themes="" data-resource-suffix="" data-rustdoc-version="1.98.1 (48a229cea 2026-09-01)" data-channel="1.98.1" data-search-js="search-9944d736.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../static.files/main-417ebf0a.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc fn"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">arpack_rnsolve</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../igraph/index.html">igraph</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">arpack_<wbr>rnsolve</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#errors" title="Errors">Errors</a></li><li><a href="#examples" title="Examples">Examples</a></li></ul></section><div id="rustdoc-modnav"><h2><a href="index.html">In igraph::<wbr>linalg</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../index.html">igraph</a>::<wbr><a href="index.html">linalg</a></div><h1>Function <span class="fn">arpack_<wbr>rnsolve</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/igraph/linalg/arpack.rs.html#916-947">Source</a> </span></div><pre class="rust item-decl"><code>pub fn arpack_rnsolve&lt;F: <a class="trait" href="https://doc.rust-lang.org/1.98.1/core/ops/function/trait.FnMut.html" title="trait core::ops::function::FnMut">FnMut</a>(&amp;[<a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.f64.html">f64</a>], &amp;mut [<a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.f64.html">f64</a>])&gt;(
+    n: <a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.usize.html">usize</a>,
+    matvec: F,
+    options: &amp;<a class="struct" href="struct.ArpackOptions.html" title="struct igraph::linalg::ArpackOptions">ArpackOptions</a>,
+    storage: <a class="enum" href="https://doc.rust-lang.org/1.98.1/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;&amp;mut <a class="struct" href="struct.ArpackStorage.html" title="struct igraph::linalg::ArpackStorage">ArpackStorage</a>&gt;,
+) -&gt; <a class="type" href="../error/type.Result.html" title="type igraph::error::Result">Result</a>&lt;<a class="struct" href="struct.ArpackNonSymmetricResult.html" title="struct igraph::linalg::ArpackNonSymmetricResult">ArpackNonSymmetricResult</a>&gt;</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Eigenvalues and eigenvectors of a general (<strong>non-symmetric</strong>) linear
+operator given as a Rust closure, with ARPACK’s implicitly restarted
+Arnoldi method (<code>igraph_arpack_rnsolve</code>).</p>
+<p><code>matvec(x, y)</code> stores <code>A x</code> into <code>y</code>, as in <a href="fn.arpack_rssolve.html" title="fn igraph::linalg::arpack_rssolve"><code>arpack_rssolve</code></a>. The
+eigenvalues may be complex: they are returned as <a href="type.Complex.html" title="type igraph::linalg::Complex"><code>Complex</code></a> numbers,
+with complex conjugate pairs next to each other, and the eigenvectors are
+unpacked into complex vectors. Note that ARPACK requires <code>nev &lt;= n - 2</code>
+here; in regular mode 1 × 1 and 2 × 2 problems are solved exactly by
+igraph (in closed form, without ARPACK).</p>
+<p>As explained for <a href="fn.arpack_rssolve.html" title="fn igraph::linalg::arpack_rssolve"><code>arpack_rssolve</code></a>, ARPACK starts from <code>A v0</code> rather
+than from the start vector <code>v0</code>, so eigenvectors of a singular operator
+with eigenvalue 0 may be missed (shift the operator to <code>A + s I</code> and
+subtract <code>s</code> afterwards), and ARPACK computations cannot be nested inside
+<code>matvec</code> or inside handlers (a nested call fails with
+<a href="../error/enum.ErrorKind.html#variant.Failure" title="variant igraph::error::ErrorKind::Failure"><code>ErrorKind::Failure</code></a>).</p>
+<p>Binds <a href="https://igraph.org/c/html/latest/igraph-Linalg.html#igraph_arpack_rnsolve"><code>igraph_arpack_rnsolve</code></a>.</p>
+<p>See also <a href="../ffi/struct.igraph_sparsemat_t.html#method.arpack_rnsolve" title="method igraph::ffi::igraph_sparsemat_t::arpack_rnsolve"><code>SparseMat::arpack_rnsolve</code></a>,
+<a href="fn.eigen_matrix.html" title="fn igraph::linalg::eigen_matrix"><code>eigen_matrix</code></a> for dense matrices, and
+<a href="../ffi/struct.igraph_t.html#method.pagerank" title="method igraph::ffi::igraph_t::pagerank"><code>Graph::pagerank</code></a> /
+<a href="../ffi/struct.igraph_t.html#method.hub_and_authority_scores" title="method igraph::ffi::igraph_t::hub_and_authority_scores"><code>Graph::hub_and_authority_scores</code></a>,
+the classic non-symmetric eigenproblems on graphs.</p>
+<h2 id="errors"><a class="doc-anchor" href="#errors">§</a>Errors</h2>
+<p>As <a href="fn.arpack_rssolve.html" title="fn igraph::linalg::arpack_rssolve"><code>arpack_rssolve</code></a>: invalid options (see <a href="struct.ArpackOptions.html" title="struct igraph::linalg::ArpackOptions"><code>ArpackOptions</code></a>; ARPACK
+rejects <code>nev &gt; n - 2</code> for <code>n &gt; 2</code>), a non-finite product, or an ARPACK
+failure (<a href="../error/enum.ErrorKind.html#variant.Arpack" title="variant igraph::error::ErrorKind::Arpack"><code>ErrorKind::Arpack</code></a>, see
+<a href="enum.ArpackError.html#method.from_error" title="associated function igraph::linalg::ArpackError::from_error"><code>ArpackError::from_error</code></a>).</p>
+<h2 id="examples"><a class="doc-anchor" href="#examples">§</a>Examples</h2>
+<p>A directed cycle is a permutation matrix: its eigenvalues are the <code>n</code>-th
+roots of unity, all of magnitude 1.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>igraph::linalg::{arpack_rnsolve, ArpackOptions, ArpackWhich};
+<span class="kw">let </span>n = <span class="number">8</span>;
+<span class="kw">let </span>shift = |x: <span class="kw-2">&amp;</span>[f64], y: <span class="kw-2">&amp;mut </span>[f64]| {
+    <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..n {
+        y[i] = x[(i + <span class="number">1</span>) % n];
+    }
+};
+<span class="kw">let </span>opts = ArpackOptions::default().with_nev(<span class="number">3</span>).with_which(ArpackWhich::LargestReal);
+<span class="kw">let </span>res = arpack_rnsolve(n, shift, <span class="kw-2">&amp;</span>opts, <span class="prelude-val">None</span>).unwrap();
+<span class="macro">assert!</span>((res.values[<span class="number">0</span>].re() - <span class="number">1.0</span>).abs() &lt; <span class="number">1e-8 </span>&amp;&amp; res.values[<span class="number">0</span>].im().abs() &lt; <span class="number">1e-8</span>);
+<span class="kw">for </span>v <span class="kw">in </span><span class="kw-2">&amp;</span>res.values {
+    <span class="macro">assert!</span>(((v.re() * v.re() + v.im() * v.im()).sqrt() - <span class="number">1.0</span>).abs() &lt; <span class="number">1e-8</span>);
+}</code></pre></div></div></details></section></div></main></body></html>

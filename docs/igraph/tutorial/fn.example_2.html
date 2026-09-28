@@ -1,0 +1,96 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Lesson 2: average path length of a lattice, before and after adding a few random edges."><title>example_2 in igraph::tutorial - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-1ed95124.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="igraph" data-themes="" data-resource-suffix="" data-rustdoc-version="1.98.1 (48a229cea 2026-09-01)" data-channel="1.98.1" data-search-js="search-9944d736.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../static.files/main-417ebf0a.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc fn"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">example_2</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../igraph/index.html">igraph</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">example_<wbr>2</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#c-code" title="C code">C code</a></li><li><a href="#rust-translation" title="Rust translation">Rust translation</a></li><li><a href="#errors" title="Errors">Errors</a></li></ul></section><div id="rustdoc-modnav"><h2><a href="index.html">In igraph::<wbr>tutorial</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../index.html">igraph</a>::<wbr><a href="index.html">tutorial</a></div><h1>Function <span class="fn">example_<wbr>2</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/igraph/tutorial.rs.html#486-509">Source</a> </span></div><pre class="rust item-decl"><code>pub fn example_2() -&gt; <a class="type" href="../error/type.Result.html" title="type igraph::error::Result">Result</a>&lt;<a class="struct" href="struct.LatticePathLengths.html" title="struct igraph::tutorial::LatticePathLengths">LatticePathLengths</a>&gt;</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Lesson 2: average path length of a lattice, before and after adding a
+few random edges.</p>
+<p>Builds the undirected 30 × 30 square lattice with periodic boundaries in
+both dimensions (a torus: every vertex has degree 4) and computes its
+average shortest path length, <code>15 · 900 / 899 ≈ 15.0167</code>. Then it seeds
+the thread’s default random number generator with 42, draws 20 uniform
+vertex ids in <code>0..900</code> (pairing them up as ten edges; in general such
+draws may include loops and multi-edges, although with seed 42 they do
+not), adds them to the lattice and computes the average
+path length again, <code>≈ 11.8142</code>: ten random shortcuts reduce distances by
+more than 20%.</p>
+<p>It translates <code>examples/tutorial/tutorial2.c</code> of the
+<a href="https://igraph.org/c/html/latest/igraph-Tutorial.html#tut-lesson-2">second lesson</a>,
+drawing the random numbers in the same order, so that the results are
+exactly those printed by the C program with igraph 1.0.1.</p>
+<h2 id="c-code"><a class="doc-anchor" href="#c-code">§</a>C code</h2><div class="example-wrap"><pre class="language-c"><code>#include &lt;igraph.h&gt;
+
+int main(void) {
+    igraph_t graph;
+    igraph_vector_int_t dimvector;
+    igraph_vector_int_t edges;
+    igraph_vector_bool_t periodic;
+    igraph_real_t avg_path_len;
+
+    /* Initialize the library. */
+    igraph_setup();
+
+    igraph_vector_int_init(&amp;dimvector, 2);
+    VECTOR(dimvector)[0] = 30;
+    VECTOR(dimvector)[1] = 30;
+
+    igraph_vector_bool_init(&amp;periodic, 2);
+    igraph_vector_bool_fill(&amp;periodic, true);
+    igraph_square_lattice(&amp;graph, &amp;dimvector, 0, IGRAPH_UNDIRECTED,
+                          /* mutual= */ false, &amp;periodic);
+
+    igraph_average_path_length(&amp;graph, NULL, &amp;avg_path_len, NULL,
+                               IGRAPH_UNDIRECTED, /* unconn= */ true);
+    printf(&quot;Average path length (lattice):            %g\n&quot;, (double) avg_path_len);
+
+    /* Seed the RNG to ensure identical results across runs. */
+    igraph_rng_seed(igraph_rng_default(), 42);
+
+    igraph_vector_int_init(&amp;edges, 20);
+    for (igraph_int_t i = 0; i &lt; igraph_vector_int_size(&amp;edges); i++) {
+        VECTOR(edges)[i] = RNG_INTEGER(0, igraph_vcount(&amp;graph) - 1);
+    }
+
+    igraph_add_edges(&amp;graph, &amp;edges, NULL);
+    igraph_average_path_length(&amp;graph, NULL, &amp;avg_path_len, NULL,
+                               IGRAPH_UNDIRECTED, /* unconn= */ true);
+    printf(&quot;Average path length (randomized lattice): %g\n&quot;, (double) avg_path_len);
+
+    igraph_vector_bool_destroy(&amp;periodic);
+    igraph_vector_int_destroy(&amp;dimvector);
+    igraph_vector_int_destroy(&amp;edges);
+    igraph_destroy(&amp;graph);
+
+    return 0;
+}</code></pre></div><h2 id="rust-translation"><a class="doc-anchor" href="#rust-translation">§</a>Rust translation</h2>
+<p>The body of this function, step by step: plain arrays replace the
+<code>igraph_vector_*_t</code> objects, and nothing needs to be destroyed.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>igraph::prelude::<span class="kw-2">*</span>;
+
+<span class="kw">let </span><span class="kw-2">mut </span>graph = Graph::square_lattice(
+    <span class="kw-2">&amp;</span>[<span class="number">30</span>, <span class="number">30</span>],          <span class="comment">// dimensions
+    </span><span class="number">0</span>,                  <span class="comment">// nei: only direct neighbors
+    </span><span class="bool-val">false</span>,              <span class="comment">// undirected
+    </span><span class="bool-val">false</span>,              <span class="comment">// mutual (directed graphs only)
+    </span><span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>[<span class="bool-val">true</span>, <span class="bool-val">true</span>]), <span class="comment">// periodic in both dimensions
+</span>)<span class="question-mark">?</span>;
+
+<span class="kw">let </span>lattice = graph.average_path_length(<span class="prelude-val">None</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>)<span class="question-mark">?</span>;
+<span class="macro">println!</span>(<span class="string">"Average path length (lattice):            {lattice}"</span>);
+<span class="macro">assert!</span>((lattice - <span class="number">15.0 </span>* <span class="number">900.0 </span>/ <span class="number">899.0</span>).abs() &lt; <span class="number">1e-12</span>);
+
+<span class="comment">// Seed the RNG to ensure identical results across runs.
+</span>rng::seed(<span class="number">42</span>)<span class="question-mark">?</span>;
+
+<span class="kw">let </span>n = graph.vcount() <span class="kw">as </span>i64;
+<span class="kw">let </span>edges: Vec&lt;i64&gt; = (<span class="number">0</span>..<span class="number">20</span>).map(|<span class="kw">_</span>| rng::integer(<span class="number">0</span>, n - <span class="number">1</span>)).collect();
+
+graph.add_edges_from_vector(<span class="kw-2">&amp;</span>edges)<span class="question-mark">?</span>;
+<span class="kw">let </span>randomized = graph.average_path_length(<span class="prelude-val">None</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>)<span class="question-mark">?</span>;
+<span class="macro">println!</span>(<span class="string">"Average path length (randomized lattice): {randomized}"</span>);
+<span class="macro">assert!</span>((randomized - <span class="number">11.814163885799037</span>).abs() &lt; <span class="number">1e-12</span>);
+
+<span class="comment">// ... which is what `example_2` returns.
+</span><span class="kw">let </span>res = igraph::tutorial::example_2()<span class="question-mark">?</span>;
+<span class="macro">assert_eq!</span>((res.lattice, res.randomized), (lattice, randomized));
+<span class="macro">assert_eq!</span>(res.to_string(), <span class="string">"\
+Average path length (lattice):            15.0167
+Average path length (randomized lattice): 11.8142"</span>);</code></pre></div><h2 id="errors"><a class="doc-anchor" href="#errors">§</a>Errors</h2>
+<p>Propagates the errors of the igraph calls (none are expected).</p>
+</div></details></section></div></main></body></html>

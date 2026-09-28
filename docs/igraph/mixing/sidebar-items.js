@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["is_bigraphical","is_graphical"],"struct":["JointDegreeDistributionOptions"]};

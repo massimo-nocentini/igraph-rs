@@ -1,0 +1,91 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Clustering, degree correlations and graphicality: transitivity, assortativity, mixing matrices and degree-sequence realizability."><title>igraph::mixing - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-1ed95124.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="igraph" data-themes="" data-resource-suffix="" data-rustdoc-version="1.98.1 (48a229cea 2026-09-01)" data-channel="1.98.1" data-search-js="search-9944d736.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../static.files/main-417ebf0a.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Module mixing</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../igraph/index.html">igraph</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module mixing</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#see-also" title="See also">See also</a></li><li><a href="#example" title="Example">Example</a></li></ul><h3><a href="#reexports">Module Items</a></h3><ul class="block"><li><a href="#reexports" title="Re-exports">Re-exports</a></li><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#functions" title="Functions">Functions</a></li></ul></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="../index.html">In crate igraph</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../index.html">igraph</a></div><h1>Module <span>mixing</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/igraph/mixing.rs.html#1-1257">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Clustering, degree correlations and graphicality: transitivity,
+assortativity, mixing matrices and degree-sequence realizability.</p>
+<p>This module binds three igraph headers:</p>
+<ul>
+<li><code>igraph_transitivity.h</code> — <em>how clustered is a graph?</em> The global
+transitivity (fraction of closed connected triples), the local clustering
+coefficient of Watts and Strogatz, its average, Barrat’s weighted variant
+and the edge clustering coefficient of Radicchi <em>et al.</em>;</li>
+<li><code>igraph_mixing.h</code> — <em>who connects to whom?</em> Newman’s assortativity
+coefficients (for numeric values, for categories and for degrees), the
+joint degree matrix, the joint degree distribution and the mixing matrix
+of vertex categories;</li>
+<li><code>igraph_graphicality.h</code> — <em>can a degree sequence be realized?</em> The
+Erdős–Gallai / Fulkerson–Chen–Anstee / Gale–Ryser tests, extended to
+graphs with self-loops and/or multi-edges.</li>
+</ul>
+<p>Functions that take a graph are methods of <a href="../graph/type.Graph.html" title="type igraph::graph::Graph"><code>Graph</code></a>; the graphicality tests
+work on plain degree slices and are free functions.</p>
+<div><table><thead><tr><th>Rust</th><th>C function</th><th>Computes</th></tr></thead><tbody>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.transitivity_undirected" title="method igraph::ffi::igraph_t::transitivity_undirected"><code>Graph::transitivity_undirected</code></a></td><td><code>igraph_transitivity_undirected</code></td><td>global clustering coefficient</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.transitivity_local_undirected" title="method igraph::ffi::igraph_t::transitivity_local_undirected"><code>Graph::transitivity_local_undirected</code></a></td><td><code>igraph_transitivity_local_undirected</code></td><td>local clustering coefficient of vertices</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.transitivity_avglocal_undirected" title="method igraph::ffi::igraph_t::transitivity_avglocal_undirected"><code>Graph::transitivity_avglocal_undirected</code></a></td><td><code>igraph_transitivity_avglocal_undirected</code></td><td>average local clustering coefficient</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.transitivity_barrat" title="method igraph::ffi::igraph_t::transitivity_barrat"><code>Graph::transitivity_barrat</code></a></td><td><code>igraph_transitivity_barrat</code></td><td>Barrat’s weighted local clustering</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.ecc" title="method igraph::ffi::igraph_t::ecc"><code>Graph::ecc</code></a></td><td><code>igraph_ecc</code></td><td>edge clustering coefficient (3- and 4-cycles)</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.assortativity" title="method igraph::ffi::igraph_t::assortativity"><code>Graph::assortativity</code></a></td><td><code>igraph_assortativity</code></td><td>assortativity by numeric vertex values</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.assortativity_nominal" title="method igraph::ffi::igraph_t::assortativity_nominal"><code>Graph::assortativity_nominal</code></a></td><td><code>igraph_assortativity_nominal</code></td><td>assortativity by vertex categories</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.assortativity_degree" title="method igraph::ffi::igraph_t::assortativity_degree"><code>Graph::assortativity_degree</code></a></td><td><code>igraph_assortativity_degree</code></td><td>degree assortativity</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.joint_degree_matrix" title="method igraph::ffi::igraph_t::joint_degree_matrix"><code>Graph::joint_degree_matrix</code></a></td><td><code>igraph_joint_degree_matrix</code></td><td>edge counts between degree classes</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.joint_degree_distribution" title="method igraph::ffi::igraph_t::joint_degree_distribution"><code>Graph::joint_degree_distribution</code></a></td><td><code>igraph_joint_degree_distribution</code></td><td>joint degree distribution <code>P_ij</code></td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.joint_type_distribution" title="method igraph::ffi::igraph_t::joint_type_distribution"><code>Graph::joint_type_distribution</code></a></td><td><code>igraph_joint_type_distribution</code></td><td>mixing matrix of vertex categories</td></tr>
+<tr><td><a href="fn.is_graphical.html" title="fn igraph::mixing::is_graphical"><code>is_graphical</code></a></td><td><code>igraph_is_graphical</code></td><td>is a (bi-)degree sequence realizable?</td></tr>
+<tr><td><a href="fn.is_bigraphical.html" title="fn igraph::mixing::is_bigraphical"><code>is_bigraphical</code></a></td><td><code>igraph_is_bigraphical</code></td><td>is a pair of sequences realizable as a bipartite graph?</td></tr>
+</tbody></table>
+</div>
+<p>Which kinds of edges the graphicality tests may use is described by
+<a href="../constants/struct.AllowedEdgeTypes.html" title="struct igraph::constants::AllowedEdgeTypes"><code>AllowedEdgeTypes</code></a> (defined in <a href="../constants/index.html" title="mod igraph::constants"><code>constants</code></a> and shared
+with the <a href="../games/index.html" title="mod igraph::games"><code>games</code></a> and <a href="../constructors/index.html" title="mod igraph::constructors"><code>constructors</code></a>
+modules), which also converts from <a href="../constants/enum.EdgeTypeSw.html" title="enum igraph::constants::EdgeTypeSw"><code>EdgeTypeSw</code></a>.</p>
+<p>All functions of this module are deterministic.</p>
+<h2 id="see-also"><a class="doc-anchor" href="#see-also">§</a>See also</h2>
+<ul>
+<li>Triangles themselves: <a href="../ffi/struct.igraph_t.html#method.count_triangles" title="method igraph::ffi::igraph_t::count_triangles"><code>Graph::count_triangles</code></a>,
+<a href="../ffi/struct.igraph_t.html#method.count_adjacent_triangles" title="method igraph::ffi::igraph_t::count_adjacent_triangles"><code>Graph::count_adjacent_triangles</code></a> and <a href="../ffi/struct.igraph_t.html#method.list_triangles" title="method igraph::ffi::igraph_t::list_triangles"><code>Graph::list_triangles</code></a>
+(the global transitivity is <code>3 × triangles / connected triples</code>), the
+<a href="../ffi/struct.igraph_t.html#method.triad_census" title="method igraph::ffi::igraph_t::triad_census">triad census</a> and <a href="../ffi/struct.igraph_t.html#method.motifs_randesu" title="method igraph::ffi::igraph_t::motifs_randesu">motifs</a>.</li>
+<li>Degree correlations as functions of the degree: the average nearest
+neighbor degree <a href="../ffi/struct.igraph_t.html#method.avg_nearest_neighbor_degree" title="method igraph::ffi::igraph_t::avg_nearest_neighbor_degree"><code>Graph::avg_nearest_neighbor_degree</code></a> and
+<a href="../ffi/struct.igraph_t.html#method.degree_correlation_vector" title="method igraph::ffi::igraph_t::degree_correlation_vector"><code>Graph::degree_correlation_vector</code></a> (<code>k_nn(k)</code>, derivable from
+<a href="../ffi/struct.igraph_t.html#method.joint_degree_distribution" title="method igraph::ffi::igraph_t::joint_degree_distribution"><code>Graph::joint_degree_distribution</code></a>); vertex <a href="../ffi/struct.igraph_t.html#method.strength" title="method igraph::ffi::igraph_t::strength">strengths</a>
+for weighted degrees; the <a href="../ffi/struct.igraph_t.html#method.rich_club_sequence" title="method igraph::ffi::igraph_t::rich_club_sequence">rich-club coefficient</a>.</li>
+<li>Categories: the unnormalized nominal assortativity is the
+<a href="../ffi/struct.igraph_t.html#method.modularity" title="method igraph::ffi::igraph_t::modularity">modularity</a> of the partition, and community detection
+(e.g. <a href="../ffi/struct.igraph_t.html#method.community_multilevel" title="method igraph::ffi::igraph_t::community_multilevel"><code>Graph::community_multilevel</code></a>) finds partitions with high values.</li>
+<li>Degree sequences: build a graph from a graphical sequence with
+<a href="../ffi/struct.igraph_t.html#method.realize_degree_sequence" title="associated function igraph::ffi::igraph_t::realize_degree_sequence"><code>Graph::realize_degree_sequence</code></a> /
+<a href="../ffi/struct.igraph_t.html#method.realize_bipartite_degree_sequence" title="associated function igraph::ffi::igraph_t::realize_bipartite_degree_sequence"><code>Graph::realize_bipartite_degree_sequence</code></a> (deterministic) or
+<a href="../ffi/struct.igraph_t.html#method.degree_sequence_game" title="associated function igraph::ffi::igraph_t::degree_sequence_game"><code>Graph::degree_sequence_game</code></a> / <a href="../ffi/struct.igraph_t.html#method.k_regular_game" title="associated function igraph::ffi::igraph_t::k_regular_game"><code>Graph::k_regular_game</code></a> (random);
+randomize a graph while keeping its degrees with <a href="../ffi/struct.igraph_t.html#method.rewire" title="method igraph::ffi::igraph_t::rewire"><code>Graph::rewire</code></a>, the
+usual null model against which clustering and assortativity are compared.</li>
+</ul>
+<h2 id="example"><a class="doc-anchor" href="#example">§</a>Example</h2>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>igraph::mixing::{is_graphical, AllowedEdgeTypes};
+<span class="kw">use </span>igraph::prelude::<span class="kw-2">*</span>;
+
+<span class="comment">// A "bow tie": two triangles sharing vertex 2.
+</span><span class="kw">let </span>g = Graph::from_edges(<span class="kw-2">&amp;</span>[(<span class="number">0</span>, <span class="number">1</span>), (<span class="number">1</span>, <span class="number">2</span>), (<span class="number">2</span>, <span class="number">0</span>), (<span class="number">2</span>, <span class="number">3</span>), (<span class="number">3</span>, <span class="number">4</span>), (<span class="number">4</span>, <span class="number">2</span>)], <span class="number">5</span>, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+
+<span class="comment">// 2 triangles, 3 * 2 = 6 closed triples out of 10 connected triples.
+</span><span class="kw">let </span>t = g.transitivity_undirected(TransitivityMode::Nan)<span class="question-mark">?</span>;
+<span class="macro">assert!</span>((t - <span class="number">0.6</span>).abs() &lt; <span class="number">1e-12</span>);
+<span class="macro">assert_eq!</span>(g.count_triangles()<span class="question-mark">?</span>, <span class="number">2.0</span>);
+
+<span class="comment">// The hub closes 2 out of the 6 pairs of its neighbors, the others all theirs.
+</span><span class="kw">let </span>local = g.transitivity_local_undirected(.., TransitivityMode::Zero)<span class="question-mark">?</span>;
+<span class="macro">assert!</span>((local[<span class="number">2</span>] - <span class="number">1.0 </span>/ <span class="number">3.0</span>).abs() &lt; <span class="number">1e-12</span>);
+<span class="macro">assert_eq!</span>(local[<span class="number">0</span>], <span class="number">1.0</span>);
+
+<span class="comment">// High-degree hub attached to low-degree vertices: disassortative.
+</span><span class="macro">assert!</span>(g.assortativity_degree(<span class="bool-val">false</span>)<span class="question-mark">? </span>&lt; <span class="number">0.0</span>);
+
+<span class="comment">// Its degree sequence is, of course, graphical.
+</span><span class="kw">let </span>degrees = g.degree(.., NeighborMode::All, Loops::Twice)<span class="question-mark">?</span>;
+<span class="macro">assert!</span>(is_graphical(<span class="kw-2">&amp;</span>degrees, <span class="prelude-val">None</span>, AllowedEdgeTypes::SIMPLE)<span class="question-mark">?</span>);
+<span class="comment">// ...while an odd degree sum never is.
+</span><span class="macro">assert!</span>(!is_graphical(<span class="kw-2">&amp;</span>[<span class="number">3</span>, <span class="number">3</span>, <span class="number">3</span>], <span class="prelude-val">None</span>, AllowedEdgeTypes::ALL)<span class="question-mark">?</span>);
+
+<span class="comment">// Zachary's karate club: clustered, and its hubs avoid each other.
+</span><span class="kw">let </span>karate = Graph::famous(<span class="string">"Zachary"</span>)<span class="question-mark">?</span>;
+<span class="kw">let </span>c = karate.transitivity_undirected(TransitivityMode::Nan)<span class="question-mark">?</span>;
+<span class="macro">assert!</span>((c - <span class="number">0.2556818</span>).abs() &lt; <span class="number">1e-6</span>);
+<span class="macro">assert!</span>((karate.assortativity_degree(<span class="bool-val">false</span>)<span class="question-mark">? </span>+ <span class="number">0.475613</span>).abs() &lt; <span class="number">1e-6</span>);</code></pre></div></div></details><h2 id="reexports" class="section-header">Re-exports<a href="#reexports" class="anchor">§</a></h2><dl class="item-table reexports"><dt id="reexport.AllowedEdgeTypes"><code>pub use crate::constants::<a class="struct" href="../constants/struct.AllowedEdgeTypes.html" title="struct igraph::constants::AllowedEdgeTypes">AllowedEdgeTypes</a>;</code></dt></dl><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.JointDegreeDistributionOptions.html" title="struct igraph::mixing::JointDegreeDistributionOptions">Joint<wbr>Degree<wbr>Distribution<wbr>Options</a></dt><dd>Options of <a href="../ffi/struct.igraph_t.html#method.joint_degree_distribution" title="method igraph::ffi::igraph_t::joint_degree_distribution"><code>Graph::joint_degree_distribution</code></a>.</dd></dl><h2 id="functions" class="section-header">Functions<a href="#functions" class="anchor">§</a></h2><dl class="item-table"><dt><a class="fn" href="fn.is_bigraphical.html" title="fn igraph::mixing::is_bigraphical">is_<wbr>bigraphical</a></dt><dd>Is there a bipartite graph with the given pair of degree sequences?</dd><dt><a class="fn" href="fn.is_graphical.html" title="fn igraph::mixing::is_graphical">is_<wbr>graphical</a></dt><dd>Is there a graph with the given degree sequence?</dd></dl></section></div></main></body></html>

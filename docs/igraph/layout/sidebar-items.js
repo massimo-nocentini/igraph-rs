@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["DrlTemplate","RootChoice"],"fn":["layout_merge_dla"],"struct":["DavidsonHarelOptions","FruchtermanReingoldOptions","GemOptions","GraphoptOptions","KamadaKawaiOptions","LglOptions","SugiyamaLayout","SugiyamaOptions","UmapOptions"],"type":["DrlOptions"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["format_real","format_real_precise"],"struct":["View"],"type":["Vector","VectorBool","VectorChar","VectorComplex","VectorInt"]};

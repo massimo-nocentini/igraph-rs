@@ -1,0 +1,1038 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/visitor.rs`."><title>visitor.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-1ed95124.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="igraph" data-themes="" data-resource-suffix="" data-rustdoc-version="1.98.1 (48a229cea 2026-09-01)" data-channel="1.98.1" data-search-js="search-9944d736.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="../../static.files/src-script-813739b1.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-417ebf0a.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><h1><div class="sub-heading">igraph/</div>visitor.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-4"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="doccomment">//! Breadth-first and depth-first traversals, with Rust closures as visitors
+<a href=#2 id=2 data-nosnippet>2</a>//! (`igraph_visitor.h`).
+<a href=#3 id=3 data-nosnippet>3</a>//!
+<a href=#4 id=4 data-nosnippet>4</a>//! This module binds the three graph traversal functions of igraph's
+<a href=#5 id=5 data-nosnippet>5</a>//! [Visitors](https://igraph.org/c/html/latest/igraph-Visitors.html) chapter:
+<a href=#6 id=6 data-nosnippet>6</a>//!
+<a href=#7 id=7 data-nosnippet>7</a>//! | Rust method | C function | What you get |
+<a href=#8 id=8 data-nosnippet>8</a>//! |-------------|------------|--------------|
+<a href=#9 id=9 data-nosnippet>9</a>//! | [`Graph::bfs`] | [`igraph_bfs`](https://igraph.org/c/html/latest/igraph-Visitors.html#igraph_bfs) | [`BfsResult`]: order, rank, parents, pred, succ, dist |
+<a href=#10 id=10 data-nosnippet>10</a>//! | [`Graph::bfs_with`] | `igraph_bfs` + `igraph_bfshandler_t` | same, calling a closure on every visited vertex ([`BfsVisit`]) |
+<a href=#11 id=11 data-nosnippet>11</a>//! | [`Graph::bfs_simple`] | [`igraph_bfs_simple`](https://igraph.org/c/html/latest/igraph-Visitors.html#igraph_bfs_simple) | [`BfsSimpleResult`]: order, distance layers, parents |
+<a href=#12 id=12 data-nosnippet>12</a>//! | [`Graph::dfs`] | [`igraph_dfs`](https://igraph.org/c/html/latest/igraph-Visitors.html#igraph_dfs) | [`DfsResult`]: discovery and finishing orders, parents, dist |
+<a href=#13 id=13 data-nosnippet>13</a>//! | [`Graph::dfs_with`] | `igraph_dfs` + `igraph_dfshandler_t` (in and out) | same, calling a closure on every [`DfsEvent`] |
+<a href=#14 id=14 data-nosnippet>14</a>//!
+<a href=#15 id=15 data-nosnippet>15</a>//! Traversal parameters are grouped in [`BfsOptions`] and [`DfsOptions`]
+<a href=#16 id=16 data-nosnippet>16</a>//! (edge direction to follow, whether to restart from unreachable vertices,
+<a href=#17 id=17 data-nosnippet>17</a>//! and, for BFS, an optional restricted vertex set).
+<a href=#18 id=18 data-nosnippet>18</a>//!
+<a href=#19 id=19 data-nosnippet>19</a>//! # Visitors are closures
+<a href=#20 id=20 data-nosnippet>20</a>//!
+<a href=#21 id=21 data-nosnippet>21</a>//! The callback variants accept any `FnMut` closure returning
+<a href=#22 id=22 data-nosnippet>22</a>//! [`ControlFlow&lt;()&gt;`](std::ops::ControlFlow): return
+<a href=#23 id=23 data-nosnippet>23</a>//! [`ControlFlow::Continue(())`](std::ops::ControlFlow::Continue) to go on,
+<a href=#24 id=24 data-nosnippet>24</a>//! or [`ControlFlow::Break(())`](std::ops::ControlFlow::Break) to stop the
+<a href=#25 id=25 data-nosnippet>25</a>//! traversal early. Stopping is *not* an error (it maps to igraph's
+<a href=#26 id=26 data-nosnippet>26</a>//! `IGRAPH_STOP`): the wrapper returns `Ok` with the partial results computed
+<a href=#27 id=27 data-nosnippet>27</a>//! so far and sets the `stopped` flag of the result. If the closure panics,
+<a href=#28 id=28 data-nosnippet>28</a>//! the traversal is aborted inside igraph (no unwinding crosses the FFI
+<a href=#29 id=29 data-nosnippet>29</a>//! boundary) and the panic is then resumed in the calling Rust code.
+<a href=#30 id=30 data-nosnippet>30</a>//!
+<a href=#31 id=31 data-nosnippet>31</a>//! # Rusty results
+<a href=#32 id=32 data-nosnippet>32</a>//!
+<a href=#33 id=33 data-nosnippet>33</a>//! Where igraph stores negative sentinels (`-1` for "root", `-2` for "not
+<a href=#34 id=34 data-nosnippet>34</a>//! visited"), the result structs use [`Option`]s instead, and the visiting
+<a href=#35 id=35 data-nosnippet>35</a>//! orders only contain the vertices that were actually reached (igraph pads
+<a href=#36 id=36 data-nosnippet>36</a>//! them with `-1`).
+<a href=#37 id=37 data-nosnippet>37</a>//!
+<a href=#38 id=38 data-nosnippet>38</a>//! # Differences from the raw C functions
+<a href=#39 id=39 data-nosnippet>39</a>//!
+<a href=#40 id=40 data-nosnippet>40</a>//! The bindings smooth over a few rough edges of `src/graph/visitors.c`,
+<a href=#41 id=41 data-nosnippet>41</a>//! which are present in igraph 1.0.0 and 1.0.1 (the file is unchanged
+<a href=#42 id=42 data-nosnippet>42</a>//! between the two releases):
+<a href=#43 id=43 data-nosnippet>43</a>//!
+<a href=#44 id=44 data-nosnippet>44</a>//! - `igraph_dfs` reports a wrong depth to its out-callback (one less than
+<a href=#45 id=45 data-nosnippet>45</a>//!   the depth given at discovery) and, after a restart with `unreachable`,
+<a href=#46 id=46 data-nosnippet>46</a>//!   its depth counter is not reset: the roots of later trees still get
+<a href=#47 id=47 data-nosnippet>47</a>//!   depth 0, but the other vertices of the second tree get one less than
+<a href=#48 id=48 data-nosnippet>48</a>//!   their true depth, those of the third tree two less, and so on (the raw
+<a href=#49 id=49 data-nosnippet>49</a>//!   `dist` output can even become `-1`, the "not visited" sentinel).
+<a href=#50 id=50 data-nosnippet>50</a>//!   [`DfsEvent`] and [`DfsResult::dist`] carry the true depths, tracked on
+<a href=#51 id=51 data-nosnippet>51</a>//!   the Rust side.
+<a href=#52 id=52 data-nosnippet>52</a>//! - `igraph_bfs` with `unreachable = true` reads out of bounds on the null
+<a href=#53 id=53 data-nosnippet>53</a>//!   graph: the bindings answer that case without calling igraph.
+<a href=#54 id=54 data-nosnippet>54</a>//! - `igraph_bfs_simple` does not validate its root, and `igraph_dfs`
+<a href=#55 id=55 data-nosnippet>55</a>//!   reports an invalid root as `IGRAPH_EINVAL`: both methods check the
+<a href=#56 id=56 data-nosnippet>56</a>//!   root first and report [`ErrorKind::InvalidVertexId`], like
+<a href=#57 id=57 data-nosnippet>57</a>//!   [`Graph::bfs`].
+<a href=#58 id=58 data-nosnippet>58</a>//! - After an early stop, `igraph_bfs` has already assigned a parent to the
+<a href=#59 id=59 data-nosnippet>59</a>//!   vertices waiting in its queue; [`BfsResult::parents`] only describes
+<a href=#60 id=60 data-nosnippet>60</a>//!   the vertices that were actually visited.
+<a href=#61 id=61 data-nosnippet>61</a>//!
+<a href=#62 id=62 data-nosnippet>62</a>//! # See also
+<a href=#63 id=63 data-nosnippet>63</a>//!
+<a href=#64 id=64 data-nosnippet>64</a>//! Many questions that can be answered with a hand-written traversal have a
+<a href=#65 id=65 data-nosnippet>65</a>//! dedicated (and usually faster) function elsewhere in the crate:
+<a href=#66 id=66 data-nosnippet>66</a>//!
+<a href=#67 id=67 data-nosnippet>67</a>//! - distances and shortest paths: [`Graph::distances`],
+<a href=#68 id=68 data-nosnippet>68</a>//!   [`Graph::get_shortest_path`], [`Graph::get_shortest_paths`],
+<a href=#69 id=69 data-nosnippet>69</a>//!   [`Graph::eccentricity`] (all in [`crate::paths`]);
+<a href=#70 id=70 data-nosnippet>70</a>//! - reachability and components: [`Graph::subcomponent`] (the vertices a
+<a href=#71 id=71 data-nosnippet>71</a>//!   BFS from one root reaches), [`Graph::connected_components`],
+<a href=#72 id=72 data-nosnippet>72</a>//!   [`Graph::neighborhood`] (vertices within a given number of hops);
+<a href=#73 id=73 data-nosnippet>73</a>//! - DAGs and cycles: [`Graph::topological_sorting`], [`Graph::is_dag`],
+<a href=#74 id=74 data-nosnippet>74</a>//!   [`Graph::find_cycle`] (in [`crate::cycles`]);
+<a href=#75 id=75 data-nosnippet>75</a>//! - trees: [`Graph::unfold_tree`] (unrolls a graph into a BFS tree),
+<a href=#76 id=76 data-nosnippet>76</a>//!   [`Graph::kary_tree`] and [`Graph::famous`] to build test inputs;
+<a href=#77 id=77 data-nosnippet>77</a>//! - low-level neighbor access for your own traversals: [`crate::adjlist`].
+<a href=#78 id=78 data-nosnippet>78</a>//!
+<a href=#79 id=79 data-nosnippet>79</a>//! # Example
+<a href=#80 id=80 data-nosnippet>80</a>//!
+<a href=#81 id=81 data-nosnippet>81</a>//! ```
+<a href=#82 id=82 data-nosnippet>82</a>//! use igraph::prelude::*;
+<a href=#83 id=83 data-nosnippet>83</a>//! use igraph::visitor::{BfsOptions, DfsOptions};
+<a href=#84 id=84 data-nosnippet>84</a>//! use std::ops::ControlFlow;
+<a href=#85 id=85 data-nosnippet>85</a>//!
+<a href=#86 id=86 data-nosnippet>86</a>//! // A small binary tree:      0
+<a href=#87 id=87 data-nosnippet>87</a>//! //                         /   \
+<a href=#88 id=88 data-nosnippet>88</a>//! //                        1     2
+<a href=#89 id=89 data-nosnippet>89</a>//! //                       / \   /
+<a href=#90 id=90 data-nosnippet>90</a>//! //                      3   4 5
+<a href=#91 id=91 data-nosnippet>91</a>//! let tree = Graph::kary_tree(6, 2, TreeMode::Undirected)?;
+<a href=#92 id=92 data-nosnippet>92</a>//!
+<a href=#93 id=93 data-nosnippet>93</a>//! let bfs = tree.bfs(&amp;[0], &amp;BfsOptions::default())?;
+<a href=#94 id=94 data-nosnippet>94</a>//! assert_eq!(bfs.order, [0, 1, 2, 3, 4, 5]);
+<a href=#95 id=95 data-nosnippet>95</a>//! assert_eq!(bfs.dist, [Some(0), Some(1), Some(1), Some(2), Some(2), Some(2)]);
+<a href=#96 id=96 data-nosnippet>96</a>//! assert_eq!(bfs.path_to(5), Some(vec![0, 2, 5]));
+<a href=#97 id=97 data-nosnippet>97</a>//!
+<a href=#98 id=98 data-nosnippet>98</a>//! let dfs = tree.dfs(0, &amp;DfsOptions::default())?;
+<a href=#99 id=99 data-nosnippet>99</a>//! assert_eq!(dfs.order, [0, 1, 3, 4, 2, 5]);     // pre-order
+<a href=#100 id=100 data-nosnippet>100</a>//! assert_eq!(dfs.order_out, [3, 4, 1, 5, 2, 0]); // post-order
+<a href=#101 id=101 data-nosnippet>101</a>//!
+<a href=#102 id=102 data-nosnippet>102</a>//! // Stop as soon as a vertex at distance 2 is found.
+<a href=#103 id=103 data-nosnippet>103</a>//! let mut first_deep = None;
+<a href=#104 id=104 data-nosnippet>104</a>//! let partial = tree.bfs_with(&amp;[0], &amp;BfsOptions::default(), |visit| {
+<a href=#105 id=105 data-nosnippet>105</a>//!     if visit.dist == 2 {
+<a href=#106 id=106 data-nosnippet>106</a>//!         first_deep = Some(visit.vid);
+<a href=#107 id=107 data-nosnippet>107</a>//!         return ControlFlow::Break(());
+<a href=#108 id=108 data-nosnippet>108</a>//!     }
+<a href=#109 id=109 data-nosnippet>109</a>//!     ControlFlow::Continue(())
+<a href=#110 id=110 data-nosnippet>110</a>//! })?;
+<a href=#111 id=111 data-nosnippet>111</a>//! assert_eq!(first_deep, Some(3));
+<a href=#112 id=112 data-nosnippet>112</a>//! assert!(partial.stopped);
+<a href=#113 id=113 data-nosnippet>113</a>//!
+<a href=#114 id=114 data-nosnippet>114</a>//! // In an unweighted graph, BFS distances are shortest-path lengths.
+<a href=#115 id=115 data-nosnippet>115</a>//! let d = tree.distances(0, .., None, NeighborMode::All)?;
+<a href=#116 id=116 data-nosnippet>116</a>//! assert_eq!(d.to_rows()[0], [0.0, 1.0, 1.0, 2.0, 2.0, 2.0]);
+<a href=#117 id=117 data-nosnippet>117</a>//! # Ok::&lt;(), igraph::Error&gt;(())
+<a href=#118 id=118 data-nosnippet>118</a>//! ```
+<a href=#119 id=119 data-nosnippet>119</a>
+<a href=#120 id=120 data-nosnippet>120</a></span><span class="kw">use crate</span>::{
+<a href=#121 id=121 data-nosnippet>121</a>    constants::NeighborMode,
+<a href=#122 id=122 data-nosnippet>122</a>    error::{Error, ErrorKind, <span class="prelude-ty">Result</span>, catch_panic},
+<a href=#123 id=123 data-nosnippet>123</a>    ffi::<span class="kw-2">*</span>,
+<a href=#124 id=124 data-nosnippet>124</a>    graph::{Graph, VertexId},
+<a href=#125 id=125 data-nosnippet>125</a>    igraph_call,
+<a href=#126 id=126 data-nosnippet>126</a>    vector::VectorInt,
+<a href=#127 id=127 data-nosnippet>127</a>};
+<a href=#128 id=128 data-nosnippet>128</a><span class="kw">use </span>std::{ffi::c_void, ops::ControlFlow, ptr};
+<a href=#129 id=129 data-nosnippet>129</a>
+<a href=#130 id=130 data-nosnippet>130</a><span class="comment">// ---------------------------------------------------------------------------
+<a href=#131 id=131 data-nosnippet>131</a>// Options
+<a href=#132 id=132 data-nosnippet>132</a>// ---------------------------------------------------------------------------
+<a href=#133 id=133 data-nosnippet>133</a>
+<a href=#134 id=134 data-nosnippet>134</a></span><span class="doccomment">/// Parameters of a breadth-first search ([`Graph::bfs`], [`Graph::bfs_with`]).
+<a href=#135 id=135 data-nosnippet>135</a>///
+<a href=#136 id=136 data-nosnippet>136</a>/// The defaults are: follow out-edges ([`NeighborMode::Out`]), do **not**
+<a href=#137 id=137 data-nosnippet>137</a>/// visit vertices unreachable from the roots, no restriction.
+<a href=#138 id=138 data-nosnippet>138</a>///
+<a href=#139 id=139 data-nosnippet>139</a>/// ```
+<a href=#140 id=140 data-nosnippet>140</a>/// use igraph::prelude::*;
+<a href=#141 id=141 data-nosnippet>141</a>/// use igraph::visitor::BfsOptions;
+<a href=#142 id=142 data-nosnippet>142</a>///
+<a href=#143 id=143 data-nosnippet>143</a>/// let restricted = [0, 1, 2];
+<a href=#144 id=144 data-nosnippet>144</a>/// let opts = BfsOptions::default()
+<a href=#145 id=145 data-nosnippet>145</a>///     .with_mode(NeighborMode::All)
+<a href=#146 id=146 data-nosnippet>146</a>///     .with_unreachable(true)
+<a href=#147 id=147 data-nosnippet>147</a>///     .with_restricted(&amp;restricted);
+<a href=#148 id=148 data-nosnippet>148</a>/// assert_eq!(opts.mode, NeighborMode::All);
+<a href=#149 id=149 data-nosnippet>149</a>/// assert!(opts.unreachable);
+<a href=#150 id=150 data-nosnippet>150</a>/// assert_eq!(opts.restricted, Some(&amp;restricted[..]));
+<a href=#151 id=151 data-nosnippet>151</a>/// ```
+<a href=#152 id=152 data-nosnippet>152</a></span><span class="attr">#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+<a href=#153 id=153 data-nosnippet>153</a></span><span class="kw">pub struct </span>BfsOptions&lt;<span class="lifetime">'a</span>&gt; {
+<a href=#154 id=154 data-nosnippet>154</a>    <span class="doccomment">/// Which edges to follow in directed graphs: [`NeighborMode::Out`] follows
+<a href=#155 id=155 data-nosnippet>155</a>    /// the edge directions, [`NeighborMode::In`] goes against them and
+<a href=#156 id=156 data-nosnippet>156</a>    /// [`NeighborMode::All`] ignores them. Ignored for undirected graphs.
+<a href=#157 id=157 data-nosnippet>157</a>    </span><span class="kw">pub </span>mode: NeighborMode,
+<a href=#158 id=158 data-nosnippet>158</a>    <span class="doccomment">/// If `true`, once the roots are exhausted, further searches are started
+<a href=#159 id=159 data-nosnippet>159</a>    /// from the not yet visited vertices, in increasing id order, until every
+<a href=#160 id=160 data-nosnippet>160</a>    /// (allowed) vertex has been visited.
+<a href=#161 id=161 data-nosnippet>161</a>    </span><span class="kw">pub </span>unreachable: bool,
+<a href=#162 id=162 data-nosnippet>162</a>    <span class="doccomment">/// If set, the search only walks on these vertices: every other vertex
+<a href=#163 id=163 data-nosnippet>163</a>    /// is treated as already visited (even when it is given as a root, in
+<a href=#164 id=164 data-nosnippet>164</a>    /// which case it is silently skipped).
+<a href=#165 id=165 data-nosnippet>165</a>    </span><span class="kw">pub </span>restricted: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>[VertexId]&gt;,
+<a href=#166 id=166 data-nosnippet>166</a>}
+<a href=#167 id=167 data-nosnippet>167</a>
+<a href=#168 id=168 data-nosnippet>168</a><span class="kw">impl </span>Default <span class="kw">for </span>BfsOptions&lt;<span class="lifetime">'_</span>&gt; {
+<a href=#169 id=169 data-nosnippet>169</a>    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+<a href=#170 id=170 data-nosnippet>170</a>        <span class="self">Self </span>{
+<a href=#171 id=171 data-nosnippet>171</a>            mode: NeighborMode::Out,
+<a href=#172 id=172 data-nosnippet>172</a>            unreachable: <span class="bool-val">false</span>,
+<a href=#173 id=173 data-nosnippet>173</a>            restricted: <span class="prelude-val">None</span>,
+<a href=#174 id=174 data-nosnippet>174</a>        }
+<a href=#175 id=175 data-nosnippet>175</a>    }
+<a href=#176 id=176 data-nosnippet>176</a>}
+<a href=#177 id=177 data-nosnippet>177</a>
+<a href=#178 id=178 data-nosnippet>178</a><span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; BfsOptions&lt;<span class="lifetime">'a</span>&gt; {
+<a href=#179 id=179 data-nosnippet>179</a>    <span class="doccomment">/// Sets [`mode`](Self::mode).
+<a href=#180 id=180 data-nosnippet>180</a>    </span><span class="kw">pub fn </span>with_mode(<span class="kw-2">mut </span><span class="self">self</span>, mode: NeighborMode) -&gt; <span class="self">Self </span>{
+<a href=#181 id=181 data-nosnippet>181</a>        <span class="self">self</span>.mode = mode;
+<a href=#182 id=182 data-nosnippet>182</a>        <span class="self">self
+<a href=#183 id=183 data-nosnippet>183</a>    </span>}
+<a href=#184 id=184 data-nosnippet>184</a>
+<a href=#185 id=185 data-nosnippet>185</a>    <span class="doccomment">/// Sets [`unreachable`](Self::unreachable).
+<a href=#186 id=186 data-nosnippet>186</a>    </span><span class="kw">pub fn </span>with_unreachable(<span class="kw-2">mut </span><span class="self">self</span>, unreachable: bool) -&gt; <span class="self">Self </span>{
+<a href=#187 id=187 data-nosnippet>187</a>        <span class="self">self</span>.unreachable = unreachable;
+<a href=#188 id=188 data-nosnippet>188</a>        <span class="self">self
+<a href=#189 id=189 data-nosnippet>189</a>    </span>}
+<a href=#190 id=190 data-nosnippet>190</a>
+<a href=#191 id=191 data-nosnippet>191</a>    <span class="doccomment">/// Sets [`restricted`](Self::restricted) to `Some(vertices)`.
+<a href=#192 id=192 data-nosnippet>192</a>    </span><span class="kw">pub fn </span>with_restricted(<span class="kw-2">mut </span><span class="self">self</span>, vertices: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>[VertexId]) -&gt; <span class="self">Self </span>{
+<a href=#193 id=193 data-nosnippet>193</a>        <span class="self">self</span>.restricted = <span class="prelude-val">Some</span>(vertices);
+<a href=#194 id=194 data-nosnippet>194</a>        <span class="self">self
+<a href=#195 id=195 data-nosnippet>195</a>    </span>}
+<a href=#196 id=196 data-nosnippet>196</a>}
+<a href=#197 id=197 data-nosnippet>197</a>
+<a href=#198 id=198 data-nosnippet>198</a><span class="doccomment">/// Parameters of a depth-first search ([`Graph::dfs`], [`Graph::dfs_with`]).
+<a href=#199 id=199 data-nosnippet>199</a>///
+<a href=#200 id=200 data-nosnippet>200</a>/// The defaults are: follow out-edges ([`NeighborMode::Out`]) and do **not**
+<a href=#201 id=201 data-nosnippet>201</a>/// visit vertices unreachable from the root.
+<a href=#202 id=202 data-nosnippet>202</a>///
+<a href=#203 id=203 data-nosnippet>203</a>/// ```
+<a href=#204 id=204 data-nosnippet>204</a>/// use igraph::prelude::*;
+<a href=#205 id=205 data-nosnippet>205</a>/// use igraph::visitor::DfsOptions;
+<a href=#206 id=206 data-nosnippet>206</a>///
+<a href=#207 id=207 data-nosnippet>207</a>/// // 0 -&gt; 1, 2 -&gt; 1: walking against the edges from 1 finds 0 and 2.
+<a href=#208 id=208 data-nosnippet>208</a>/// let g = Graph::from_edges(&amp;[(0, 1), (2, 1)], 3, true)?;
+<a href=#209 id=209 data-nosnippet>209</a>/// let opts = DfsOptions::default().with_mode(NeighborMode::In);
+<a href=#210 id=210 data-nosnippet>210</a>/// assert_eq!(g.dfs(1, &amp;opts)?.order, [1, 0, 2]);
+<a href=#211 id=211 data-nosnippet>211</a>/// assert_eq!(g.dfs(1, &amp;DfsOptions::default())?.order, [1]);
+<a href=#212 id=212 data-nosnippet>212</a>/// # Ok::&lt;(), igraph::Error&gt;(())
+<a href=#213 id=213 data-nosnippet>213</a>/// ```
+<a href=#214 id=214 data-nosnippet>214</a></span><span class="attr">#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+<a href=#215 id=215 data-nosnippet>215</a></span><span class="kw">pub struct </span>DfsOptions {
+<a href=#216 id=216 data-nosnippet>216</a>    <span class="doccomment">/// Which edges to follow in directed graphs (see [`BfsOptions::mode`]).
+<a href=#217 id=217 data-nosnippet>217</a>    /// Ignored for undirected graphs.
+<a href=#218 id=218 data-nosnippet>218</a>    </span><span class="kw">pub </span>mode: NeighborMode,
+<a href=#219 id=219 data-nosnippet>219</a>    <span class="doccomment">/// If `true`, once the tree of the root is complete, further searches are
+<a href=#220 id=220 data-nosnippet>220</a>    /// started from the not yet visited vertices, in increasing id order.
+<a href=#221 id=221 data-nosnippet>221</a>    </span><span class="kw">pub </span>unreachable: bool,
+<a href=#222 id=222 data-nosnippet>222</a>}
+<a href=#223 id=223 data-nosnippet>223</a>
+<a href=#224 id=224 data-nosnippet>224</a><span class="kw">impl </span>Default <span class="kw">for </span>DfsOptions {
+<a href=#225 id=225 data-nosnippet>225</a>    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+<a href=#226 id=226 data-nosnippet>226</a>        <span class="self">Self </span>{
+<a href=#227 id=227 data-nosnippet>227</a>            mode: NeighborMode::Out,
+<a href=#228 id=228 data-nosnippet>228</a>            unreachable: <span class="bool-val">false</span>,
+<a href=#229 id=229 data-nosnippet>229</a>        }
+<a href=#230 id=230 data-nosnippet>230</a>    }
+<a href=#231 id=231 data-nosnippet>231</a>}
+<a href=#232 id=232 data-nosnippet>232</a>
+<a href=#233 id=233 data-nosnippet>233</a><span class="kw">impl </span>DfsOptions {
+<a href=#234 id=234 data-nosnippet>234</a>    <span class="doccomment">/// Sets [`mode`](Self::mode).
+<a href=#235 id=235 data-nosnippet>235</a>    </span><span class="kw">pub fn </span>with_mode(<span class="kw-2">mut </span><span class="self">self</span>, mode: NeighborMode) -&gt; <span class="self">Self </span>{
+<a href=#236 id=236 data-nosnippet>236</a>        <span class="self">self</span>.mode = mode;
+<a href=#237 id=237 data-nosnippet>237</a>        <span class="self">self
+<a href=#238 id=238 data-nosnippet>238</a>    </span>}
+<a href=#239 id=239 data-nosnippet>239</a>
+<a href=#240 id=240 data-nosnippet>240</a>    <span class="doccomment">/// Sets [`unreachable`](Self::unreachable).
+<a href=#241 id=241 data-nosnippet>241</a>    </span><span class="kw">pub fn </span>with_unreachable(<span class="kw-2">mut </span><span class="self">self</span>, unreachable: bool) -&gt; <span class="self">Self </span>{
+<a href=#242 id=242 data-nosnippet>242</a>        <span class="self">self</span>.unreachable = unreachable;
+<a href=#243 id=243 data-nosnippet>243</a>        <span class="self">self
+<a href=#244 id=244 data-nosnippet>244</a>    </span>}
+<a href=#245 id=245 data-nosnippet>245</a>}
+<a href=#246 id=246 data-nosnippet>246</a>
+<a href=#247 id=247 data-nosnippet>247</a><span class="comment">// ---------------------------------------------------------------------------
+<a href=#248 id=248 data-nosnippet>248</a>// Results and events
+<a href=#249 id=249 data-nosnippet>249</a>// ---------------------------------------------------------------------------
+<a href=#250 id=250 data-nosnippet>250</a>
+<a href=#251 id=251 data-nosnippet>251</a></span><span class="doccomment">/// What a breadth-first search visitor sees each time a vertex is visited
+<a href=#252 id=252 data-nosnippet>252</a>/// (the arguments of igraph's `igraph_bfshandler_t`).
+<a href=#253 id=253 data-nosnippet>253</a></span><span class="attr">#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+<a href=#254 id=254 data-nosnippet>254</a></span><span class="kw">pub struct </span>BfsVisit {
+<a href=#255 id=255 data-nosnippet>255</a>    <span class="doccomment">/// The vertex being visited.
+<a href=#256 id=256 data-nosnippet>256</a>    </span><span class="kw">pub </span>vid: VertexId,
+<a href=#257 id=257 data-nosnippet>257</a>    <span class="doccomment">/// The vertex visited just before, or `None` if `vid` is the root of a
+<a href=#258 id=258 data-nosnippet>258</a>    /// search tree.
+<a href=#259 id=259 data-nosnippet>259</a>    </span><span class="kw">pub </span>pred: <span class="prelude-ty">Option</span>&lt;VertexId&gt;,
+<a href=#260 id=260 data-nosnippet>260</a>    <span class="doccomment">/// The vertex that will be visited next, or `None` if `vid` is the last
+<a href=#261 id=261 data-nosnippet>261</a>    /// vertex of its search tree.
+<a href=#262 id=262 data-nosnippet>262</a>    </span><span class="kw">pub </span>succ: <span class="prelude-ty">Option</span>&lt;VertexId&gt;,
+<a href=#263 id=263 data-nosnippet>263</a>    <span class="doccomment">/// The rank of `vid`, i.e. its position in the visiting order (from 0).
+<a href=#264 id=264 data-nosnippet>264</a>    </span><span class="kw">pub </span>rank: usize,
+<a href=#265 id=265 data-nosnippet>265</a>    <span class="doccomment">/// The distance (number of hops) of `vid` from the root of its search
+<a href=#266 id=266 data-nosnippet>266</a>    /// tree.
+<a href=#267 id=267 data-nosnippet>267</a>    </span><span class="kw">pub </span>dist: usize,
+<a href=#268 id=268 data-nosnippet>268</a>}
+<a href=#269 id=269 data-nosnippet>269</a>
+<a href=#270 id=270 data-nosnippet>270</a><span class="doccomment">/// Results of a breadth-first search ([`Graph::bfs`], [`Graph::bfs_with`]).
+<a href=#271 id=271 data-nosnippet>271</a>///
+<a href=#272 id=272 data-nosnippet>272</a>/// The per-vertex vectors (`rank`, `parents`, `pred`, `succ`, `dist`) have
+<a href=#273 id=273 data-nosnippet>273</a>/// one entry per vertex of the graph, `None` for vertices that were not
+<a href=#274 id=274 data-nosnippet>274</a>/// visited (e.g. unreachable, outside the restricted set, or not reached
+<a href=#275 id=275 data-nosnippet>275</a>/// because the visitor stopped the search).
+<a href=#276 id=276 data-nosnippet>276</a></span><span class="attr">#[derive(Debug, Clone, PartialEq, Eq)]
+<a href=#277 id=277 data-nosnippet>277</a></span><span class="kw">pub struct </span>BfsResult {
+<a href=#278 id=278 data-nosnippet>278</a>    <span class="doccomment">/// The visited vertices, in visiting order.
+<a href=#279 id=279 data-nosnippet>279</a>    </span><span class="kw">pub </span>order: Vec&lt;VertexId&gt;,
+<a href=#280 id=280 data-nosnippet>280</a>    <span class="doccomment">/// The rank (position in [`order`](Self::order)) of each vertex.
+<a href=#281 id=281 data-nosnippet>281</a>    </span><span class="kw">pub </span>rank: Vec&lt;<span class="prelude-ty">Option</span>&lt;usize&gt;&gt;,
+<a href=#282 id=282 data-nosnippet>282</a>    <span class="doccomment">/// The parent of each vertex in the BFS forest: `None` for the roots of
+<a href=#283 id=283 data-nosnippet>283</a>    /// the search trees and for unvisited vertices (igraph itself already
+<a href=#284 id=284 data-nosnippet>284</a>    /// assigns a parent to vertices that were queued but not yet visited when
+<a href=#285 id=285 data-nosnippet>285</a>    /// the visitor stopped the search; the bindings report them as `None`
+<a href=#286 id=286 data-nosnippet>286</a>    /// too, so that `parents` always describes the visited forest).
+<a href=#287 id=287 data-nosnippet>287</a>    </span><span class="kw">pub </span>parents: Vec&lt;<span class="prelude-ty">Option</span>&lt;VertexId&gt;&gt;,
+<a href=#288 id=288 data-nosnippet>288</a>    <span class="doccomment">/// The vertex visited just before each vertex: `None` for the roots of
+<a href=#289 id=289 data-nosnippet>289</a>    /// the search trees and for unvisited vertices.
+<a href=#290 id=290 data-nosnippet>290</a>    </span><span class="kw">pub </span>pred: Vec&lt;<span class="prelude-ty">Option</span>&lt;VertexId&gt;&gt;,
+<a href=#291 id=291 data-nosnippet>291</a>    <span class="doccomment">/// The vertex visited just after each vertex: `None` for the last vertex
+<a href=#292 id=292 data-nosnippet>292</a>    /// of each search tree and for unvisited vertices. When the visitor stops
+<a href=#293 id=293 data-nosnippet>293</a>    /// the search, the successor of the vertex it stopped at is `None` too.
+<a href=#294 id=294 data-nosnippet>294</a>    </span><span class="kw">pub </span>succ: Vec&lt;<span class="prelude-ty">Option</span>&lt;VertexId&gt;&gt;,
+<a href=#295 id=295 data-nosnippet>295</a>    <span class="doccomment">/// The distance of each vertex from the root of its search tree.
+<a href=#296 id=296 data-nosnippet>296</a>    </span><span class="kw">pub </span>dist: Vec&lt;<span class="prelude-ty">Option</span>&lt;usize&gt;&gt;,
+<a href=#297 id=297 data-nosnippet>297</a>    <span class="doccomment">/// `true` if the visitor closure returned
+<a href=#298 id=298 data-nosnippet>298</a>    /// [`ControlFlow::Break`], so that the search ended early.
+<a href=#299 id=299 data-nosnippet>299</a>    </span><span class="kw">pub </span>stopped: bool,
+<a href=#300 id=300 data-nosnippet>300</a>}
+<a href=#301 id=301 data-nosnippet>301</a>
+<a href=#302 id=302 data-nosnippet>302</a><span class="kw">impl </span>BfsResult {
+<a href=#303 id=303 data-nosnippet>303</a>    <span class="doccomment">/// Whether vertex `v` was visited by the search.
+<a href=#304 id=304 data-nosnippet>304</a>    </span><span class="kw">pub fn </span>is_visited(<span class="kw-2">&amp;</span><span class="self">self</span>, v: VertexId) -&gt; bool {
+<a href=#305 id=305 data-nosnippet>305</a>        usize::try_from(v)
+<a href=#306 id=306 data-nosnippet>306</a>            .ok()
+<a href=#307 id=307 data-nosnippet>307</a>            .and_then(|i| <span class="self">self</span>.rank.get(i))
+<a href=#308 id=308 data-nosnippet>308</a>            .is_some_and(Option::is_some)
+<a href=#309 id=309 data-nosnippet>309</a>    }
+<a href=#310 id=310 data-nosnippet>310</a>
+<a href=#311 id=311 data-nosnippet>311</a>    <span class="doccomment">/// The roots of the search trees, in the order they were used.
+<a href=#312 id=312 data-nosnippet>312</a>    ///
+<a href=#313 id=313 data-nosnippet>313</a>    /// In an undirected graph searched with [`BfsOptions::unreachable`] set
+<a href=#314 id=314 data-nosnippet>314</a>    /// (and no restriction), there is exactly one root per connected
+<a href=#315 id=315 data-nosnippet>315</a>    /// component, see [`Graph::connected_components`].
+<a href=#316 id=316 data-nosnippet>316</a>    </span><span class="kw">pub fn </span>roots(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;VertexId&gt; {
+<a href=#317 id=317 data-nosnippet>317</a>        <span class="self">self</span>.order
+<a href=#318 id=318 data-nosnippet>318</a>            .iter()
+<a href=#319 id=319 data-nosnippet>319</a>            .copied()
+<a href=#320 id=320 data-nosnippet>320</a>            .filter(|<span class="kw-2">&amp;</span>v| <span class="self">self</span>.parents[v <span class="kw">as </span>usize].is_none())
+<a href=#321 id=321 data-nosnippet>321</a>            .collect()
+<a href=#322 id=322 data-nosnippet>322</a>    }
+<a href=#323 id=323 data-nosnippet>323</a>
+<a href=#324 id=324 data-nosnippet>324</a>    <span class="doccomment">/// The path of the BFS forest from the root of `v`'s search tree down to
+<a href=#325 id=325 data-nosnippet>325</a>    /// `v` (a shortest path in unweighted graphs), or `None` if `v` was not
+<a href=#326 id=326 data-nosnippet>326</a>    /// visited. [`Graph::get_shortest_path`] computes a single such path
+<a href=#327 id=327 data-nosnippet>327</a>    /// directly (also with weights).
+<a href=#328 id=328 data-nosnippet>328</a>    </span><span class="kw">pub fn </span>path_to(<span class="kw-2">&amp;</span><span class="self">self</span>, v: VertexId) -&gt; <span class="prelude-ty">Option</span>&lt;Vec&lt;VertexId&gt;&gt; {
+<a href=#329 id=329 data-nosnippet>329</a>        tree_path(<span class="kw-2">&amp;</span><span class="self">self</span>.parents, <span class="kw-2">&amp;</span><span class="self">self</span>.rank, v)
+<a href=#330 id=330 data-nosnippet>330</a>    }
+<a href=#331 id=331 data-nosnippet>331</a>}
+<a href=#332 id=332 data-nosnippet>332</a>
+<a href=#333 id=333 data-nosnippet>333</a><span class="doccomment">/// Results of [`Graph::bfs_simple`].
+<a href=#334 id=334 data-nosnippet>334</a></span><span class="attr">#[derive(Debug, Clone, PartialEq, Eq)]
+<a href=#335 id=335 data-nosnippet>335</a></span><span class="kw">pub struct </span>BfsSimpleResult {
+<a href=#336 id=336 data-nosnippet>336</a>    <span class="doccomment">/// The visited vertices, in visiting order (only the ones reachable from
+<a href=#337 id=337 data-nosnippet>337</a>    /// the root).
+<a href=#338 id=338 data-nosnippet>338</a>    </span><span class="kw">pub </span>order: Vec&lt;VertexId&gt;,
+<a href=#339 id=339 data-nosnippet>339</a>    <span class="doccomment">/// Layer boundaries: the vertices at distance `i` from the root are
+<a href=#340 id=340 data-nosnippet>340</a>    /// `order[layers[i]..layers[i + 1]]`. It has one more element than the
+<a href=#341 id=341 data-nosnippet>341</a>    /// number of layers; the last one is `order.len()`.
+<a href=#342 id=342 data-nosnippet>342</a>    </span><span class="kw">pub </span>layers: Vec&lt;usize&gt;,
+<a href=#343 id=343 data-nosnippet>343</a>    <span class="doccomment">/// The parent of each vertex in the BFS tree: `None` for the root and for
+<a href=#344 id=344 data-nosnippet>344</a>    /// vertices that were not reached.
+<a href=#345 id=345 data-nosnippet>345</a>    </span><span class="kw">pub </span>parents: Vec&lt;<span class="prelude-ty">Option</span>&lt;VertexId&gt;&gt;,
+<a href=#346 id=346 data-nosnippet>346</a>}
+<a href=#347 id=347 data-nosnippet>347</a>
+<a href=#348 id=348 data-nosnippet>348</a><span class="kw">impl </span>BfsSimpleResult {
+<a href=#349 id=349 data-nosnippet>349</a>    <span class="doccomment">/// Number of distance layers (the eccentricity of the root plus one).
+<a href=#350 id=350 data-nosnippet>350</a>    </span><span class="kw">pub fn </span>num_layers(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+<a href=#351 id=351 data-nosnippet>351</a>        <span class="self">self</span>.layers.len().saturating_sub(<span class="number">1</span>)
+<a href=#352 id=352 data-nosnippet>352</a>    }
+<a href=#353 id=353 data-nosnippet>353</a>
+<a href=#354 id=354 data-nosnippet>354</a>    <span class="doccomment">/// The vertices at distance `i` from the root (empty if `i` is too large).
+<a href=#355 id=355 data-nosnippet>355</a>    </span><span class="kw">pub fn </span>layer(<span class="kw-2">&amp;</span><span class="self">self</span>, i: usize) -&gt; <span class="kw-2">&amp;</span>[VertexId] {
+<a href=#356 id=356 data-nosnippet>356</a>        <span class="kw">match </span>(<span class="self">self</span>.layers.get(i), <span class="self">self</span>.layers.get(i + <span class="number">1</span>)) {
+<a href=#357 id=357 data-nosnippet>357</a>            (<span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>a), <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>b)) =&gt; <span class="kw-2">&amp;</span><span class="self">self</span>.order[a..b],
+<a href=#358 id=358 data-nosnippet>358</a>            <span class="kw">_ </span>=&gt; <span class="kw-2">&amp;</span>[],
+<a href=#359 id=359 data-nosnippet>359</a>        }
+<a href=#360 id=360 data-nosnippet>360</a>    }
+<a href=#361 id=361 data-nosnippet>361</a>
+<a href=#362 id=362 data-nosnippet>362</a>    <span class="doccomment">/// Iterates over the distance layers, from the root outwards.
+<a href=#363 id=363 data-nosnippet>363</a>    </span><span class="kw">pub fn </span>iter_layers(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = <span class="kw-2">&amp;</span>[VertexId]&gt; + <span class="lifetime">'_ </span>{
+<a href=#364 id=364 data-nosnippet>364</a>        <span class="self">self</span>.layers.windows(<span class="number">2</span>).map(|w| <span class="kw-2">&amp;</span><span class="self">self</span>.order[w[<span class="number">0</span>]..w[<span class="number">1</span>]])
+<a href=#365 id=365 data-nosnippet>365</a>    }
+<a href=#366 id=366 data-nosnippet>366</a>}
+<a href=#367 id=367 data-nosnippet>367</a>
+<a href=#368 id=368 data-nosnippet>368</a><span class="doccomment">/// An event reported to a depth-first search visitor ([`Graph::dfs_with`]).
+<a href=#369 id=369 data-nosnippet>369</a>///
+<a href=#370 id=370 data-nosnippet>370</a>/// igraph has two DFS callbacks: one when a vertex is *discovered*
+<a href=#371 id=371 data-nosnippet>371</a>/// (`in_callback`) and one when its subtree is *finished* (`out_callback`).
+<a href=#372 id=372 data-nosnippet>372</a>/// A single Rust closure receives both, as the two variants of this enum.
+<a href=#373 id=373 data-nosnippet>373</a></span><span class="attr">#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+<a href=#374 id=374 data-nosnippet>374</a></span><span class="kw">pub enum </span>DfsEvent {
+<a href=#375 id=375 data-nosnippet>375</a>    <span class="doccomment">/// A vertex has just been discovered (pre-order).
+<a href=#376 id=376 data-nosnippet>376</a>    </span>Discover {
+<a href=#377 id=377 data-nosnippet>377</a>        <span class="doccomment">/// The discovered vertex.
+<a href=#378 id=378 data-nosnippet>378</a>        </span>vid: VertexId,
+<a href=#379 id=379 data-nosnippet>379</a>        <span class="doccomment">/// Its distance (depth) from the root of its search tree.
+<a href=#380 id=380 data-nosnippet>380</a>        </span>dist: usize,
+<a href=#381 id=381 data-nosnippet>381</a>    },
+<a href=#382 id=382 data-nosnippet>382</a>    <span class="doccomment">/// The whole subtree of a vertex has been explored (post-order).
+<a href=#383 id=383 data-nosnippet>383</a>    </span>Finish {
+<a href=#384 id=384 data-nosnippet>384</a>        <span class="doccomment">/// The finished vertex.
+<a href=#385 id=385 data-nosnippet>385</a>        </span>vid: VertexId,
+<a href=#386 id=386 data-nosnippet>386</a>        <span class="doccomment">/// Its distance (depth) from the root of its search tree: the same
+<a href=#387 id=387 data-nosnippet>387</a>        /// value as in the matching [`Discover`](DfsEvent::Discover) event
+<a href=#388 id=388 data-nosnippet>388</a>        /// (the raw C callback receives one less).
+<a href=#389 id=389 data-nosnippet>389</a>        </span>dist: usize,
+<a href=#390 id=390 data-nosnippet>390</a>    },
+<a href=#391 id=391 data-nosnippet>391</a>}
+<a href=#392 id=392 data-nosnippet>392</a>
+<a href=#393 id=393 data-nosnippet>393</a><span class="kw">impl </span>DfsEvent {
+<a href=#394 id=394 data-nosnippet>394</a>    <span class="doccomment">/// The vertex the event is about.
+<a href=#395 id=395 data-nosnippet>395</a>    </span><span class="kw">pub fn </span>vid(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; VertexId {
+<a href=#396 id=396 data-nosnippet>396</a>        <span class="kw">match </span><span class="kw-2">*</span><span class="self">self </span>{
+<a href=#397 id=397 data-nosnippet>397</a>            <span class="self">Self</span>::Discover { vid, .. } | <span class="self">Self</span>::Finish { vid, .. } =&gt; vid,
+<a href=#398 id=398 data-nosnippet>398</a>        }
+<a href=#399 id=399 data-nosnippet>399</a>    }
+<a href=#400 id=400 data-nosnippet>400</a>
+<a href=#401 id=401 data-nosnippet>401</a>    <span class="doccomment">/// The depth of the vertex in its search tree.
+<a href=#402 id=402 data-nosnippet>402</a>    </span><span class="kw">pub fn </span>dist(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+<a href=#403 id=403 data-nosnippet>403</a>        <span class="kw">match </span><span class="kw-2">*</span><span class="self">self </span>{
+<a href=#404 id=404 data-nosnippet>404</a>            <span class="self">Self</span>::Discover { dist, .. } | <span class="self">Self</span>::Finish { dist, .. } =&gt; dist,
+<a href=#405 id=405 data-nosnippet>405</a>        }
+<a href=#406 id=406 data-nosnippet>406</a>    }
+<a href=#407 id=407 data-nosnippet>407</a>}
+<a href=#408 id=408 data-nosnippet>408</a>
+<a href=#409 id=409 data-nosnippet>409</a><span class="doccomment">/// Results of a depth-first search ([`Graph::dfs`], [`Graph::dfs_with`]).
+<a href=#410 id=410 data-nosnippet>410</a></span><span class="attr">#[derive(Debug, Clone, PartialEq, Eq)]
+<a href=#411 id=411 data-nosnippet>411</a></span><span class="kw">pub struct </span>DfsResult {
+<a href=#412 id=412 data-nosnippet>412</a>    <span class="doccomment">/// The vertices in the order they were discovered (pre-order).
+<a href=#413 id=413 data-nosnippet>413</a>    </span><span class="kw">pub </span>order: Vec&lt;VertexId&gt;,
+<a href=#414 id=414 data-nosnippet>414</a>    <span class="doccomment">/// The vertices in the order their subtrees were completed (post-order).
+<a href=#415 id=415 data-nosnippet>415</a>    /// If the search was stopped early, it may be shorter than
+<a href=#416 id=416 data-nosnippet>416</a>    /// [`order`](Self::order).
+<a href=#417 id=417 data-nosnippet>417</a>    </span><span class="kw">pub </span>order_out: Vec&lt;VertexId&gt;,
+<a href=#418 id=418 data-nosnippet>418</a>    <span class="doccomment">/// The parent of each vertex in the DFS forest: `None` for the roots of
+<a href=#419 id=419 data-nosnippet>419</a>    /// the search trees and for unvisited vertices.
+<a href=#420 id=420 data-nosnippet>420</a>    </span><span class="kw">pub </span>parents: Vec&lt;<span class="prelude-ty">Option</span>&lt;VertexId&gt;&gt;,
+<a href=#421 id=421 data-nosnippet>421</a>    <span class="doccomment">/// The depth of each vertex in its DFS tree (the number of tree edges
+<a href=#422 id=422 data-nosnippet>422</a>    /// between it and the root of its tree), `None` if not visited. Unlike
+<a href=#423 id=423 data-nosnippet>423</a>    /// the raw output of `igraph_dfs`, it stays exact after a restart with
+<a href=#424 id=424 data-nosnippet>424</a>    /// [`DfsOptions::unreachable`] (see the [module docs](self)).
+<a href=#425 id=425 data-nosnippet>425</a>    </span><span class="kw">pub </span>dist: Vec&lt;<span class="prelude-ty">Option</span>&lt;usize&gt;&gt;,
+<a href=#426 id=426 data-nosnippet>426</a>    <span class="doccomment">/// `true` if the visitor closure returned [`ControlFlow::Break`].
+<a href=#427 id=427 data-nosnippet>427</a>    </span><span class="kw">pub </span>stopped: bool,
+<a href=#428 id=428 data-nosnippet>428</a>}
+<a href=#429 id=429 data-nosnippet>429</a>
+<a href=#430 id=430 data-nosnippet>430</a><span class="kw">impl </span>DfsResult {
+<a href=#431 id=431 data-nosnippet>431</a>    <span class="doccomment">/// Whether vertex `v` was discovered by the search.
+<a href=#432 id=432 data-nosnippet>432</a>    </span><span class="kw">pub fn </span>is_visited(<span class="kw-2">&amp;</span><span class="self">self</span>, v: VertexId) -&gt; bool {
+<a href=#433 id=433 data-nosnippet>433</a>        usize::try_from(v)
+<a href=#434 id=434 data-nosnippet>434</a>            .ok()
+<a href=#435 id=435 data-nosnippet>435</a>            .and_then(|i| <span class="self">self</span>.dist.get(i))
+<a href=#436 id=436 data-nosnippet>436</a>            .is_some_and(Option::is_some)
+<a href=#437 id=437 data-nosnippet>437</a>    }
+<a href=#438 id=438 data-nosnippet>438</a>
+<a href=#439 id=439 data-nosnippet>439</a>    <span class="doccomment">/// The path of the DFS forest from the root of `v`'s tree down to `v`,
+<a href=#440 id=440 data-nosnippet>440</a>    /// or `None` if `v` was not visited.
+<a href=#441 id=441 data-nosnippet>441</a>    </span><span class="kw">pub fn </span>path_to(<span class="kw-2">&amp;</span><span class="self">self</span>, v: VertexId) -&gt; <span class="prelude-ty">Option</span>&lt;Vec&lt;VertexId&gt;&gt; {
+<a href=#442 id=442 data-nosnippet>442</a>        tree_path(<span class="kw-2">&amp;</span><span class="self">self</span>.parents, <span class="kw-2">&amp;</span><span class="self">self</span>.dist, v)
+<a href=#443 id=443 data-nosnippet>443</a>    }
+<a href=#444 id=444 data-nosnippet>444</a>}
+<a href=#445 id=445 data-nosnippet>445</a>
+<a href=#446 id=446 data-nosnippet>446</a><span class="comment">// ---------------------------------------------------------------------------
+<a href=#447 id=447 data-nosnippet>447</a>// Helpers
+<a href=#448 id=448 data-nosnippet>448</a>// ---------------------------------------------------------------------------
+<a href=#449 id=449 data-nosnippet>449</a>
+<a href=#450 id=450 data-nosnippet>450</a></span><span class="doccomment">/// Follows `parents` from `v` up to a root; `visited[v]` tells whether `v`
+<a href=#451 id=451 data-nosnippet>451</a>/// belongs to the forest at all.
+<a href=#452 id=452 data-nosnippet>452</a></span><span class="kw">fn </span>tree_path&lt;T&gt;(
+<a href=#453 id=453 data-nosnippet>453</a>    parents: <span class="kw-2">&amp;</span>[<span class="prelude-ty">Option</span>&lt;VertexId&gt;],
+<a href=#454 id=454 data-nosnippet>454</a>    visited: <span class="kw-2">&amp;</span>[<span class="prelude-ty">Option</span>&lt;T&gt;],
+<a href=#455 id=455 data-nosnippet>455</a>    v: VertexId,
+<a href=#456 id=456 data-nosnippet>456</a>) -&gt; <span class="prelude-ty">Option</span>&lt;Vec&lt;VertexId&gt;&gt; {
+<a href=#457 id=457 data-nosnippet>457</a>    <span class="kw">let </span>i = usize::try_from(v).ok()<span class="question-mark">?</span>;
+<a href=#458 id=458 data-nosnippet>458</a>    visited.get(i)<span class="question-mark">?</span>.as_ref()<span class="question-mark">?</span>;
+<a href=#459 id=459 data-nosnippet>459</a>    <span class="kw">let </span><span class="kw-2">mut </span>path = <span class="macro">vec!</span>[v];
+<a href=#460 id=460 data-nosnippet>460</a>    <span class="kw">let </span><span class="kw-2">mut </span>cur = v;
+<a href=#461 id=461 data-nosnippet>461</a>    <span class="kw">while let </span><span class="prelude-val">Some</span>(p) = parents[cur <span class="kw">as </span>usize] {
+<a href=#462 id=462 data-nosnippet>462</a>        path.push(p);
+<a href=#463 id=463 data-nosnippet>463</a>        cur = p;
+<a href=#464 id=464 data-nosnippet>464</a>        <span class="kw">if </span>path.len() &gt; parents.len() {
+<a href=#465 id=465 data-nosnippet>465</a>            <span class="kw">return </span><span class="prelude-val">None</span>; <span class="comment">// defensive: never loop on a malformed forest
+<a href=#466 id=466 data-nosnippet>466</a>        </span>}
+<a href=#467 id=467 data-nosnippet>467</a>    }
+<a href=#468 id=468 data-nosnippet>468</a>    path.reverse();
+<a href=#469 id=469 data-nosnippet>469</a>    <span class="prelude-val">Some</span>(path)
+<a href=#470 id=470 data-nosnippet>470</a>}
+<a href=#471 id=471 data-nosnippet>471</a>
+<a href=#472 id=472 data-nosnippet>472</a><span class="doccomment">/// Converts an igraph id vector with negative sentinels into `Option`s.
+<a href=#473 id=473 data-nosnippet>473</a></span><span class="kw">fn </span>opt_ids(v: VectorInt) -&gt; Vec&lt;<span class="prelude-ty">Option</span>&lt;VertexId&gt;&gt; {
+<a href=#474 id=474 data-nosnippet>474</a>    v.iter().map(|<span class="kw-2">&amp;</span>x| (x &gt;= <span class="number">0</span>).then_some(x)).collect()
+<a href=#475 id=475 data-nosnippet>475</a>}
+<a href=#476 id=476 data-nosnippet>476</a>
+<a href=#477 id=477 data-nosnippet>477</a><span class="doccomment">/// Converts an igraph count vector with negative sentinels into `Option`s.
+<a href=#478 id=478 data-nosnippet>478</a></span><span class="kw">fn </span>opt_counts(v: VectorInt) -&gt; Vec&lt;<span class="prelude-ty">Option</span>&lt;usize&gt;&gt; {
+<a href=#479 id=479 data-nosnippet>479</a>    v.iter().map(|<span class="kw-2">&amp;</span>x| usize::try_from(x).ok()).collect()
+<a href=#480 id=480 data-nosnippet>480</a>}
+<a href=#481 id=481 data-nosnippet>481</a>
+<a href=#482 id=482 data-nosnippet>482</a><span class="doccomment">/// Keeps the visited prefix of an order vector padded with `-1`.
+<a href=#483 id=483 data-nosnippet>483</a></span><span class="kw">fn </span>visited_prefix(v: VectorInt) -&gt; Vec&lt;VertexId&gt; {
+<a href=#484 id=484 data-nosnippet>484</a>    v.iter().copied().take_while(|<span class="kw-2">&amp;</span>x| x &gt;= <span class="number">0</span>).collect()
+<a href=#485 id=485 data-nosnippet>485</a>}
+<a href=#486 id=486 data-nosnippet>486</a>
+<a href=#487 id=487 data-nosnippet>487</a><span class="kw">fn </span>check_vertex(graph: <span class="kw-2">&amp;</span>Graph, v: VertexId, what: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+<a href=#488 id=488 data-nosnippet>488</a>    <span class="kw">if </span>v &lt; <span class="number">0 </span>|| v <span class="kw">as </span>usize &gt;= graph.vcount() {
+<a href=#489 id=489 data-nosnippet>489</a>        <span class="kw">return </span><span class="prelude-val">Err</span>(Error::new(
+<a href=#490 id=490 data-nosnippet>490</a>            ErrorKind::InvalidVertexId,
+<a href=#491 id=491 data-nosnippet>491</a>            <span class="macro">format!</span>(
+<a href=#492 id=492 data-nosnippet>492</a>                <span class="string">"invalid {what} vertex id {v} (the graph has {} vertices)"</span>,
+<a href=#493 id=493 data-nosnippet>493</a>                graph.vcount()
+<a href=#494 id=494 data-nosnippet>494</a>            ),
+<a href=#495 id=495 data-nosnippet>495</a>        ));
+<a href=#496 id=496 data-nosnippet>496</a>    }
+<a href=#497 id=497 data-nosnippet>497</a>    <span class="prelude-val">Ok</span>(())
+<a href=#498 id=498 data-nosnippet>498</a>}
+<a href=#499 id=499 data-nosnippet>499</a>
+<a href=#500 id=500 data-nosnippet>500</a><span class="kw">fn </span>flow_to_code(flow: ControlFlow&lt;()&gt;, stopped: <span class="kw-2">&amp;mut </span>bool) -&gt; igraph_error_t {
+<a href=#501 id=501 data-nosnippet>501</a>    <span class="kw">match </span>flow {
+<a href=#502 id=502 data-nosnippet>502</a>        ControlFlow::Continue(()) =&gt; igraph_error_type_t_IGRAPH_SUCCESS,
+<a href=#503 id=503 data-nosnippet>503</a>        ControlFlow::Break(()) =&gt; {
+<a href=#504 id=504 data-nosnippet>504</a>            <span class="kw-2">*</span>stopped = <span class="bool-val">true</span>;
+<a href=#505 id=505 data-nosnippet>505</a>            igraph_error_type_t_IGRAPH_STOP
+<a href=#506 id=506 data-nosnippet>506</a>        }
+<a href=#507 id=507 data-nosnippet>507</a>    }
+<a href=#508 id=508 data-nosnippet>508</a>}
+<a href=#509 id=509 data-nosnippet>509</a>
+<a href=#510 id=510 data-nosnippet>510</a><span class="doccomment">/// Runs the Rust side of a BFS/DFS callback in a new level of igraph's
+<a href=#511 id=511 data-nosnippet>511</a>/// "finally" stack (`IGRAPH_FINALLY_ENTER` / `IGRAPH_FINALLY_EXIT`), catching
+<a href=#512 id=512 data-nosnippet>512</a>/// panics.
+<a href=#513 id=513 data-nosnippet>513</a>///
+<a href=#514 id=514 data-nosnippet>514</a>/// The running search keeps its temporaries (queue, stack, bitsets) on that
+<a href=#515 id=515 data-nosnippet>515</a>/// stack, and igraph's error handler frees the objects of the current level
+<a href=#516 id=516 data-nosnippet>516</a>/// when a call fails. Without a new level, an igraph call made by the user
+<a href=#517 id=517 data-nosnippet>517</a>/// closure that fails (returning an `Err` the closure may well ignore) would
+<a href=#518 id=518 data-nosnippet>518</a>/// free the temporaries of the search that is still running, a
+<a href=#519 id=519 data-nosnippet>519</a>/// use-after-free in C.
+<a href=#520 id=520 data-nosnippet>520</a></span><span class="kw">fn </span>in_finally_level(f: <span class="kw">impl </span>FnOnce() -&gt; igraph_error_t) -&gt; igraph_error_t {
+<a href=#521 id=521 data-nosnippet>521</a>    <span class="comment">// SAFETY: plain bookkeeping on igraph's thread-local finally stack; the
+<a href=#522 id=522 data-nosnippet>522</a>    // matching EXIT runs below, as `catch_panic` never unwinds.
+<a href=#523 id=523 data-nosnippet>523</a>    </span><span class="kw">unsafe </span>{ IGRAPH_FINALLY_ENTER() };
+<a href=#524 id=524 data-nosnippet>524</a>    <span class="kw">let </span>code = catch_panic(f);
+<a href=#525 id=525 data-nosnippet>525</a>    <span class="comment">// SAFETY: closes the level opened above. Every igraph call made by the
+<a href=#526 id=526 data-nosnippet>526</a>    // closure has returned, and a failed one has already freed its objects.
+<a href=#527 id=527 data-nosnippet>527</a>    </span><span class="kw">unsafe </span>{ IGRAPH_FINALLY_EXIT() };
+<a href=#528 id=528 data-nosnippet>528</a>    code
+<a href=#529 id=529 data-nosnippet>529</a>}
+<a href=#530 id=530 data-nosnippet>530</a>
+<a href=#531 id=531 data-nosnippet>531</a><span class="kw">struct </span>BfsState&lt;F&gt; {
+<a href=#532 id=532 data-nosnippet>532</a>    f: F,
+<a href=#533 id=533 data-nosnippet>533</a>    stopped: bool,
+<a href=#534 id=534 data-nosnippet>534</a>}
+<a href=#535 id=535 data-nosnippet>535</a>
+<a href=#536 id=536 data-nosnippet>536</a><span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>bfs_trampoline&lt;F&gt;(
+<a href=#537 id=537 data-nosnippet>537</a>    _graph: <span class="kw-2">*const </span>igraph_t,
+<a href=#538 id=538 data-nosnippet>538</a>    vid: igraph_int_t,
+<a href=#539 id=539 data-nosnippet>539</a>    pred: igraph_int_t,
+<a href=#540 id=540 data-nosnippet>540</a>    succ: igraph_int_t,
+<a href=#541 id=541 data-nosnippet>541</a>    rank: igraph_int_t,
+<a href=#542 id=542 data-nosnippet>542</a>    dist: igraph_int_t,
+<a href=#543 id=543 data-nosnippet>543</a>    extra: <span class="kw-2">*mut </span>c_void,
+<a href=#544 id=544 data-nosnippet>544</a>) -&gt; igraph_error_t
+<a href=#545 id=545 data-nosnippet>545</a><span class="kw">where
+<a href=#546 id=546 data-nosnippet>546</a>    </span>F: FnMut(BfsVisit) -&gt; ControlFlow&lt;()&gt;,
+<a href=#547 id=547 data-nosnippet>547</a>{
+<a href=#548 id=548 data-nosnippet>548</a>    in_finally_level(|| {
+<a href=#549 id=549 data-nosnippet>549</a>        <span class="comment">// SAFETY: `extra` is the `&amp;mut BfsState&lt;F&gt;` passed by `bfs_impl`,
+<a href=#550 id=550 data-nosnippet>550</a>        // alive and exclusively borrowed for the whole C call.
+<a href=#551 id=551 data-nosnippet>551</a>        </span><span class="kw">let </span>state = <span class="kw">unsafe </span>{ <span class="kw-2">&amp;mut *</span>(extra <span class="kw">as </span><span class="kw-2">*mut </span>BfsState&lt;F&gt;) };
+<a href=#552 id=552 data-nosnippet>552</a>        <span class="kw">let </span>visit = BfsVisit {
+<a href=#553 id=553 data-nosnippet>553</a>            vid,
+<a href=#554 id=554 data-nosnippet>554</a>            pred: (pred &gt;= <span class="number">0</span>).then_some(pred),
+<a href=#555 id=555 data-nosnippet>555</a>            succ: (succ &gt;= <span class="number">0</span>).then_some(succ),
+<a href=#556 id=556 data-nosnippet>556</a>            rank: rank <span class="kw">as </span>usize,
+<a href=#557 id=557 data-nosnippet>557</a>            dist: dist <span class="kw">as </span>usize,
+<a href=#558 id=558 data-nosnippet>558</a>        };
+<a href=#559 id=559 data-nosnippet>559</a>        <span class="kw">let </span>flow = (state.f)(visit);
+<a href=#560 id=560 data-nosnippet>560</a>        flow_to_code(flow, <span class="kw-2">&amp;mut </span>state.stopped)
+<a href=#561 id=561 data-nosnippet>561</a>    })
+<a href=#562 id=562 data-nosnippet>562</a>}
+<a href=#563 id=563 data-nosnippet>563</a>
+<a href=#564 id=564 data-nosnippet>564</a><span class="doccomment">/// State shared by the two DFS trampolines. igraph's own `dist` argument to
+<a href=#565 id=565 data-nosnippet>565</a>/// the out-callback is off by one, and both callbacks' `dist` drift after a
+<a href=#566 id=566 data-nosnippet>566</a>/// restart with
+<a href=#567 id=567 data-nosnippet>567</a>/// `unreachable` (igraph 1.0.0 and 1.0.1: `act_dist` is never reset for a new
+<a href=#568 id=568 data-nosnippet>568</a>/// root), so the depth is tracked here: `depth` is the size of the DFS
+<a href=#569 id=569 data-nosnippet>569</a>/// stack, incremented on discovery and decremented on completion.
+<a href=#570 id=570 data-nosnippet>570</a></span><span class="kw">struct </span>DfsState&lt;F&gt; {
+<a href=#571 id=571 data-nosnippet>571</a>    f: F,
+<a href=#572 id=572 data-nosnippet>572</a>    depth: usize,
+<a href=#573 id=573 data-nosnippet>573</a>    stopped: bool,
+<a href=#574 id=574 data-nosnippet>574</a>}
+<a href=#575 id=575 data-nosnippet>575</a>
+<a href=#576 id=576 data-nosnippet>576</a><span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>dfs_in_trampoline&lt;F&gt;(
+<a href=#577 id=577 data-nosnippet>577</a>    _graph: <span class="kw-2">*const </span>igraph_t,
+<a href=#578 id=578 data-nosnippet>578</a>    vid: igraph_int_t,
+<a href=#579 id=579 data-nosnippet>579</a>    _dist: igraph_int_t,
+<a href=#580 id=580 data-nosnippet>580</a>    extra: <span class="kw-2">*mut </span>c_void,
+<a href=#581 id=581 data-nosnippet>581</a>) -&gt; igraph_error_t
+<a href=#582 id=582 data-nosnippet>582</a><span class="kw">where
+<a href=#583 id=583 data-nosnippet>583</a>    </span>F: FnMut(DfsEvent) -&gt; ControlFlow&lt;()&gt;,
+<a href=#584 id=584 data-nosnippet>584</a>{
+<a href=#585 id=585 data-nosnippet>585</a>    in_finally_level(|| {
+<a href=#586 id=586 data-nosnippet>586</a>        <span class="comment">// SAFETY: see `bfs_trampoline`.
+<a href=#587 id=587 data-nosnippet>587</a>        </span><span class="kw">let </span>state = <span class="kw">unsafe </span>{ <span class="kw-2">&amp;mut *</span>(extra <span class="kw">as </span><span class="kw-2">*mut </span>DfsState&lt;F&gt;) };
+<a href=#588 id=588 data-nosnippet>588</a>        <span class="kw">let </span>dist = state.depth;
+<a href=#589 id=589 data-nosnippet>589</a>        state.depth += <span class="number">1</span>;
+<a href=#590 id=590 data-nosnippet>590</a>        <span class="kw">let </span>flow = (state.f)(DfsEvent::Discover { vid, dist });
+<a href=#591 id=591 data-nosnippet>591</a>        flow_to_code(flow, <span class="kw-2">&amp;mut </span>state.stopped)
+<a href=#592 id=592 data-nosnippet>592</a>    })
+<a href=#593 id=593 data-nosnippet>593</a>}
+<a href=#594 id=594 data-nosnippet>594</a>
+<a href=#595 id=595 data-nosnippet>595</a><span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>dfs_out_trampoline&lt;F&gt;(
+<a href=#596 id=596 data-nosnippet>596</a>    _graph: <span class="kw-2">*const </span>igraph_t,
+<a href=#597 id=597 data-nosnippet>597</a>    vid: igraph_int_t,
+<a href=#598 id=598 data-nosnippet>598</a>    _dist: igraph_int_t,
+<a href=#599 id=599 data-nosnippet>599</a>    extra: <span class="kw-2">*mut </span>c_void,
+<a href=#600 id=600 data-nosnippet>600</a>) -&gt; igraph_error_t
+<a href=#601 id=601 data-nosnippet>601</a><span class="kw">where
+<a href=#602 id=602 data-nosnippet>602</a>    </span>F: FnMut(DfsEvent) -&gt; ControlFlow&lt;()&gt;,
+<a href=#603 id=603 data-nosnippet>603</a>{
+<a href=#604 id=604 data-nosnippet>604</a>    in_finally_level(|| {
+<a href=#605 id=605 data-nosnippet>605</a>        <span class="comment">// SAFETY: see `bfs_trampoline`.
+<a href=#606 id=606 data-nosnippet>606</a>        </span><span class="kw">let </span>state = <span class="kw">unsafe </span>{ <span class="kw-2">&amp;mut *</span>(extra <span class="kw">as </span><span class="kw-2">*mut </span>DfsState&lt;F&gt;) };
+<a href=#607 id=607 data-nosnippet>607</a>        state.depth = state.depth.saturating_sub(<span class="number">1</span>);
+<a href=#608 id=608 data-nosnippet>608</a>        <span class="kw">let </span>dist = state.depth;
+<a href=#609 id=609 data-nosnippet>609</a>        <span class="kw">let </span>flow = (state.f)(DfsEvent::Finish { vid, dist });
+<a href=#610 id=610 data-nosnippet>610</a>        flow_to_code(flow, <span class="kw-2">&amp;mut </span>state.stopped)
+<a href=#611 id=611 data-nosnippet>611</a>    })
+<a href=#612 id=612 data-nosnippet>612</a>}
+<a href=#613 id=613 data-nosnippet>613</a>
+<a href=#614 id=614 data-nosnippet>614</a><span class="comment">// ---------------------------------------------------------------------------
+<a href=#615 id=615 data-nosnippet>615</a>// Graph methods
+<a href=#616 id=616 data-nosnippet>616</a>// ---------------------------------------------------------------------------
+<a href=#617 id=617 data-nosnippet>617</a>
+<a href=#618 id=618 data-nosnippet>618</a></span><span class="kw">impl </span>igraph_t {
+<a href=#619 id=619 data-nosnippet>619</a>    <span class="kw">fn </span>bfs_impl(
+<a href=#620 id=620 data-nosnippet>620</a>        <span class="kw-2">&amp;</span><span class="self">self</span>,
+<a href=#621 id=621 data-nosnippet>621</a>        roots: <span class="kw-2">&amp;</span>[VertexId],
+<a href=#622 id=622 data-nosnippet>622</a>        options: <span class="kw-2">&amp;</span>BfsOptions&lt;<span class="lifetime">'_</span>&gt;,
+<a href=#623 id=623 data-nosnippet>623</a>        callback: igraph_bfshandler_t,
+<a href=#624 id=624 data-nosnippet>624</a>        extra: <span class="kw-2">*mut </span>c_void,
+<a href=#625 id=625 data-nosnippet>625</a>    ) -&gt; <span class="prelude-ty">Result</span>&lt;BfsResult&gt; {
+<a href=#626 id=626 data-nosnippet>626</a>        <span class="kw">if </span><span class="self">self</span>.vcount() == <span class="number">0 </span>{
+<a href=#627 id=627 data-nosnippet>627</a>            <span class="comment">// igraph 1.0.0 and 1.0.1 read out of bounds when `unreachable` is
+<a href=#628 id=628 data-nosnippet>628</a>            // set on the null graph (`IGRAPH_BIT_TEST(added, 0)` on an empty
+<a href=#629 id=629 data-nosnippet>629</a>            // bitset): handle it here (any given id is invalid).
+<a href=#630 id=630 data-nosnippet>630</a>            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>v) = roots.iter().chain(options.restricted.unwrap_or(<span class="kw-2">&amp;</span>[])).next() {
+<a href=#631 id=631 data-nosnippet>631</a>                check_vertex(<span class="self">self</span>, v, <span class="string">"root or restricted"</span>)<span class="question-mark">?</span>;
+<a href=#632 id=632 data-nosnippet>632</a>            }
+<a href=#633 id=633 data-nosnippet>633</a>            <span class="kw">return </span><span class="prelude-val">Ok</span>(BfsResult {
+<a href=#634 id=634 data-nosnippet>634</a>                order: <span class="macro">vec!</span>[],
+<a href=#635 id=635 data-nosnippet>635</a>                rank: <span class="macro">vec!</span>[],
+<a href=#636 id=636 data-nosnippet>636</a>                parents: <span class="macro">vec!</span>[],
+<a href=#637 id=637 data-nosnippet>637</a>                pred: <span class="macro">vec!</span>[],
+<a href=#638 id=638 data-nosnippet>638</a>                succ: <span class="macro">vec!</span>[],
+<a href=#639 id=639 data-nosnippet>639</a>                dist: <span class="macro">vec!</span>[],
+<a href=#640 id=640 data-nosnippet>640</a>                stopped: <span class="bool-val">false</span>,
+<a href=#641 id=641 data-nosnippet>641</a>            });
+<a href=#642 id=642 data-nosnippet>642</a>        }
+<a href=#643 id=643 data-nosnippet>643</a>        <span class="kw">let </span>roots_v = VectorInt::view(roots);
+<a href=#644 id=644 data-nosnippet>644</a>        <span class="kw">let </span>restricted_v = options.restricted.map(VectorInt::view);
+<a href=#645 id=645 data-nosnippet>645</a>        <span class="kw">let </span>restricted_p = restricted_v.as_ref().map_or(ptr::null(), |v| v.as_ptr());
+<a href=#646 id=646 data-nosnippet>646</a>        <span class="kw">let </span><span class="kw-2">mut </span>order = VectorInt::new();
+<a href=#647 id=647 data-nosnippet>647</a>        <span class="kw">let </span><span class="kw-2">mut </span>rank = VectorInt::new();
+<a href=#648 id=648 data-nosnippet>648</a>        <span class="kw">let </span><span class="kw-2">mut </span>parents = VectorInt::new();
+<a href=#649 id=649 data-nosnippet>649</a>        <span class="kw">let </span><span class="kw-2">mut </span>pred = VectorInt::new();
+<a href=#650 id=650 data-nosnippet>650</a>        <span class="kw">let </span><span class="kw-2">mut </span>succ = VectorInt::new();
+<a href=#651 id=651 data-nosnippet>651</a>        <span class="kw">let </span><span class="kw-2">mut </span>dist = VectorInt::new();
+<a href=#652 id=652 data-nosnippet>652</a>        <span class="macro">igraph_call!</span>(igraph_bfs(
+<a href=#653 id=653 data-nosnippet>653</a>            <span class="self">self</span>,
+<a href=#654 id=654 data-nosnippet>654</a>            <span class="number">0</span>,
+<a href=#655 id=655 data-nosnippet>655</a>            roots_v.as_ptr(),
+<a href=#656 id=656 data-nosnippet>656</a>            options.mode.into(),
+<a href=#657 id=657 data-nosnippet>657</a>            options.unreachable,
+<a href=#658 id=658 data-nosnippet>658</a>            restricted_p,
+<a href=#659 id=659 data-nosnippet>659</a>            <span class="kw-2">&amp;mut </span>order,
+<a href=#660 id=660 data-nosnippet>660</a>            <span class="kw-2">&amp;mut </span>rank,
+<a href=#661 id=661 data-nosnippet>661</a>            <span class="kw-2">&amp;mut </span>parents,
+<a href=#662 id=662 data-nosnippet>662</a>            <span class="kw-2">&amp;mut </span>pred,
+<a href=#663 id=663 data-nosnippet>663</a>            <span class="kw-2">&amp;mut </span>succ,
+<a href=#664 id=664 data-nosnippet>664</a>            <span class="kw-2">&amp;mut </span>dist,
+<a href=#665 id=665 data-nosnippet>665</a>            callback,
+<a href=#666 id=666 data-nosnippet>666</a>            extra,
+<a href=#667 id=667 data-nosnippet>667</a>        ))<span class="question-mark">?</span>;
+<a href=#668 id=668 data-nosnippet>668</a>        <span class="kw">let </span>rank = opt_counts(rank);
+<a href=#669 id=669 data-nosnippet>669</a>        <span class="comment">// igraph assigns `parents` when a vertex is *enqueued*, not when it is
+<a href=#670 id=670 data-nosnippet>670</a>        // visited: after an early stop, vertices still waiting in the queue
+<a href=#671 id=671 data-nosnippet>671</a>        // would have a parent but no rank/dist. Keep the documented invariant
+<a href=#672 id=672 data-nosnippet>672</a>        // "parent is `Some` only for visited, non-root vertices".
+<a href=#673 id=673 data-nosnippet>673</a>        </span><span class="kw">let </span>parents = opt_ids(parents)
+<a href=#674 id=674 data-nosnippet>674</a>            .into_iter()
+<a href=#675 id=675 data-nosnippet>675</a>            .zip(<span class="kw-2">&amp;</span>rank)
+<a href=#676 id=676 data-nosnippet>676</a>            .map(|(p, r)| r.and(p))
+<a href=#677 id=677 data-nosnippet>677</a>            .collect();
+<a href=#678 id=678 data-nosnippet>678</a>        <span class="prelude-val">Ok</span>(BfsResult {
+<a href=#679 id=679 data-nosnippet>679</a>            order: visited_prefix(order),
+<a href=#680 id=680 data-nosnippet>680</a>            rank,
+<a href=#681 id=681 data-nosnippet>681</a>            parents,
+<a href=#682 id=682 data-nosnippet>682</a>            pred: opt_ids(pred),
+<a href=#683 id=683 data-nosnippet>683</a>            succ: opt_ids(succ),
+<a href=#684 id=684 data-nosnippet>684</a>            dist: opt_counts(dist),
+<a href=#685 id=685 data-nosnippet>685</a>            stopped: <span class="bool-val">false</span>,
+<a href=#686 id=686 data-nosnippet>686</a>        })
+<a href=#687 id=687 data-nosnippet>687</a>    }
+<a href=#688 id=688 data-nosnippet>688</a>
+<a href=#689 id=689 data-nosnippet>689</a>    <span class="doccomment">/// Breadth-first search from one or more root vertices.
+<a href=#690 id=690 data-nosnippet>690</a>    ///
+<a href=#691 id=691 data-nosnippet>691</a>    /// The search starts from `roots[0]`; when its tree is exhausted, it
+<a href=#692 id=692 data-nosnippet>692</a>    /// continues from the next root in `roots` that was not visited yet, and
+<a href=#693 id=693 data-nosnippet>693</a>    /// so on (roots already reached from a previous one are skipped). If
+<a href=#694 id=694 data-nosnippet>694</a>    /// [`options.unreachable`](BfsOptions::unreachable) is `true`, the
+<a href=#695 id=695 data-nosnippet>695</a>    /// remaining vertices are then used as roots too, in increasing id order,
+<a href=#696 id=696 data-nosnippet>696</a>    /// so that the whole graph is traversed. Neighbors are enqueued in the
+<a href=#697 id=697 data-nosnippet>697</a>    /// order of the graph's adjacency lists (increasing neighbor id). An
+<a href=#698 id=698 data-nosnippet>698</a>    /// empty `roots` slice is allowed: nothing is visited unless
+<a href=#699 id=699 data-nosnippet>699</a>    /// `unreachable` is set.
+<a href=#700 id=700 data-nosnippet>700</a>    ///
+<a href=#701 id=701 data-nosnippet>701</a>    /// The result gathers every output of the C function: the visiting
+<a href=#702 id=702 data-nosnippet>702</a>    /// order, and, for each vertex, its rank, BFS-tree parent, predecessor
+<a href=#703 id=703 data-nosnippet>703</a>    /// and successor in the visiting order, and distance from its root. See
+<a href=#704 id=704 data-nosnippet>704</a>    /// [`BfsResult`]. Use [`Graph::bfs_with`] to run a visitor closure during
+<a href=#705 id=705 data-nosnippet>705</a>    /// the search, and [`Graph::bfs_simple`] for a lighter single-root
+<a href=#706 id=706 data-nosnippet>706</a>    /// variant that also reports distance layers.
+<a href=#707 id=707 data-nosnippet>707</a>    ///
+<a href=#708 id=708 data-nosnippet>708</a>    /// Time complexity: O(|V| + |E|).
+<a href=#709 id=709 data-nosnippet>709</a>    ///
+<a href=#710 id=710 data-nosnippet>710</a>    /// Binds [`igraph_bfs`](https://igraph.org/c/html/latest/igraph-Visitors.html#igraph_bfs).
+<a href=#711 id=711 data-nosnippet>711</a>    ///
+<a href=#712 id=712 data-nosnippet>712</a>    /// See also [`Graph::subcomponent`] (just the set of reachable
+<a href=#713 id=713 data-nosnippet>713</a>    /// vertices), [`Graph::distances`] and [`Graph::get_shortest_paths`]
+<a href=#714 id=714 data-nosnippet>714</a>    /// (weighted distances and paths), [`Graph::connected_components`], and
+<a href=#715 id=715 data-nosnippet>715</a>    /// [`Graph::unfold_tree`] (turns the graph into its BFS tree).
+<a href=#716 id=716 data-nosnippet>716</a>    ///
+<a href=#717 id=717 data-nosnippet>717</a>    /// # Errors
+<a href=#718 id=718 data-nosnippet>718</a>    ///
+<a href=#719 id=719 data-nosnippet>719</a>    /// [`ErrorKind::InvalidVertexId`] if a root or a restricted vertex does
+<a href=#720 id=720 data-nosnippet>720</a>    /// not exist.
+<a href=#721 id=721 data-nosnippet>721</a>    ///
+<a href=#722 id=722 data-nosnippet>722</a>    /// # Examples
+<a href=#723 id=723 data-nosnippet>723</a>    ///
+<a href=#724 id=724 data-nosnippet>724</a>    /// Two disjoint 4-cycles `0-1-2-3` and `4-5-6-7`:
+<a href=#725 id=725 data-nosnippet>725</a>    ///
+<a href=#726 id=726 data-nosnippet>726</a>    /// ```
+<a href=#727 id=727 data-nosnippet>727</a>    /// use igraph::prelude::*;
+<a href=#728 id=728 data-nosnippet>728</a>    /// use igraph::visitor::BfsOptions;
+<a href=#729 id=729 data-nosnippet>729</a>    ///
+<a href=#730 id=730 data-nosnippet>730</a>    /// let square = Graph::ring(4, false, false, true)?;
+<a href=#731 id=731 data-nosnippet>731</a>    /// let g = square.disjoint_union(&amp;square)?;
+<a href=#732 id=732 data-nosnippet>732</a>    /// let r = g.bfs(&amp;[0], &amp;BfsOptions::default())?;
+<a href=#733 id=733 data-nosnippet>733</a>    /// assert_eq!(r.order, [0, 1, 3, 2]);
+<a href=#734 id=734 data-nosnippet>734</a>    /// assert_eq!(r.dist[2], Some(2));
+<a href=#735 id=735 data-nosnippet>735</a>    /// assert!(!r.is_visited(5));
+<a href=#736 id=736 data-nosnippet>736</a>    ///
+<a href=#737 id=737 data-nosnippet>737</a>    /// let all = g.bfs(&amp;[0], &amp;BfsOptions::default().with_unreachable(true))?;
+<a href=#738 id=738 data-nosnippet>738</a>    /// assert_eq!(all.order, [0, 1, 3, 2, 4, 5, 7, 6]);
+<a href=#739 id=739 data-nosnippet>739</a>    /// // One search tree per connected component.
+<a href=#740 id=740 data-nosnippet>740</a>    /// assert_eq!(all.roots(), [0, 4]);
+<a href=#741 id=741 data-nosnippet>741</a>    /// assert_eq!(g.connected_components(Connectedness::Weak)?.count, 2);
+<a href=#742 id=742 data-nosnippet>742</a>    /// # Ok::&lt;(), igraph::Error&gt;(())
+<a href=#743 id=743 data-nosnippet>743</a>    /// ```
+<a href=#744 id=744 data-nosnippet>744</a>    </span><span class="kw">pub fn </span>bfs(<span class="kw-2">&amp;</span><span class="self">self</span>, roots: <span class="kw-2">&amp;</span>[VertexId], options: <span class="kw-2">&amp;</span>BfsOptions&lt;<span class="lifetime">'_</span>&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;BfsResult&gt; {
+<a href=#745 id=745 data-nosnippet>745</a>        <span class="self">self</span>.bfs_impl(roots, options, <span class="prelude-val">None</span>, ptr::null_mut())
+<a href=#746 id=746 data-nosnippet>746</a>    }
+<a href=#747 id=747 data-nosnippet>747</a>
+<a href=#748 id=748 data-nosnippet>748</a>    <span class="doccomment">/// Breadth-first search calling a visitor closure on every visited vertex.
+<a href=#749 id=749 data-nosnippet>749</a>    ///
+<a href=#750 id=750 data-nosnippet>750</a>    /// Same traversal as [`Graph::bfs`]; in addition, `visitor` is called
+<a href=#751 id=751 data-nosnippet>751</a>    /// each time a vertex is *visited* (dequeued), after all its unvisited
+<a href=#752 id=752 data-nosnippet>752</a>    /// neighbors have been enqueued, with a [`BfsVisit`] describing the
+<a href=#753 id=753 data-nosnippet>753</a>    /// vertex, its predecessor and successor in the visiting order, its rank
+<a href=#754 id=754 data-nosnippet>754</a>    /// and its distance from the root.
+<a href=#755 id=755 data-nosnippet>755</a>    ///
+<a href=#756 id=756 data-nosnippet>756</a>    /// Return [`ControlFlow::Continue`] to go on or [`ControlFlow::Break`] to
+<a href=#757 id=757 data-nosnippet>757</a>    /// stop: the search then ends normally, the returned [`BfsResult`] has
+<a href=#758 id=758 data-nosnippet>758</a>    /// [`stopped`](BfsResult::stopped) set, and contains the values computed
+<a href=#759 id=759 data-nosnippet>759</a>    /// so far (the vertices not yet visited are `None`). Note that, when
+<a href=#760 id=760 data-nosnippet>760</a>    /// stopping, the vertex the visitor stopped at has already been visited
+<a href=#761 id=761 data-nosnippet>761</a>    /// (it is in `order`), but its `succ` entry is `None`. If `visitor`
+<a href=#762 id=762 data-nosnippet>762</a>    /// panics, the search is aborted and the panic resumes in the caller.
+<a href=#763 id=763 data-nosnippet>763</a>    ///
+<a href=#764 id=764 data-nosnippet>764</a>    /// Binds [`igraph_bfs`](https://igraph.org/c/html/latest/igraph-Visitors.html#igraph_bfs)
+<a href=#765 id=765 data-nosnippet>765</a>    /// with an [`igraph_bfshandler_t`](https://igraph.org/c/html/latest/igraph-Visitors.html#igraph_bfshandler_t)
+<a href=#766 id=766 data-nosnippet>766</a>    /// callback.
+<a href=#767 id=767 data-nosnippet>767</a>    ///
+<a href=#768 id=768 data-nosnippet>768</a>    /// See also [`Graph::dfs_with`] for the depth-first counterpart.
+<a href=#769 id=769 data-nosnippet>769</a>    ///
+<a href=#770 id=770 data-nosnippet>770</a>    /// # Errors
+<a href=#771 id=771 data-nosnippet>771</a>    ///
+<a href=#772 id=772 data-nosnippet>772</a>    /// Same as [`Graph::bfs`].
+<a href=#773 id=773 data-nosnippet>773</a>    ///
+<a href=#774 id=774 data-nosnippet>774</a>    /// # Examples
+<a href=#775 id=775 data-nosnippet>775</a>    ///
+<a href=#776 id=776 data-nosnippet>776</a>    /// Find the first vertex of a path that is at least three hops away,
+<a href=#777 id=777 data-nosnippet>777</a>    /// without visiting the rest of the graph:
+<a href=#778 id=778 data-nosnippet>778</a>    ///
+<a href=#779 id=779 data-nosnippet>779</a>    /// ```
+<a href=#780 id=780 data-nosnippet>780</a>    /// use igraph::prelude::*;
+<a href=#781 id=781 data-nosnippet>781</a>    /// use igraph::visitor::BfsOptions;
+<a href=#782 id=782 data-nosnippet>782</a>    /// use std::ops::ControlFlow;
+<a href=#783 id=783 data-nosnippet>783</a>    ///
+<a href=#784 id=784 data-nosnippet>784</a>    /// let path = Graph::ring(6, false, false, false)?; // 0 - 1 - 2 - 3 - 4 - 5
+<a href=#785 id=785 data-nosnippet>785</a>    /// let mut seen = vec![];
+<a href=#786 id=786 data-nosnippet>786</a>    /// let r = path.bfs_with(&amp;[0], &amp;BfsOptions::default(), |v| {
+<a href=#787 id=787 data-nosnippet>787</a>    ///     seen.push(v.vid);
+<a href=#788 id=788 data-nosnippet>788</a>    ///     if v.dist &gt;= 3 { ControlFlow::Break(()) } else { ControlFlow::Continue(()) }
+<a href=#789 id=789 data-nosnippet>789</a>    /// })?;
+<a href=#790 id=790 data-nosnippet>790</a>    /// assert_eq!(seen, [0, 1, 2, 3]);
+<a href=#791 id=791 data-nosnippet>791</a>    /// assert!(r.stopped);
+<a href=#792 id=792 data-nosnippet>792</a>    /// assert_eq!(r.order, [0, 1, 2, 3]);
+<a href=#793 id=793 data-nosnippet>793</a>    /// assert_eq!(r.rank[5], None);
+<a href=#794 id=794 data-nosnippet>794</a>    /// # Ok::&lt;(), igraph::Error&gt;(())
+<a href=#795 id=795 data-nosnippet>795</a>    /// ```
+<a href=#796 id=796 data-nosnippet>796</a>    </span><span class="kw">pub fn </span>bfs_with&lt;F&gt;(
+<a href=#797 id=797 data-nosnippet>797</a>        <span class="kw-2">&amp;</span><span class="self">self</span>,
+<a href=#798 id=798 data-nosnippet>798</a>        roots: <span class="kw-2">&amp;</span>[VertexId],
+<a href=#799 id=799 data-nosnippet>799</a>        options: <span class="kw-2">&amp;</span>BfsOptions&lt;<span class="lifetime">'_</span>&gt;,
+<a href=#800 id=800 data-nosnippet>800</a>        visitor: F,
+<a href=#801 id=801 data-nosnippet>801</a>    ) -&gt; <span class="prelude-ty">Result</span>&lt;BfsResult&gt;
+<a href=#802 id=802 data-nosnippet>802</a>    <span class="kw">where
+<a href=#803 id=803 data-nosnippet>803</a>        </span>F: FnMut(BfsVisit) -&gt; ControlFlow&lt;()&gt;,
+<a href=#804 id=804 data-nosnippet>804</a>    {
+<a href=#805 id=805 data-nosnippet>805</a>        <span class="kw">let </span><span class="kw-2">mut </span>state = BfsState {
+<a href=#806 id=806 data-nosnippet>806</a>            f: visitor,
+<a href=#807 id=807 data-nosnippet>807</a>            stopped: <span class="bool-val">false</span>,
+<a href=#808 id=808 data-nosnippet>808</a>        };
+<a href=#809 id=809 data-nosnippet>809</a>        <span class="kw">let </span>extra = <span class="kw-2">&amp;mut </span>state <span class="kw">as </span><span class="kw-2">*mut </span>BfsState&lt;F&gt; <span class="kw">as </span><span class="kw-2">*mut </span>c_void;
+<a href=#810 id=810 data-nosnippet>810</a>        <span class="kw">let </span><span class="kw-2">mut </span>result = <span class="self">self</span>.bfs_impl(roots, options, <span class="prelude-val">Some</span>(bfs_trampoline::&lt;F&gt;), extra)<span class="question-mark">?</span>;
+<a href=#811 id=811 data-nosnippet>811</a>        result.stopped = state.stopped;
+<a href=#812 id=812 data-nosnippet>812</a>        <span class="prelude-val">Ok</span>(result)
+<a href=#813 id=813 data-nosnippet>813</a>    }
+<a href=#814 id=814 data-nosnippet>814</a>
+<a href=#815 id=815 data-nosnippet>815</a>    <span class="doccomment">/// Simple single-source breadth-first search, reporting distance layers.
+<a href=#816 id=816 data-nosnippet>816</a>    ///
+<a href=#817 id=817 data-nosnippet>817</a>    /// Visits the vertices reachable from `root` (following edges according
+<a href=#818 id=818 data-nosnippet>818</a>    /// to `mode` in directed graphs; `mode` is ignored for undirected graphs)
+<a href=#819 id=819 data-nosnippet>819</a>    /// and returns the visiting order, the *layers* (vertices grouped by
+<a href=#820 id=820 data-nosnippet>820</a>    /// their distance from `root`) and the BFS-tree parents. This is the
+<a href=#821 id=821 data-nosnippet>821</a>    /// lighter alternative to [`Graph::bfs`] when only these outputs matter.
+<a href=#822 id=822 data-nosnippet>822</a>    ///
+<a href=#823 id=823 data-nosnippet>823</a>    /// Time complexity: O(|V| + |E|).
+<a href=#824 id=824 data-nosnippet>824</a>    ///
+<a href=#825 id=825 data-nosnippet>825</a>    /// Binds [`igraph_bfs_simple`](https://igraph.org/c/html/latest/igraph-Visitors.html#igraph_bfs_simple).
+<a href=#826 id=826 data-nosnippet>826</a>    ///
+<a href=#827 id=827 data-nosnippet>827</a>    /// See also [`Graph::neighborhood`] (the vertices within a number of
+<a href=#828 id=828 data-nosnippet>828</a>    /// hops, possibly from several roots) and [`Graph::eccentricity`] (which,
+<a href=#829 id=829 data-nosnippet>829</a>    /// computed with the same `mode`, is `num_layers() - 1`: igraph ignores
+<a href=#830 id=830 data-nosnippet>830</a>    /// unreachable vertices there too).
+<a href=#831 id=831 data-nosnippet>831</a>    ///
+<a href=#832 id=832 data-nosnippet>832</a>    /// # Errors
+<a href=#833 id=833 data-nosnippet>833</a>    ///
+<a href=#834 id=834 data-nosnippet>834</a>    /// [`ErrorKind::InvalidVertexId`] if `root` does not exist (checked on
+<a href=#835 id=835 data-nosnippet>835</a>    /// the Rust side: igraph 1.0.0 and 1.0.1 do not validate it).
+<a href=#836 id=836 data-nosnippet>836</a>    ///
+<a href=#837 id=837 data-nosnippet>837</a>    /// # Examples
+<a href=#838 id=838 data-nosnippet>838</a>    ///
+<a href=#839 id=839 data-nosnippet>839</a>    /// The layers of a complete binary tree with 7 vertices:
+<a href=#840 id=840 data-nosnippet>840</a>    ///
+<a href=#841 id=841 data-nosnippet>841</a>    /// ```
+<a href=#842 id=842 data-nosnippet>842</a>    /// use igraph::prelude::*;
+<a href=#843 id=843 data-nosnippet>843</a>    ///
+<a href=#844 id=844 data-nosnippet>844</a>    /// let t = Graph::kary_tree(7, 2, TreeMode::Undirected)?;
+<a href=#845 id=845 data-nosnippet>845</a>    /// let r = t.bfs_simple(0, NeighborMode::All)?;
+<a href=#846 id=846 data-nosnippet>846</a>    /// assert_eq!(r.num_layers(), 3);
+<a href=#847 id=847 data-nosnippet>847</a>    /// assert_eq!(r.layer(0), [0]);
+<a href=#848 id=848 data-nosnippet>848</a>    /// assert_eq!(r.layer(1), [1, 2]);
+<a href=#849 id=849 data-nosnippet>849</a>    /// assert_eq!(r.layer(2), [3, 4, 5, 6]);
+<a href=#850 id=850 data-nosnippet>850</a>    /// assert_eq!(r.parents[4], Some(1));
+<a href=#851 id=851 data-nosnippet>851</a>    /// // The eccentricity of the root is the index of the last layer.
+<a href=#852 id=852 data-nosnippet>852</a>    /// assert_eq!(t.eccentricity(0, None, NeighborMode::All)?, [2.0]);
+<a href=#853 id=853 data-nosnippet>853</a>    /// # Ok::&lt;(), igraph::Error&gt;(())
+<a href=#854 id=854 data-nosnippet>854</a>    /// ```
+<a href=#855 id=855 data-nosnippet>855</a>    </span><span class="kw">pub fn </span>bfs_simple(<span class="kw-2">&amp;</span><span class="self">self</span>, root: VertexId, mode: NeighborMode) -&gt; <span class="prelude-ty">Result</span>&lt;BfsSimpleResult&gt; {
+<a href=#856 id=856 data-nosnippet>856</a>        check_vertex(<span class="self">self</span>, root, <span class="string">"root"</span>)<span class="question-mark">?</span>;
+<a href=#857 id=857 data-nosnippet>857</a>        <span class="kw">let </span><span class="kw-2">mut </span>order = VectorInt::new();
+<a href=#858 id=858 data-nosnippet>858</a>        <span class="kw">let </span><span class="kw-2">mut </span>layers = VectorInt::new();
+<a href=#859 id=859 data-nosnippet>859</a>        <span class="kw">let </span><span class="kw-2">mut </span>parents = VectorInt::new();
+<a href=#860 id=860 data-nosnippet>860</a>        <span class="macro">igraph_call!</span>(igraph_bfs_simple(
+<a href=#861 id=861 data-nosnippet>861</a>            <span class="self">self</span>,
+<a href=#862 id=862 data-nosnippet>862</a>            root,
+<a href=#863 id=863 data-nosnippet>863</a>            mode.into(),
+<a href=#864 id=864 data-nosnippet>864</a>            <span class="kw-2">&amp;mut </span>order,
+<a href=#865 id=865 data-nosnippet>865</a>            <span class="kw-2">&amp;mut </span>layers,
+<a href=#866 id=866 data-nosnippet>866</a>            <span class="kw-2">&amp;mut </span>parents,
+<a href=#867 id=867 data-nosnippet>867</a>        ))<span class="question-mark">?</span>;
+<a href=#868 id=868 data-nosnippet>868</a>        <span class="prelude-val">Ok</span>(BfsSimpleResult {
+<a href=#869 id=869 data-nosnippet>869</a>            order: order.into(),
+<a href=#870 id=870 data-nosnippet>870</a>            layers: layers.iter().map(|<span class="kw-2">&amp;</span>x| x <span class="kw">as </span>usize).collect(),
+<a href=#871 id=871 data-nosnippet>871</a>            parents: opt_ids(parents),
+<a href=#872 id=872 data-nosnippet>872</a>        })
+<a href=#873 id=873 data-nosnippet>873</a>    }
+<a href=#874 id=874 data-nosnippet>874</a>
+<a href=#875 id=875 data-nosnippet>875</a>    <span class="kw">fn </span>dfs_impl(
+<a href=#876 id=876 data-nosnippet>876</a>        <span class="kw-2">&amp;</span><span class="self">self</span>,
+<a href=#877 id=877 data-nosnippet>877</a>        root: VertexId,
+<a href=#878 id=878 data-nosnippet>878</a>        options: <span class="kw-2">&amp;</span>DfsOptions,
+<a href=#879 id=879 data-nosnippet>879</a>        callbacks: (igraph_dfshandler_t, igraph_dfshandler_t),
+<a href=#880 id=880 data-nosnippet>880</a>        extra: <span class="kw-2">*mut </span>c_void,
+<a href=#881 id=881 data-nosnippet>881</a>    ) -&gt; <span class="prelude-ty">Result</span>&lt;DfsResult&gt; {
+<a href=#882 id=882 data-nosnippet>882</a>        check_vertex(<span class="self">self</span>, root, <span class="string">"root"</span>)<span class="question-mark">?</span>;
+<a href=#883 id=883 data-nosnippet>883</a>        <span class="kw">let </span><span class="kw-2">mut </span>order = VectorInt::new();
+<a href=#884 id=884 data-nosnippet>884</a>        <span class="kw">let </span><span class="kw-2">mut </span>order_out = VectorInt::new();
+<a href=#885 id=885 data-nosnippet>885</a>        <span class="kw">let </span><span class="kw-2">mut </span>parents = VectorInt::new();
+<a href=#886 id=886 data-nosnippet>886</a>        <span class="macro">igraph_call!</span>(igraph_dfs(
+<a href=#887 id=887 data-nosnippet>887</a>            <span class="self">self</span>,
+<a href=#888 id=888 data-nosnippet>888</a>            root,
+<a href=#889 id=889 data-nosnippet>889</a>            options.mode.into(),
+<a href=#890 id=890 data-nosnippet>890</a>            options.unreachable,
+<a href=#891 id=891 data-nosnippet>891</a>            <span class="kw-2">&amp;mut </span>order,
+<a href=#892 id=892 data-nosnippet>892</a>            <span class="kw-2">&amp;mut </span>order_out,
+<a href=#893 id=893 data-nosnippet>893</a>            <span class="kw-2">&amp;mut </span>parents,
+<a href=#894 id=894 data-nosnippet>894</a>            ptr::null_mut(),
+<a href=#895 id=895 data-nosnippet>895</a>            callbacks.<span class="number">0</span>,
+<a href=#896 id=896 data-nosnippet>896</a>            callbacks.<span class="number">1</span>,
+<a href=#897 id=897 data-nosnippet>897</a>            extra,
+<a href=#898 id=898 data-nosnippet>898</a>        ))<span class="question-mark">?</span>;
+<a href=#899 id=899 data-nosnippet>899</a>        <span class="kw">let </span>order = visited_prefix(order);
+<a href=#900 id=900 data-nosnippet>900</a>        <span class="kw">let </span>parents = opt_ids(parents);
+<a href=#901 id=901 data-nosnippet>901</a>        <span class="comment">// igraph's `dist` output drifts after a restart with `unreachable`
+<a href=#902 id=902 data-nosnippet>902</a>        // (igraph 1.0.0 and 1.0.1); recompute it from the parents, which are
+<a href=#903 id=903 data-nosnippet>903</a>        // always exact. Parents are
+<a href=#904 id=904 data-nosnippet>904</a>        // discovered before their children, so one pass in `order` suffices.
+<a href=#905 id=905 data-nosnippet>905</a>        </span><span class="kw">let </span><span class="kw-2">mut </span>dist: Vec&lt;<span class="prelude-ty">Option</span>&lt;usize&gt;&gt; = <span class="macro">vec!</span>[<span class="prelude-val">None</span>; <span class="self">self</span>.vcount()];
+<a href=#906 id=906 data-nosnippet>906</a>        <span class="kw">for </span><span class="kw-2">&amp;</span>v <span class="kw">in </span><span class="kw-2">&amp;</span>order {
+<a href=#907 id=907 data-nosnippet>907</a>            dist[v <span class="kw">as </span>usize] = <span class="prelude-val">Some</span>(<span class="kw">match </span>parents[v <span class="kw">as </span>usize] {
+<a href=#908 id=908 data-nosnippet>908</a>                <span class="prelude-val">Some</span>(p) =&gt; dist[p <span class="kw">as </span>usize].map_or(<span class="number">0</span>, |d| d + <span class="number">1</span>),
+<a href=#909 id=909 data-nosnippet>909</a>                <span class="prelude-val">None </span>=&gt; <span class="number">0</span>,
+<a href=#910 id=910 data-nosnippet>910</a>            });
+<a href=#911 id=911 data-nosnippet>911</a>        }
+<a href=#912 id=912 data-nosnippet>912</a>        <span class="prelude-val">Ok</span>(DfsResult {
+<a href=#913 id=913 data-nosnippet>913</a>            order,
+<a href=#914 id=914 data-nosnippet>914</a>            order_out: visited_prefix(order_out),
+<a href=#915 id=915 data-nosnippet>915</a>            parents,
+<a href=#916 id=916 data-nosnippet>916</a>            dist,
+<a href=#917 id=917 data-nosnippet>917</a>            stopped: <span class="bool-val">false</span>,
+<a href=#918 id=918 data-nosnippet>918</a>        })
+<a href=#919 id=919 data-nosnippet>919</a>    }
+<a href=#920 id=920 data-nosnippet>920</a>
+<a href=#921 id=921 data-nosnippet>921</a>    <span class="doccomment">/// Depth-first search from a root vertex.
+<a href=#922 id=922 data-nosnippet>922</a>    ///
+<a href=#923 id=923 data-nosnippet>923</a>    /// Explores the graph depth first from `root`, following edges according
+<a href=#924 id=924 data-nosnippet>924</a>    /// to [`options.mode`](DfsOptions::mode) in directed graphs; neighbors
+<a href=#925 id=925 data-nosnippet>925</a>    /// are tried in adjacency list order (increasing neighbor id). If
+<a href=#926 id=926 data-nosnippet>926</a>    /// [`options.unreachable`](DfsOptions::unreachable) is set, further
+<a href=#927 id=927 data-nosnippet>927</a>    /// searches are started from the unvisited vertices, in
+<a href=#928 id=928 data-nosnippet>928</a>    /// increasing id order, until all vertices are visited.
+<a href=#929 id=929 data-nosnippet>929</a>    ///
+<a href=#930 id=930 data-nosnippet>930</a>    /// Returns the discovery order (pre-order), the completion order
+<a href=#931 id=931 data-nosnippet>931</a>    /// (post-order), the DFS-forest parents and the depth of each vertex,
+<a href=#932 id=932 data-nosnippet>932</a>    /// see [`DfsResult`]. Use [`Graph::dfs_with`] to react to discovery and
+<a href=#933 id=933 data-nosnippet>933</a>    /// completion events while the search runs.
+<a href=#934 id=934 data-nosnippet>934</a>    ///
+<a href=#935 id=935 data-nosnippet>935</a>    /// Time complexity: O(|V| + |E|).
+<a href=#936 id=936 data-nosnippet>936</a>    ///
+<a href=#937 id=937 data-nosnippet>937</a>    /// Binds [`igraph_dfs`](https://igraph.org/c/html/latest/igraph-Visitors.html#igraph_dfs).
+<a href=#938 id=938 data-nosnippet>938</a>    ///
+<a href=#939 id=939 data-nosnippet>939</a>    /// See also [`Graph::topological_sorting`], [`Graph::is_dag`] and
+<a href=#940 id=940 data-nosnippet>940</a>    /// [`Graph::find_cycle`] (in [`crate::cycles`]), which answer the most
+<a href=#941 id=941 data-nosnippet>941</a>    /// common DFS questions directly, and [`Graph::biconnected_components`].
+<a href=#942 id=942 data-nosnippet>942</a>    ///
+<a href=#943 id=943 data-nosnippet>943</a>    /// # Errors
+<a href=#944 id=944 data-nosnippet>944</a>    ///
+<a href=#945 id=945 data-nosnippet>945</a>    /// [`ErrorKind::InvalidVertexId`] if `root` does not exist (checked on
+<a href=#946 id=946 data-nosnippet>946</a>    /// the Rust side; igraph 1.0.0 and 1.0.1 would report
+<a href=#947 id=947 data-nosnippet>947</a>    /// [`ErrorKind::InvalidValue`]). In particular, the graph must have at
+<a href=#948 id=948 data-nosnippet>948</a>    /// least one vertex.
+<a href=#949 id=949 data-nosnippet>949</a>    ///
+<a href=#950 id=950 data-nosnippet>950</a>    /// # Examples
+<a href=#951 id=951 data-nosnippet>951</a>    ///
+<a href=#952 id=952 data-nosnippet>952</a>    /// A reverse post-order of a DAG is a topological order:
+<a href=#953 id=953 data-nosnippet>953</a>    ///
+<a href=#954 id=954 data-nosnippet>954</a>    /// ```
+<a href=#955 id=955 data-nosnippet>955</a>    /// use igraph::prelude::*;
+<a href=#956 id=956 data-nosnippet>956</a>    /// use igraph::visitor::DfsOptions;
+<a href=#957 id=957 data-nosnippet>957</a>    ///
+<a href=#958 id=958 data-nosnippet>958</a>    /// // 0 → 1 → 3, 0 → 2 → 3
+<a href=#959 id=959 data-nosnippet>959</a>    /// let dag = Graph::from_edges(&amp;[(0, 1), (0, 2), (1, 3), (2, 3)], 4, true)?;
+<a href=#960 id=960 data-nosnippet>960</a>    /// let r = dag.dfs(0, &amp;DfsOptions::default())?;
+<a href=#961 id=961 data-nosnippet>961</a>    /// assert_eq!(r.order, [0, 1, 3, 2]);
+<a href=#962 id=962 data-nosnippet>962</a>    /// assert_eq!(r.order_out, [3, 1, 2, 0]);
+<a href=#963 id=963 data-nosnippet>963</a>    /// let topo: Vec&lt;_&gt; = r.order_out.iter().rev().copied().collect();
+<a href=#964 id=964 data-nosnippet>964</a>    /// assert_eq!(topo, [0, 2, 1, 3]);
+<a href=#965 id=965 data-nosnippet>965</a>    /// assert_eq!(r.dist[3], Some(2));
+<a href=#966 id=966 data-nosnippet>966</a>    /// // `topological_sorting` finds another valid order (Kahn's algorithm).
+<a href=#967 id=967 data-nosnippet>967</a>    /// assert_eq!(dag.topological_sorting(NeighborMode::Out)?, [0, 1, 2, 3]);
+<a href=#968 id=968 data-nosnippet>968</a>    /// # Ok::&lt;(), igraph::Error&gt;(())
+<a href=#969 id=969 data-nosnippet>969</a>    /// ```
+<a href=#970 id=970 data-nosnippet>970</a>    </span><span class="kw">pub fn </span>dfs(<span class="kw-2">&amp;</span><span class="self">self</span>, root: VertexId, options: <span class="kw-2">&amp;</span>DfsOptions) -&gt; <span class="prelude-ty">Result</span>&lt;DfsResult&gt; {
+<a href=#971 id=971 data-nosnippet>971</a>        <span class="self">self</span>.dfs_impl(root, options, (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>), ptr::null_mut())
+<a href=#972 id=972 data-nosnippet>972</a>    }
+<a href=#973 id=973 data-nosnippet>973</a>
+<a href=#974 id=974 data-nosnippet>974</a>    <span class="doccomment">/// Depth-first search calling a visitor closure on discovery and
+<a href=#975 id=975 data-nosnippet>975</a>    /// completion of every vertex.
+<a href=#976 id=976 data-nosnippet>976</a>    ///
+<a href=#977 id=977 data-nosnippet>977</a>    /// Same traversal as [`Graph::dfs`]; in addition `visitor` receives a
+<a href=#978 id=978 data-nosnippet>978</a>    /// [`DfsEvent::Discover`] when a vertex is first reached and a
+<a href=#979 id=979 data-nosnippet>979</a>    /// [`DfsEvent::Finish`] when its whole subtree has been explored (the
+<a href=#980 id=980 data-nosnippet>980</a>    /// two C callbacks `in_callback` and `out_callback`, merged in a single
+<a href=#981 id=981 data-nosnippet>981</a>    /// closure so that they can share mutable state). Both events carry the
+<a href=#982 id=982 data-nosnippet>982</a>    /// depth of the vertex in its DFS tree.
+<a href=#983 id=983 data-nosnippet>983</a>    ///
+<a href=#984 id=984 data-nosnippet>984</a>    /// Return [`ControlFlow::Break`] to stop the search: the call still
+<a href=#985 id=985 data-nosnippet>985</a>    /// returns `Ok` with the partial results and
+<a href=#986 id=986 data-nosnippet>986</a>    /// [`stopped`](DfsResult::stopped) set. If `visitor` panics, the search
+<a href=#987 id=987 data-nosnippet>987</a>    /// is aborted and the panic resumes in the caller.
+<a href=#988 id=988 data-nosnippet>988</a>    ///
+<a href=#989 id=989 data-nosnippet>989</a>    /// Binds [`igraph_dfs`](https://igraph.org/c/html/latest/igraph-Visitors.html#igraph_dfs)
+<a href=#990 id=990 data-nosnippet>990</a>    /// with two [`igraph_dfshandler_t`](https://igraph.org/c/html/latest/igraph-Visitors.html#igraph_dfshandler_t)
+<a href=#991 id=991 data-nosnippet>991</a>    /// callbacks.
+<a href=#992 id=992 data-nosnippet>992</a>    ///
+<a href=#993 id=993 data-nosnippet>993</a>    /// See also [`Graph::bfs_with`] for the breadth-first counterpart.
+<a href=#994 id=994 data-nosnippet>994</a>    ///
+<a href=#995 id=995 data-nosnippet>995</a>    /// # Errors
+<a href=#996 id=996 data-nosnippet>996</a>    ///
+<a href=#997 id=997 data-nosnippet>997</a>    /// Same as [`Graph::dfs`].
+<a href=#998 id=998 data-nosnippet>998</a>    ///
+<a href=#999 id=999 data-nosnippet>999</a>    /// # Examples
+<a href=#1000 id=1000 data-nosnippet>1000</a>    ///
+<a href=#1001 id=1001 data-nosnippet>1001</a>    /// Print a tree as an indented outline, using the discovery events:
+<a href=#1002 id=1002 data-nosnippet>1002</a>    ///
+<a href=#1003 id=1003 data-nosnippet>1003</a>    /// ```
+<a href=#1004 id=1004 data-nosnippet>1004</a>    /// use igraph::prelude::*;
+<a href=#1005 id=1005 data-nosnippet>1005</a>    /// use igraph::visitor::{DfsEvent, DfsOptions};
+<a href=#1006 id=1006 data-nosnippet>1006</a>    /// use std::ops::ControlFlow;
+<a href=#1007 id=1007 data-nosnippet>1007</a>    ///
+<a href=#1008 id=1008 data-nosnippet>1008</a>    /// let t = Graph::from_edges(&amp;[(0, 1), (0, 2), (1, 3)], 4, false)?;
+<a href=#1009 id=1009 data-nosnippet>1009</a>    /// let mut outline = String::new();
+<a href=#1010 id=1010 data-nosnippet>1010</a>    /// t.dfs_with(0, &amp;DfsOptions::default(), |e| {
+<a href=#1011 id=1011 data-nosnippet>1011</a>    ///     if let DfsEvent::Discover { vid, dist } = e {
+<a href=#1012 id=1012 data-nosnippet>1012</a>    ///         outline += &amp;format!("{}{vid}\n", "  ".repeat(dist));
+<a href=#1013 id=1013 data-nosnippet>1013</a>    ///     }
+<a href=#1014 id=1014 data-nosnippet>1014</a>    ///     ControlFlow::Continue(())
+<a href=#1015 id=1015 data-nosnippet>1015</a>    /// })?;
+<a href=#1016 id=1016 data-nosnippet>1016</a>    /// assert_eq!(outline, "0\n  1\n    3\n  2\n");
+<a href=#1017 id=1017 data-nosnippet>1017</a>    /// # Ok::&lt;(), igraph::Error&gt;(())
+<a href=#1018 id=1018 data-nosnippet>1018</a>    /// ```
+<a href=#1019 id=1019 data-nosnippet>1019</a>    </span><span class="kw">pub fn </span>dfs_with&lt;F&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, root: VertexId, options: <span class="kw-2">&amp;</span>DfsOptions, visitor: F) -&gt; <span class="prelude-ty">Result</span>&lt;DfsResult&gt;
+<a href=#1020 id=1020 data-nosnippet>1020</a>    <span class="kw">where
+<a href=#1021 id=1021 data-nosnippet>1021</a>        </span>F: FnMut(DfsEvent) -&gt; ControlFlow&lt;()&gt;,
+<a href=#1022 id=1022 data-nosnippet>1022</a>    {
+<a href=#1023 id=1023 data-nosnippet>1023</a>        <span class="kw">let </span><span class="kw-2">mut </span>state = DfsState {
+<a href=#1024 id=1024 data-nosnippet>1024</a>            f: visitor,
+<a href=#1025 id=1025 data-nosnippet>1025</a>            depth: <span class="number">0</span>,
+<a href=#1026 id=1026 data-nosnippet>1026</a>            stopped: <span class="bool-val">false</span>,
+<a href=#1027 id=1027 data-nosnippet>1027</a>        };
+<a href=#1028 id=1028 data-nosnippet>1028</a>        <span class="kw">let </span>extra = <span class="kw-2">&amp;mut </span>state <span class="kw">as </span><span class="kw-2">*mut </span>DfsState&lt;F&gt; <span class="kw">as </span><span class="kw-2">*mut </span>c_void;
+<a href=#1029 id=1029 data-nosnippet>1029</a>        <span class="kw">let </span>callbacks = (
+<a href=#1030 id=1030 data-nosnippet>1030</a>            <span class="prelude-val">Some</span>(dfs_in_trampoline::&lt;F&gt; <span class="kw">as _</span>),
+<a href=#1031 id=1031 data-nosnippet>1031</a>            <span class="prelude-val">Some</span>(dfs_out_trampoline::&lt;F&gt; <span class="kw">as _</span>),
+<a href=#1032 id=1032 data-nosnippet>1032</a>        );
+<a href=#1033 id=1033 data-nosnippet>1033</a>        <span class="kw">let </span><span class="kw-2">mut </span>result = <span class="self">self</span>.dfs_impl(root, options, callbacks, extra)<span class="question-mark">?</span>;
+<a href=#1034 id=1034 data-nosnippet>1034</a>        result.stopped = state.stopped;
+<a href=#1035 id=1035 data-nosnippet>1035</a>        <span class="prelude-val">Ok</span>(result)
+<a href=#1036 id=1036 data-nosnippet>1036</a>    }
+<a href=#1037 id=1037 data-nosnippet>1037</a>}
+</code></pre></div></section></main></body></html>

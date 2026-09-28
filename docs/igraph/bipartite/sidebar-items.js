@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["UNMATCHED"],"struct":["Biadjacency","BipartiteGameOptions","BipartiteGraph","BipartiteMatching","BipartiteProjection","ProjectionSize","WeightedBipartiteGraph"]};

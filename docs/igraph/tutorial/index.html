@@ -1,0 +1,107 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Translations of the igraph C tutorial into Rust."><title>igraph::tutorial - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-1ed95124.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="igraph" data-themes="" data-resource-suffix="" data-rustdoc-version="1.98.1 (48a229cea 2026-09-01)" data-channel="1.98.1" data-search-js="search-9944d736.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../static.files/main-417ebf0a.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Module tutorial</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../igraph/index.html">igraph</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module tutorial</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#lesson-1-compiling-programs-using-igraph" title="Lesson 1: compiling programs using igraph">Lesson 1: compiling programs using igraph</a></li><li><a href="#lesson-2-creating-your-first-graphs" title="Lesson 2: creating your first graphs">Lesson 2: creating your first graphs</a></li><li><a href="#lesson-3-calculating-various-properties-of-graphs" title="Lesson 3: calculating various properties of graphs">Lesson 3: calculating various properties of graphs</a></li></ul><h3><a href="#structs">Module Items</a></h3><ul class="block"><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#constants" title="Constants">Constants</a></li><li><a href="#functions" title="Functions">Functions</a></li></ul></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="../index.html">In crate igraph</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../index.html">igraph</a></div><h1>Module <span>tutorial</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/igraph/tutorial.rs.html#1-740">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Translations of the <a href="https://igraph.org/c/html/latest/igraph-Tutorial.html">igraph C tutorial</a>
+into Rust.</p>
+<p>The igraph C reference manual opens with a tutorial made of three short
+lessons, whose programs live in <code>examples/tutorial/tutorial{1,2,3}.c</code> of
+the igraph sources. This module translates each of them, one public
+function per lesson, keeping the <em>same steps in the same order</em> (and hence
+the same pseudo-random draws), so that the Rust versions compute exactly
+the numbers printed by the C programs with igraph 1.0.1:</p>
+<div><table><thead><tr><th>Lesson</th><th>Rust</th><th>C program prints</th></tr></thead><tbody>
+<tr><td><a href="https://igraph.org/c/html/latest/igraph-Tutorial.html#tut-lesson-1">1. Compiling programs using igraph</a></td><td><a href="fn.example_1.html" title="fn igraph::tutorial::example_1"><code>example_1</code></a> → <a href="struct.RandomGraphStats.html" title="struct igraph::tutorial::RandomGraphStats"><code>RandomGraphStats</code></a></td><td><code>Diameter of a random graph with average degree 2: 23</code></td></tr>
+<tr><td><a href="https://igraph.org/c/html/latest/igraph-Tutorial.html#tut-lesson-2">2. Creating your first graphs</a></td><td><a href="fn.example_2.html" title="fn igraph::tutorial::example_2"><code>example_2</code></a> → <a href="struct.LatticePathLengths.html" title="struct igraph::tutorial::LatticePathLengths"><code>LatticePathLengths</code></a></td><td><code>Average path length (lattice): 15.0167</code>, then <code>11.8142</code> once randomized</td></tr>
+<tr><td><a href="https://igraph.org/c/html/latest/igraph-Tutorial.html#tut-lesson-3">3. Calculating various properties of graphs</a></td><td><a href="fn.example_3.html" title="fn igraph::tutorial::example_3"><code>example_3</code></a> → <a href="struct.KarateCentralities.html" title="struct igraph::tutorial::KarateCentralities"><code>KarateCentralities</code></a></td><td>maximum degree 17, closeness 0.0172414, betweenness 231.071</td></tr>
+</tbody></table>
+</div>
+<p>Every result struct implements <a href="https://doc.rust-lang.org/1.98.1/core/fmt/trait.Display.html" title="trait core::fmt::Display"><code>Display</code></a> reproducing,
+character by character, the lines printed by the corresponding C program
+(including C’s <code>%g</code> number formatting), so the translation can be checked
+against the original at a glance:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>igraph::tutorial;
+
+<span class="macro">println!</span>(<span class="string">"{}"</span>, tutorial::example_1()<span class="question-mark">?</span>);
+<span class="macro">println!</span>(<span class="string">"{}"</span>, tutorial::example_2()<span class="question-mark">?</span>);
+<span class="macro">println!</span>(<span class="string">"{}"</span>, tutorial::example_3()<span class="question-mark">?</span>);
+<span class="macro">assert_eq!</span>(
+    tutorial::example_1()<span class="question-mark">?</span>.to_string(),
+    <span class="string">"Diameter of a random graph with average degree 2: 23"
+</span>);</code></pre></div><h2 id="lesson-1-compiling-programs-using-igraph"><a class="doc-anchor" href="#lesson-1-compiling-programs-using-igraph">§</a>Lesson 1: compiling programs using igraph</h2>
+<p>The first program generates a random graph and prints its diameter and
+mean degree. The C tutorial uses it to illustrate a few points, and each
+of them has a Rust counterpart:</p>
+<ul>
+<li>C programs include <code>igraph.h</code>; in Rust, <code>use igraph::prelude::*;</code> brings
+the graph type, the containers and the enums into scope.</li>
+<li>C programs must call <code>igraph_setup()</code> before anything else. The Rust
+bindings do it for you: every call into igraph first makes sure the
+library (and the calling thread’s error handler and random number
+generator) is initialized.</li>
+<li>igraph uses <code>igraph_int_t</code> for integers and <code>igraph_real_t</code> for reals:
+these are <code>i64</code> and <code>f64</code> in Rust. Vertex and edge ids are
+<a href="../graph/type.VertexId.html" title="type igraph::graph::VertexId"><code>VertexId</code></a> and <a href="../graph/type.EdgeId.html" title="type igraph::graph::EdgeId"><code>EdgeId</code></a> (both <code>i64</code>), counts are <code>usize</code>.</li>
+<li>Graphs are <code>igraph_t</code> objects, which is exactly what <a href="../graph/type.Graph.html" title="type igraph::graph::Graph"><code>Graph</code></a> is (a type
+alias enriched with methods). Generators such as
+<a href="../ffi/struct.igraph_t.html#method.erdos_renyi_game_gnm" title="associated function igraph::ffi::igraph_t::erdos_renyi_game_gnm"><code>Graph::erdos_renyi_game_gnm</code></a> create them; where C calls
+<code>igraph_destroy()</code>, Rust frees the graph automatically when it goes out
+of scope.</li>
+<li>C functions return an error code; the Rust methods return a
+<a href="../error/type.Result.html" title="type igraph::error::Result"><code>Result</code></a>, propagated with <code>?</code>.</li>
+</ul>
+<p>The igraph tutorial then explains how to compile the program with CMake or
+<code>pkg-config</code>; here <code>cargo build</code> takes care of it (the build script finds
+the installed igraph library and generates the raw bindings).</p>
+<h2 id="lesson-2-creating-your-first-graphs"><a class="doc-anchor" href="#lesson-2-creating-your-first-graphs">§</a>Lesson 2: creating your first graphs</h2>
+<p>Functions creating graphs are called <em>generators</em>; randomized ones are
+called <em>games</em>. Deterministic regular structures include stars
+(<a href="../ffi/struct.igraph_t.html#method.star" title="associated function igraph::ffi::igraph_t::star"><code>Graph::star</code></a>), cycles (<a href="../ffi/struct.igraph_t.html#method.cycle_graph" title="associated function igraph::ffi::igraph_t::cycle_graph"><code>Graph::cycle_graph</code></a>), lattices
+(<a href="../ffi/struct.igraph_t.html#method.square_lattice" title="associated function igraph::ffi::igraph_t::square_lattice"><code>Graph::square_lattice</code></a>) and trees (<a href="../ffi/struct.igraph_t.html#method.kary_tree" title="associated function igraph::ffi::igraph_t::kary_tree"><code>Graph::kary_tree</code></a>). Most
+generators, and most other functions, handle both directed and undirected
+graphs.</p>
+<p>The second program builds a 30 × 30 periodic square lattice (a torus),
+computes the average shortest path length, adds ten random edges and
+computes it again: a handful of random “shortcuts” shrinks the average
+distance a lot (from about 15 to about 11.8), the essence of the
+<em>small-world</em> effect.</p>
+<p>In C, igraph uses its own vector types (<code>igraph_vector_t</code>,
+<code>igraph_vector_int_t</code>, <code>igraph_vector_bool_t</code>, …) instead of plain
+arrays, initialized with <code>igraph_vector_init()</code> and destroyed with
+<code>igraph_vector_destroy()</code>. The Rust bindings accept slices as inputs and
+return <code>Vec</code>s as outputs (the owned igraph vectors, such as
+<a href="../vector/type.VectorInt.html" title="type igraph::vector::VectorInt"><code>VectorInt</code></a>, exist too and free themselves on
+drop). Vertices are identified by ids <code>0..n</code>, where <code>n</code> is
+<a href="../ffi/struct.igraph_t.html#method.vcount" title="method igraph::ffi::igraph_t::vcount"><code>Graph::vcount</code></a>. <a href="../ffi/struct.igraph_t.html#method.add_edges" title="method igraph::ffi::igraph_t::add_edges"><code>Graph::add_edges</code></a> takes <code>(from, to)</code> pairs, whereas
+the C <code>igraph_add_edges()</code> takes a flat vector of endpoints
+(<a href="../ffi/struct.igraph_t.html#method.add_edges_from_vector" title="method igraph::ffi::igraph_t::add_edges_from_vector"><code>Graph::add_edges_from_vector</code></a> is its literal counterpart).</p>
+<p>As the tutorial warns, drawing random endpoints may create <em>loop edges</em>
+(from a vertex to itself) and <em>multi-edges</em> (several edges between the same
+pair of vertices). igraph graphs can represent them, but some functions
+expect simple graphs: <a href="../ffi/struct.igraph_t.html#method.simplify" title="method igraph::ffi::igraph_t::simplify"><code>Graph::simplify</code></a> removes them. (With seed 42 the
+ten edges drawn by lesson 2, see <a href="struct.LatticePathLengths.html#structfield.random_edges" title="field igraph::tutorial::LatticePathLengths::random_edges"><code>LatticePathLengths::random_edges</code></a>,
+happen to keep the lattice simple, although vertex 885 is drawn twice in a
+row, as the endpoint of two different edges.)</p>
+<h2 id="lesson-3-calculating-various-properties-of-graphs"><a class="doc-anchor" href="#lesson-3-calculating-various-properties-of-graphs">§</a>Lesson 3: calculating various properties of graphs</h2>
+<p>The third program computes three <em>centrality</em> measures on the friendship
+network of Zachary’s karate club: how central the position of every member
+is. It builds the graph from a plain array of endpoints
+(<a href="constant.ZACHARY_KARATE_EDGES.html" title="constant igraph::tutorial::ZACHARY_KARATE_EDGES"><code>ZACHARY_KARATE_EDGES</code></a>, with <a href="../ffi/struct.igraph_t.html#method.from_flat_edges" title="associated function igraph::ffi::igraph_t::from_flat_edges"><code>Graph::from_flat_edges</code></a>; C creates a
+non-owning <em>view</em> of the array with <code>igraph_vector_int_view()</code>, which the
+Rust bindings do internally), then computes</p>
+<ul>
+<li>the degree of every vertex (<a href="../ffi/struct.igraph_t.html#method.degree" title="method igraph::ffi::igraph_t::degree"><code>Graph::degree</code></a>),</li>
+<li>the closeness centrality (<a href="../ffi/struct.igraph_t.html#method.closeness" title="method igraph::ffi::igraph_t::closeness"><code>Graph::closeness</code></a>),</li>
+<li>the betweenness centrality (<a href="../ffi/struct.igraph_t.html#method.betweenness" title="method igraph::ffi::igraph_t::betweenness"><code>Graph::betweenness</code></a>),</li>
+</ul>
+<p>and prints the largest value of each, with the vertex attaining it. The
+instructor (vertex 0) and the administrator (vertex 33) stand out.</p>
+<p>In C, the argument <code>igraph_vss_all()</code> is a <em>vertex selector</em> asking for
+the property of every vertex; in Rust it is <a href="../selector/enum.VertexSelector.html#variant.All" title="variant igraph::selector::VertexSelector::All"><code>VertexSelector::All</code></a>, or
+simply the full range <code>..</code> (see <a href="../selector/index.html" title="mod igraph::selector"><code>crate::selector</code></a> for the other
+selectors).</p>
+</div></details><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.KarateCentralities.html" title="struct igraph::tutorial::KarateCentralities">Karate<wbr>Centralities</a></dt><dd>The centrality maxima computed by lesson 3 (see <a href="fn.example_3.html" title="fn igraph::tutorial::example_3"><code>example_3</code></a>).</dd><dt><a class="struct" href="struct.LatticePathLengths.html" title="struct igraph::tutorial::LatticePathLengths">Lattice<wbr>Path<wbr>Lengths</a></dt><dd>The numbers computed by lesson 2 (see <a href="fn.example_2.html" title="fn igraph::tutorial::example_2"><code>example_2</code></a>).</dd><dt><a class="struct" href="struct.Maximum.html" title="struct igraph::tutorial::Maximum">Maximum</a></dt><dd>The maximum of a per-vertex measure and the vertex attaining it, the
+Rust counterpart of the C pair <code>igraph_vector_max()</code> /
+<code>igraph_vector_which_max()</code>.</dd><dt><a class="struct" href="struct.RandomGraphStats.html" title="struct igraph::tutorial::RandomGraphStats">Random<wbr>Graph<wbr>Stats</a></dt><dd>The numbers computed by lesson 1 (see <a href="fn.example_1.html" title="fn igraph::tutorial::example_1"><code>example_1</code></a>).</dd></dl><h2 id="constants" class="section-header">Constants<a href="#constants" class="anchor">§</a></h2><dl class="item-table"><dt><a class="constant" href="constant.ZACHARY_KARATE_EDGES.html" title="constant igraph::tutorial::ZACHARY_KARATE_EDGES">ZACHARY_<wbr>KARATE_<wbr>EDGES</a></dt><dd>The friendship network of
+<a href="https://en.wikipedia.org/wiki/Zachary%27s_karate_club">Zachary’s karate club</a>
+as the flat endpoint array of the C tutorial (lesson 3): 78 undirected
+edges among 34 members, <code>[from0, to0, from1, to1, ...]</code>.</dd></dl><h2 id="functions" class="section-header">Functions<a href="#functions" class="anchor">§</a></h2><dl class="item-table"><dt><a class="fn" href="fn.example_1.html" title="fn igraph::tutorial::example_1">example_<wbr>1</a></dt><dd>Lesson 1: the diameter and mean degree of a random graph.</dd><dt><a class="fn" href="fn.example_2.html" title="fn igraph::tutorial::example_2">example_<wbr>2</a></dt><dd>Lesson 2: average path length of a lattice, before and after adding a
+few random edges.</dd><dt><a class="fn" href="fn.example_3.html" title="fn igraph::tutorial::example_3">example_<wbr>3</a></dt><dd>Lesson 3: degree, closeness and betweenness centrality in Zachary’s
+karate club.</dd></dl></section></div></main></body></html>

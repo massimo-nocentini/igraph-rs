@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["AsymmetricTypedGraph","BarabasiAgingOptions","BarabasiOptions","GeometricGraph","RecentDegreeAgingOptions","RecentDegreeOptions","TypedGraph"]};

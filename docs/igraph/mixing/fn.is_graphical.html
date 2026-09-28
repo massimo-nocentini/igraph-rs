@@ -1,0 +1,57 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Is there a graph with the given degree sequence?"><title>is_graphical in igraph::mixing - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-1ed95124.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="igraph" data-themes="" data-resource-suffix="" data-rustdoc-version="1.98.1 (48a229cea 2026-09-01)" data-channel="1.98.1" data-search-js="search-9944d736.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../static.files/main-417ebf0a.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc fn"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">is_graphical</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../igraph/index.html">igraph</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">is_<wbr>graphical</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#errors" title="Errors">Errors</a></li><li><a href="#examples" title="Examples">Examples</a></li></ul></section><div id="rustdoc-modnav"><h2><a href="index.html">In igraph::<wbr>mixing</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../index.html">igraph</a>::<wbr><a href="index.html">mixing</a></div><h1>Function <span class="fn">is_<wbr>graphical</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/igraph/mixing.rs.html#1176-1198">Source</a> </span></div><pre class="rust item-decl"><code>pub fn is_graphical(
+    out_degrees: &amp;[<a class="type" href="../ffi/type.igraph_int_t.html" title="type igraph::ffi::igraph_int_t">igraph_int_t</a>],
+    in_degrees: <a class="enum" href="https://doc.rust-lang.org/1.98.1/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;&amp;[<a class="type" href="../ffi/type.igraph_int_t.html" title="type igraph::ffi::igraph_int_t">igraph_int_t</a>]&gt;,
+    allowed: impl <a class="trait" href="https://doc.rust-lang.org/1.98.1/core/convert/trait.Into.html" title="trait core::convert::Into">Into</a>&lt;<a class="struct" href="../constants/struct.AllowedEdgeTypes.html" title="struct igraph::constants::AllowedEdgeTypes">AllowedEdgeTypes</a>&gt;,
+) -&gt; <a class="type" href="../error/type.Result.html" title="type igraph::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.bool.html">bool</a>&gt;</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Is there a graph with the given degree sequence?</p>
+<p>For an undirected graph pass the degrees as <code>out_degrees</code> and
+<code>in_degrees = None</code>; for a directed graph pass both the out- and the
+in-degree sequences (of equal length). <code>allowed</code> says which edges the
+realization may use (anything convertible into <a href="../constants/struct.AllowedEdgeTypes.html" title="struct igraph::constants::AllowedEdgeTypes"><code>AllowedEdgeTypes</code></a>, e.g.
+<a href="../constants/enum.EdgeTypeSw.html#variant.Simple" title="variant igraph::constants::EdgeTypeSw::Simple"><code>EdgeTypeSw::Simple</code></a> or <code>AllowedEdgeTypes::ALL</code>). Sequences with negative
+entries are simply not graphical.</p>
+<p>The tests used are, for undirected graphs: the Erdős–Gallai conditions
+(Cloteaux’s linear-time algorithm) for simple graphs; an even degree sum
+when loops and multi-edges are allowed; additionally a degree sum at least
+twice the maximum degree for loopless multigraphs; Cairns–Mendan’s modified
+Erdős–Gallai conditions for at most one self-loop per vertex. For directed
+graphs: the Fulkerson–Chen–Anstee theorem with Berger’s relaxation for
+simple digraphs; equal in- and out-degree sums with loops and multi-edges;
+additionally an out-degree sum at least the maximum total degree for
+loopless multigraphs; the Gale–Ryser theorem when single self-loops are
+allowed.</p>
+<p>Binds <a href="https://igraph.org/c/html/latest/igraph-Structural.html#igraph_is_graphical"><code>igraph_is_graphical</code></a>.
+See also <a href="../ffi/struct.igraph_t.html#method.realize_degree_sequence" title="associated function igraph::ffi::igraph_t::realize_degree_sequence"><code>Graph::realize_degree_sequence</code></a>, which builds a realization
+of a graphical sequence (for the edge types it implements: simple, loopless
+multi- and loopy multigraphs when undirected, simple digraphs when
+directed, it succeeds exactly when this test says yes; single self-loops
+without multi-edges, and non-simple digraphs, fail with
+<a href="../error/enum.ErrorKind.html#variant.Unimplemented" title="variant igraph::error::ErrorKind::Unimplemented"><code>ErrorKind::Unimplemented</code></a>), and
+<a href="../ffi/struct.igraph_t.html#method.degree_sequence_game" title="associated function igraph::ffi::igraph_t::degree_sequence_game"><code>Graph::degree_sequence_game</code></a>, which samples one at random.</p>
+<p>Time complexity: O(n), n being the length of the sequence(s).</p>
+<h2 id="errors"><a class="doc-anchor" href="#errors">§</a>Errors</h2>
+<p><a href="../error/enum.ErrorKind.html#variant.InvalidValue" title="variant igraph::error::ErrorKind::InvalidValue"><code>ErrorKind::InvalidValue</code></a> if the out- and
+in-degree sequences have different lengths, or if the sum of the
+(non-negative) degrees exceeds <code>i64::MAX / 2</code>: igraph would add them up
+with signed overflow, which is undefined behavior in C, so such
+sequences are rejected on the Rust side.</p>
+<h2 id="examples"><a class="doc-anchor" href="#examples">§</a>Examples</h2>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>igraph::mixing::{is_graphical, AllowedEdgeTypes};
+<span class="kw">use </span>igraph::prelude::<span class="kw-2">*</span>;
+
+<span class="comment">// (3, 3): two vertices of degree 3 need a triple edge or loops.
+</span><span class="macro">assert!</span>(!is_graphical(<span class="kw-2">&amp;</span>[<span class="number">3</span>, <span class="number">3</span>], <span class="prelude-val">None</span>, EdgeTypeSw::Simple)<span class="question-mark">?</span>);
+<span class="macro">assert!</span>(is_graphical(<span class="kw-2">&amp;</span>[<span class="number">3</span>, <span class="number">3</span>], <span class="prelude-val">None</span>, EdgeTypeSw::Multi)<span class="question-mark">?</span>);
+<span class="macro">assert!</span>(is_graphical(<span class="kw-2">&amp;</span>[<span class="number">3</span>, <span class="number">3</span>], <span class="prelude-val">None</span>, EdgeTypeSw::Loops)<span class="question-mark">?</span>);
+<span class="comment">// (1, 2, 5) needs multi-edges *and* loops.
+</span><span class="macro">assert!</span>(!is_graphical(<span class="kw-2">&amp;</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">5</span>], <span class="prelude-val">None</span>, EdgeTypeSw::Multi)<span class="question-mark">?</span>);
+<span class="macro">assert!</span>(is_graphical(<span class="kw-2">&amp;</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">5</span>], <span class="prelude-val">None</span>, AllowedEdgeTypes::ALL)<span class="question-mark">?</span>);
+<span class="comment">// Directed: a 3-cycle has out- and in-degrees all equal to 1.
+</span><span class="macro">assert!</span>(is_graphical(<span class="kw-2">&amp;</span>[<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>], <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>[<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>]), EdgeTypeSw::Simple)<span class="question-mark">?</span>);
+<span class="macro">assert!</span>(!is_graphical(<span class="kw-2">&amp;</span>[<span class="number">2</span>, <span class="number">0</span>], <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>[<span class="number">0</span>, <span class="number">2</span>]), EdgeTypeSw::Simple)<span class="question-mark">?</span>);
+
+<span class="comment">// A graphical sequence can be realized with the same edge types.
+</span><span class="kw">let </span>seq = [<span class="number">3</span>, <span class="number">3</span>, <span class="number">2</span>, <span class="number">2</span>, <span class="number">2</span>, <span class="number">1</span>, <span class="number">1</span>];
+<span class="macro">assert!</span>(is_graphical(<span class="kw-2">&amp;</span>seq, <span class="prelude-val">None</span>, AllowedEdgeTypes::SIMPLE)<span class="question-mark">?</span>);
+<span class="kw">let </span>g = Graph::realize_degree_sequence(
+    <span class="kw-2">&amp;</span>seq, <span class="prelude-val">None</span>, AllowedEdgeTypes::SIMPLE, RealizeDegseq::Smallest)<span class="question-mark">?</span>;
+<span class="macro">assert_eq!</span>(g.degree(.., NeighborMode::All, Loops::Twice)<span class="question-mark">?</span>, seq);</code></pre></div></div></details></section></div></main></body></html>

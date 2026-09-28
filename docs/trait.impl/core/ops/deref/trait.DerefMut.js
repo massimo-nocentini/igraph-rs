@@ -1,0 +1,9 @@
+(function() {
+    const implementors = Object.fromEntries([["igraph",[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.98.1/core/ops/deref/trait.DerefMut.html\" title=\"trait core::ops::deref::DerefMut\">DerefMut</a> for <a class=\"struct\" href=\"igraph/ffi/struct.igraph_vector_bool_t.html\" title=\"struct igraph::ffi::igraph_vector_bool_t\">igraph_vector_bool_t</a>",0],["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.98.1/core/ops/deref/trait.DerefMut.html\" title=\"trait core::ops::deref::DerefMut\">DerefMut</a> for <a class=\"struct\" href=\"igraph/ffi/struct.igraph_vector_char_t.html\" title=\"struct igraph::ffi::igraph_vector_char_t\">igraph_vector_char_t</a>",0],["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.98.1/core/ops/deref/trait.DerefMut.html\" title=\"trait core::ops::deref::DerefMut\">DerefMut</a> for <a class=\"struct\" href=\"igraph/ffi/struct.igraph_vector_complex_t.html\" title=\"struct igraph::ffi::igraph_vector_complex_t\">igraph_vector_complex_t</a>",0],["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.98.1/core/ops/deref/trait.DerefMut.html\" title=\"trait core::ops::deref::DerefMut\">DerefMut</a> for <a class=\"struct\" href=\"igraph/ffi/struct.igraph_vector_int_t.html\" title=\"struct igraph::ffi::igraph_vector_int_t\">igraph_vector_int_t</a>",0],["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.98.1/core/ops/deref/trait.DerefMut.html\" title=\"trait core::ops::deref::DerefMut\">DerefMut</a> for <a class=\"struct\" href=\"igraph/ffi/struct.igraph_vector_t.html\" title=\"struct igraph::ffi::igraph_vector_t\">igraph_vector_t</a>",0]]]]);
+    if (window.register_implementors) {
+        window.register_implementors(implementors);
+    } else {
+        window.pending_implementors = implementors;
+    }
+})()
+//{"start":59,"fragment_lengths":[1583]}

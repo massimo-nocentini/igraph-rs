@@ -1,0 +1,412 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="An igraph graph (`igraph_t`), see the module docs."><title>Graph in igraph::graph - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-1ed95124.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="igraph" data-themes="" data-resource-suffix="" data-rustdoc-version="1.98.1 (48a229cea 2026-09-01)" data-channel="1.98.1" data-search-js="search-9944d736.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../static.files/main-417ebf0a.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc type"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Graph</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../igraph/index.html">igraph</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Graph</a></h2><h3><a href="#aliased-type">Aliased Type</a></h3><h3><a href="#implementations">Methods</a></h3><ul class="block method"><li><a href="#method.assortativity" title="assortativity">assortativity</a></li><li><a href="#method.assortativity_degree" title="assortativity_degree">assortativity_degree</a></li><li><a href="#method.assortativity_nominal" title="assortativity_nominal">assortativity_nominal</a></li><li><a href="#method.ecc" title="ecc">ecc</a></li><li><a href="#method.joint_degree_distribution" title="joint_degree_distribution">joint_degree_distribution</a></li><li><a href="#method.joint_degree_matrix" title="joint_degree_matrix">joint_degree_matrix</a></li><li><a href="#method.joint_type_distribution" title="joint_type_distribution">joint_type_distribution</a></li><li><a href="#method.transitivity_avglocal_undirected" title="transitivity_avglocal_undirected">transitivity_avglocal_undirected</a></li><li><a href="#method.transitivity_barrat" title="transitivity_barrat">transitivity_barrat</a></li><li><a href="#method.transitivity_local_undirected" title="transitivity_local_undirected">transitivity_local_undirected</a></li><li><a href="#method.transitivity_undirected" title="transitivity_undirected">transitivity_undirected</a></li></ul><h3><a href="#trait-implementations">Trait Implementations</a></h3><ul class="block trait-implementation"><li><a href="#impl-AsRef%3Cigraph_t%3E-for-igraph_t" title="AsRef&#60;igraph_t&#62;">AsRef&#60;igraph_t&#62;</a></li></ul></section><div id="rustdoc-modnav"><h2><a href="index.html">In igraph::<wbr>graph</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../index.html">igraph</a>::<wbr><a href="index.html">graph</a></div><h1>Type Alias <span class="type">Graph</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/igraph/graph.rs.html#102">Source</a> </span></div><pre class="rust item-decl"><code>pub type Graph = <a class="struct" href="../ffi/struct.igraph_t.html" title="struct igraph::ffi::igraph_t">igraph_t</a>;</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>An igraph graph (<code>igraph_t</code>), see the <a href="index.html" title="mod igraph::graph">module docs</a>.</p>
+</div></details><h2 id="aliased-type" class="section-header">Aliased Type<a href="#aliased-type" class="anchor">§</a></h2><pre class="rust item-decl"><code>pub struct Graph { <span class="comment">/* private fields */</span> }</code></pre><h2 id="implementations" class="section-header">Implementations<a href="#implementations" class="anchor">§</a></h2><div id="implementations-list"><details class="toggle implementors-toggle" open><summary><section id="impl-igraph_t" class="impl"><a class="src rightside" href="../../src/igraph/mixing.rs.html#242-1078">Source</a><a href="#impl-igraph_t" class="anchor">§</a><h3 class="code-header">impl <a class="type" href="type.Graph.html" title="type igraph::graph::Graph">Graph</a></h3></section></summary><div class="impl-items"><details class="toggle method-toggle" open><summary><section id="method.transitivity_undirected" class="method"><a class="src rightside" href="../../src/igraph/mixing.rs.html#357-363">Source</a><h4 class="code-header">pub fn <a href="#method.transitivity_undirected" class="fn">transitivity_undirected</a>(&amp;self, mode: <a class="enum" href="../constants/enum.TransitivityMode.html" title="enum igraph::constants::TransitivityMode">TransitivityMode</a>) -&gt; <a class="type" href="../error/type.Result.html" title="type igraph::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.f64.html">f64</a>&gt;</h4></section></summary><div class="docblock"><p>Global transitivity (clustering coefficient) of the graph.</p>
+<p>The transitivity is the probability that two neighbors of a vertex are
+connected; more precisely, it is the ratio between the number of
+<em>closed</em> connected triples (three times the number of triangles) and
+the number of connected triples. Edge directions and multiplicities are
+ignored. This single number differs from the
+<a href="../ffi/struct.igraph_t.html#method.transitivity_avglocal_undirected" title="method igraph::ffi::igraph_t::transitivity_avglocal_undirected">average local transitivity</a>,
+which weights all vertices equally.</p>
+<p><code>mode</code> says what to return for graphs without connected triples:
+<a href="../constants/enum.TransitivityMode.html#variant.Nan" title="variant igraph::constants::TransitivityMode::Nan"><code>TransitivityMode::Nan</code></a> gives <code>NaN</code>, <a href="../constants/enum.TransitivityMode.html#variant.Zero" title="variant igraph::constants::TransitivityMode::Zero"><code>TransitivityMode::Zero</code></a> gives 0.</p>
+<p>Binds <a href="https://igraph.org/c/html/latest/igraph-Structural.html#igraph_transitivity_undirected"><code>igraph_transitivity_undirected</code></a>.
+Reference: S. Wasserman and K. Faust, <em>Social Network Analysis: Methods
+and Applications</em>, Cambridge University Press (1994).</p>
+<p>See also <a href="../ffi/struct.igraph_t.html#method.count_triangles" title="method igraph::ffi::igraph_t::count_triangles"><code>Graph::count_triangles</code></a>: for a simple graph with degrees
+<code>d_v</code>, the transitivity is <code>3 T / Σ_v d_v (d_v - 1) / 2</code>.</p>
+<p>Time complexity: O(|V| d²), d being the average degree.</p>
+<h5 id="examples"><a class="doc-anchor" href="#examples">§</a>Examples</h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>igraph::prelude::<span class="kw-2">*</span>;
+
+<span class="comment">// A triangle with a pendant edge: 3 closed triples out of 5.
+</span><span class="kw">let </span>g = Graph::from_edges(<span class="kw-2">&amp;</span>[(<span class="number">0</span>, <span class="number">1</span>), (<span class="number">1</span>, <span class="number">2</span>), (<span class="number">2</span>, <span class="number">0</span>), (<span class="number">2</span>, <span class="number">3</span>)], <span class="number">4</span>, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+<span class="macro">assert!</span>((g.transitivity_undirected(TransitivityMode::Nan)<span class="question-mark">? </span>- <span class="number">0.6</span>).abs() &lt; <span class="number">1e-12</span>);
+
+<span class="comment">// A path has connected triples but no triangle; a single edge has neither.
+</span><span class="kw">let </span>path = Graph::from_edges(<span class="kw-2">&amp;</span>[(<span class="number">0</span>, <span class="number">1</span>), (<span class="number">1</span>, <span class="number">2</span>)], <span class="number">3</span>, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+<span class="macro">assert_eq!</span>(path.transitivity_undirected(TransitivityMode::Nan)<span class="question-mark">?</span>, <span class="number">0.0</span>);
+<span class="kw">let </span>edge = Graph::from_edges(<span class="kw-2">&amp;</span>[(<span class="number">0</span>, <span class="number">1</span>)], <span class="number">2</span>, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+<span class="macro">assert!</span>(edge.transitivity_undirected(TransitivityMode::Nan)<span class="question-mark">?</span>.is_nan());
+<span class="macro">assert_eq!</span>(edge.transitivity_undirected(TransitivityMode::Zero)<span class="question-mark">?</span>, <span class="number">0.0</span>);</code></pre></div></div></details><details class="toggle method-toggle" open><summary><section id="method.transitivity_local_undirected" class="method"><a class="src rightside" href="../../src/igraph/mixing.rs.html#401-417">Source</a><h4 class="code-header">pub fn <a href="#method.transitivity_local_undirected" class="fn">transitivity_local_undirected</a>&lt;'a&gt;(
+    &amp;self,
+    vids: impl <a class="trait" href="https://doc.rust-lang.org/1.98.1/core/convert/trait.Into.html" title="trait core::convert::Into">Into</a>&lt;<a class="enum" href="../selector/enum.VertexSelector.html" title="enum igraph::selector::VertexSelector">VertexSelector</a>&lt;'a&gt;&gt;,
+    mode: <a class="enum" href="../constants/enum.TransitivityMode.html" title="enum igraph::constants::TransitivityMode">TransitivityMode</a>,
+) -&gt; <a class="type" href="../error/type.Result.html" title="type igraph::error::Result">Result</a>&lt;<a class="struct" href="https://doc.rust-lang.org/1.98.1/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.f64.html">f64</a>&gt;&gt;</h4></section></summary><div class="docblock"><p>Local transitivity (clustering coefficient) of the selected vertices.</p>
+<p>For each vertex, the fraction of pairs of its neighbors that are
+themselves connected (Watts–Strogatz clustering coefficient). Edge
+directions and multiplicities are ignored. Vertices with fewer than two
+neighbors get <code>NaN</code> with <a href="../constants/enum.TransitivityMode.html#variant.Nan" title="variant igraph::constants::TransitivityMode::Nan"><code>TransitivityMode::Nan</code></a> and 0 with
+<a href="../constants/enum.TransitivityMode.html#variant.Zero" title="variant igraph::constants::TransitivityMode::Zero"><code>TransitivityMode::Zero</code></a>. The result follows the order of <code>vids</code>.</p>
+<p>Binds <a href="https://igraph.org/c/html/latest/igraph-Structural.html#igraph_transitivity_local_undirected"><code>igraph_transitivity_local_undirected</code></a>.
+Reference: D. J. Watts and S. Strogatz, <em>Collective dynamics of
+small-world networks</em>, Nature 393, 440–442 (1998).</p>
+<p>See also <a href="../ffi/struct.igraph_t.html#method.count_adjacent_triangles" title="method igraph::ffi::igraph_t::count_adjacent_triangles"><code>Graph::count_adjacent_triangles</code></a>: in a simple graph the
+local transitivity of <code>v</code> is <code>t_v / (d_v (d_v - 1) / 2)</code>, <code>t_v</code> being
+the number of triangles through <code>v</code>.</p>
+<p>Time complexity: O(n d²), n being the number of selected vertices and d
+the average degree.</p>
+<h5 id="errors"><a class="doc-anchor" href="#errors">§</a>Errors</h5>
+<p><a href="../error/enum.ErrorKind.html#variant.InvalidVertexId" title="variant igraph::error::ErrorKind::InvalidVertexId"><code>ErrorKind::InvalidVertexId</code></a> if the
+selector contains a non-existent vertex.</p>
+<h5 id="examples-1"><a class="doc-anchor" href="#examples-1">§</a>Examples</h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>igraph::prelude::<span class="kw-2">*</span>;
+
+<span class="kw">let </span>g = Graph::from_edges(<span class="kw-2">&amp;</span>[(<span class="number">0</span>, <span class="number">1</span>), (<span class="number">1</span>, <span class="number">2</span>), (<span class="number">2</span>, <span class="number">0</span>), (<span class="number">2</span>, <span class="number">3</span>)], <span class="number">4</span>, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+<span class="kw">let </span>c = g.transitivity_local_undirected(.., TransitivityMode::Zero)<span class="question-mark">?</span>;
+<span class="macro">assert_eq!</span>(c[..<span class="number">2</span>], [<span class="number">1.0</span>, <span class="number">1.0</span>]);
+<span class="macro">assert!</span>((c[<span class="number">2</span>] - <span class="number">1.0 </span>/ <span class="number">3.0</span>).abs() &lt; <span class="number">1e-12</span>);
+<span class="macro">assert_eq!</span>(c[<span class="number">3</span>], <span class="number">0.0</span>); <span class="comment">// a leaf</span></code></pre></div></div></details><details class="toggle method-toggle" open><summary><section id="method.transitivity_avglocal_undirected" class="method"><a class="src rightside" href="../../src/igraph/mixing.rs.html#450-460">Source</a><h4 class="code-header">pub fn <a href="#method.transitivity_avglocal_undirected" class="fn">transitivity_avglocal_undirected</a>(
+    &amp;self,
+    mode: <a class="enum" href="../constants/enum.TransitivityMode.html" title="enum igraph::constants::TransitivityMode">TransitivityMode</a>,
+) -&gt; <a class="type" href="../error/type.Result.html" title="type igraph::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.f64.html">f64</a>&gt;</h4></section></summary><div class="docblock"><p>Average local transitivity (average clustering coefficient).</p>
+<p>The mean of the <a href="../ffi/struct.igraph_t.html#method.transitivity_local_undirected" title="method igraph::ffi::igraph_t::transitivity_local_undirected">local transitivities</a>
+of all vertices. Vertices with fewer than two neighbors are left out of
+the average with <a href="../constants/enum.TransitivityMode.html#variant.Nan" title="variant igraph::constants::TransitivityMode::Nan"><code>TransitivityMode::Nan</code></a> (the result is <code>NaN</code> if no
+vertex has two neighbors), and counted as zero with
+<a href="../constants/enum.TransitivityMode.html#variant.Zero" title="variant igraph::constants::TransitivityMode::Zero"><code>TransitivityMode::Zero</code></a>. Edge directions and multiplicities are
+ignored.</p>
+<p>Binds <a href="https://igraph.org/c/html/latest/igraph-Structural.html#igraph_transitivity_avglocal_undirected"><code>igraph_transitivity_avglocal_undirected</code></a>.
+Reference: D. J. Watts and S. Strogatz, <em>Collective dynamics of
+small-world networks</em>, Nature 393, 440–442 (1998). A small-world graph
+(e.g. <a href="../ffi/struct.igraph_t.html#method.watts_strogatz_game" title="associated function igraph::ffi::igraph_t::watts_strogatz_game"><code>Graph::watts_strogatz_game</code></a> with a small rewiring probability)
+has a much higher average clustering than an
+<a href="../ffi/struct.igraph_t.html#method.erdos_renyi_game_gnm" title="associated function igraph::ffi::igraph_t::erdos_renyi_game_gnm">Erdős–Rényi graph</a> of the same density.</p>
+<p>Time complexity: O(|V| d²).</p>
+<h5 id="examples-2"><a class="doc-anchor" href="#examples-2">§</a>Examples</h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>igraph::prelude::<span class="kw-2">*</span>;
+
+<span class="kw">let </span>g = Graph::from_edges(<span class="kw-2">&amp;</span>[(<span class="number">0</span>, <span class="number">1</span>), (<span class="number">1</span>, <span class="number">2</span>), (<span class="number">2</span>, <span class="number">0</span>), (<span class="number">2</span>, <span class="number">3</span>)], <span class="number">4</span>, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+<span class="comment">// Local values: 1, 1, 1/3 and (leaf) NaN or 0.
+</span><span class="kw">let </span>skip = g.transitivity_avglocal_undirected(TransitivityMode::Nan)<span class="question-mark">?</span>;
+<span class="kw">let </span>zero = g.transitivity_avglocal_undirected(TransitivityMode::Zero)<span class="question-mark">?</span>;
+<span class="macro">assert!</span>((skip - <span class="number">7.0 </span>/ <span class="number">9.0</span>).abs() &lt; <span class="number">1e-12</span>);
+<span class="macro">assert!</span>((zero - <span class="number">7.0 </span>/ <span class="number">12.0</span>).abs() &lt; <span class="number">1e-12</span>);</code></pre></div></div></details><details class="toggle method-toggle" open><summary><section id="method.transitivity_barrat" class="method"><a class="src rightside" href="../../src/igraph/mixing.rs.html#512-532">Source</a><h4 class="code-header">pub fn <a href="#method.transitivity_barrat" class="fn">transitivity_barrat</a>&lt;'a&gt;(
+    &amp;self,
+    vids: impl <a class="trait" href="https://doc.rust-lang.org/1.98.1/core/convert/trait.Into.html" title="trait core::convert::Into">Into</a>&lt;<a class="enum" href="../selector/enum.VertexSelector.html" title="enum igraph::selector::VertexSelector">VertexSelector</a>&lt;'a&gt;&gt;,
+    weights: <a class="enum" href="https://doc.rust-lang.org/1.98.1/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;&amp;[<a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.f64.html">f64</a>]&gt;,
+    mode: <a class="enum" href="../constants/enum.TransitivityMode.html" title="enum igraph::constants::TransitivityMode">TransitivityMode</a>,
+) -&gt; <a class="type" href="../error/type.Result.html" title="type igraph::error::Result">Result</a>&lt;<a class="struct" href="https://doc.rust-lang.org/1.98.1/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.f64.html">f64</a>&gt;&gt;</h4></section></summary><div class="docblock"><p>Barrat’s weighted local transitivity of the selected vertices.</p>
+<p>For a vertex <code>i</code>, every triangle <code>i</code>, <code>j</code>, <code>h</code> contributes the total
+weight <code>w_ij + w_ih</code> of the two triangle edges incident on <code>i</code> (in
+equation (5) each triangle appears twice, as the ordered pairs <code>(j, h)</code>
+and <code>(h, j)</code>, with the mean weight <code>(w_ij + w_ih) / 2</code>); the sum is
+divided by <code>s_i (k_i - 1)</code>, where <code>s_i</code> is the strength and <code>k_i</code> the
+degree of <code>i</code> (equation (5) of A. Barrat, M. Barthélemy,
+R. Pastor-Satorras and A. Vespignani, <em>The architecture of complex
+weighted networks</em>, PNAS 101, 3747 (2004)). With equal weights it
+coincides with the <a href="../ffi/struct.igraph_t.html#method.transitivity_local_undirected" title="method igraph::ffi::igraph_t::transitivity_local_undirected">unweighted local transitivity</a>.</p>
+<p>Edge directions are ignored; the graph must not have multi-edges (for
+directed graphs, not even mutual pairs <code>u -&gt; v</code>, <code>v -&gt; u</code>, which become
+multi-edges once directions are ignored). If <code>weights</code>
+is <code>None</code>, igraph emits a warning and falls back to the unweighted
+local transitivity. When the denominator <code>s_i (k_i - 1)</code> is zero
+(fewer than two incident edges, or zero strength),
+<a href="../constants/enum.TransitivityMode.html#variant.Zero" title="variant igraph::constants::TransitivityMode::Zero"><code>TransitivityMode::Zero</code></a> gives 0, while <a href="../constants/enum.TransitivityMode.html#variant.Nan" title="variant igraph::constants::TransitivityMode::Nan"><code>TransitivityMode::Nan</code></a>
+performs the division: <code>NaN</code> (<code>0 / 0</code>), or <code>±∞</code> if a zero strength
+comes from weights of mixed signs around closed triangles.</p>
+<p>Binds <a href="https://igraph.org/c/html/latest/igraph-Structural.html#igraph_transitivity_barrat"><code>igraph_transitivity_barrat</code></a>.
+See also <a href="../ffi/struct.igraph_t.html#method.strength" title="method igraph::ffi::igraph_t::strength"><code>Graph::strength</code></a> for the <code>s_i</code>.</p>
+<p>Time complexity: O(|V| d²).</p>
+<h5 id="errors-1"><a class="doc-anchor" href="#errors-1">§</a>Errors</h5>
+<p><a href="../error/enum.ErrorKind.html#variant.InvalidValue" title="variant igraph::error::ErrorKind::InvalidValue"><code>ErrorKind::InvalidValue</code></a> if the
+weight vector has the wrong length or the graph has multi-edges (or
+mutual directed edges);
+<a href="../error/enum.ErrorKind.html#variant.InvalidVertexId" title="variant igraph::error::ErrorKind::InvalidVertexId"><code>ErrorKind::InvalidVertexId</code></a> for
+invalid vertices.</p>
+<h5 id="examples-3"><a class="doc-anchor" href="#examples-3">§</a>Examples</h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>igraph::prelude::<span class="kw-2">*</span>;
+
+<span class="comment">// igraph's unit test graph: two triangles 0-1-2 and 1-2-3, a tail 3-4, isolated 5.
+</span><span class="kw">let </span>g = Graph::from_edges(<span class="kw-2">&amp;</span>[(<span class="number">0</span>, <span class="number">1</span>), (<span class="number">0</span>, <span class="number">2</span>), (<span class="number">1</span>, <span class="number">2</span>), (<span class="number">1</span>, <span class="number">3</span>), (<span class="number">2</span>, <span class="number">3</span>), (<span class="number">3</span>, <span class="number">4</span>)], <span class="number">6</span>, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+<span class="kw">let </span>w = [-<span class="number">1.0</span>, <span class="number">0.0</span>, <span class="number">1.0</span>, <span class="number">2.0</span>, <span class="number">3.0</span>, <span class="number">4.0</span>];
+<span class="kw">let </span>t = g.transitivity_barrat(.., <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>w), TransitivityMode::Zero)<span class="question-mark">?</span>;
+<span class="kw">let </span>expected = [<span class="number">1.0</span>, <span class="number">0.75</span>, <span class="number">0.625</span>, <span class="number">0.277778</span>, <span class="number">0.0</span>, <span class="number">0.0</span>];
+<span class="kw">for </span>(a, b) <span class="kw">in </span>t.iter().zip(expected) {
+    <span class="macro">assert!</span>((a - b).abs() &lt; <span class="number">1e-6</span>);
+}</code></pre></div></div></details><details class="toggle method-toggle" open><summary><section id="method.ecc" class="method"><a class="src rightside" href="../../src/igraph/mixing.rs.html#584-604">Source</a><h4 class="code-header">pub fn <a href="#method.ecc" class="fn">ecc</a>&lt;'a&gt;(
+    &amp;self,
+    eids: impl <a class="trait" href="https://doc.rust-lang.org/1.98.1/core/convert/trait.Into.html" title="trait core::convert::Into">Into</a>&lt;<a class="enum" href="../selector/enum.EdgeSelector.html" title="enum igraph::selector::EdgeSelector">EdgeSelector</a>&lt;'a&gt;&gt;,
+    k: <a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.usize.html">usize</a>,
+    offset: <a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.bool.html">bool</a>,
+    normalize: <a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.bool.html">bool</a>,
+) -&gt; <a class="type" href="../error/type.Result.html" title="type igraph::error::Result">Result</a>&lt;<a class="struct" href="https://doc.rust-lang.org/1.98.1/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.f64.html">f64</a>&gt;&gt;</h4></section></summary><div class="docblock"><p>Edge clustering coefficient of the selected edges.</p>
+<p>For an edge <code>(i, j)</code>, let <code>z</code> be the number of <code>k</code>-cycles it belongs
+to and <code>s</code> the largest such number compatible with the degrees of its
+endpoints: <code>s = min(d_i - 1, d_j - 1)</code> for <code>k = 3</code> and
+<code>s = (d_i - 1)(d_j - 1)</code> for <code>k = 4</code>. The coefficient is</p>
+<div class="example-wrap"><pre class="language-text"><code>C = (z + offset) / s      (normalize = true)
+C =  z + offset           (normalize = false)</code></pre></div>
+<p>where <code>offset</code> is 1 if <code>offset</code> is <code>true</code> and 0 otherwise. The original
+definition of Radicchi <em>et al.</em> (PNAS 101, 2658 (2004)) uses
+<code>offset = true, normalize = true</code>; with <code>offset = false</code> the normalized
+value is at most 1, which for <code>k = 3</code> is achieved by every edge of a
+complete graph. When normalizing, edges with <code>s = 0</code> (an endpoint of
+degree 1, or a self-loop, which igraph assigns <code>z = s = 0</code>) get <code>NaN</code>
+without offset (<code>0 / 0</code>) and <code>+∞</code> with it (<code>1 / 0</code>). Multiplicities
+are ignored when listing cycles but not in the degrees. The result
+follows the order of <code>eids</code>.</p>
+<p>Only <code>k = 3</code> and <code>k = 4</code> are currently supported.</p>
+<p>Binds <a href="https://igraph.org/c/html/latest/igraph-Structural.html#igraph_ecc"><code>igraph_ecc</code></a>.
+See also <a href="../ffi/struct.igraph_t.html#method.list_triangles" title="method igraph::ffi::igraph_t::list_triangles"><code>Graph::list_triangles</code></a> (for <code>k = 3</code>, the unnormalized,
+offset-free coefficient of an edge is the number of listed triangles
+containing it) and <a href="../ffi/struct.igraph_t.html#method.community_edge_betweenness" title="method igraph::ffi::igraph_t::community_edge_betweenness"><code>Graph::community_edge_betweenness</code></a>, the other
+classic edge-removal criterion for divisive community detection.</p>
+<p>Time complexity: O(|V| d log d + |E| d) for <code>k = 3</code>,
+O(|V| d log d + |E| d²) for <code>k = 4</code>.</p>
+<h5 id="errors-2"><a class="doc-anchor" href="#errors-2">§</a>Errors</h5>
+<p><a href="../error/enum.ErrorKind.html#variant.InvalidValue" title="variant igraph::error::ErrorKind::InvalidValue"><code>ErrorKind::InvalidValue</code></a> if <code>k &lt; 3</code>;
+<a href="../error/enum.ErrorKind.html#variant.Unimplemented" title="variant igraph::error::ErrorKind::Unimplemented"><code>ErrorKind::Unimplemented</code></a> if <code>k &gt; 4</code>;
+<a href="../error/enum.ErrorKind.html#variant.InvalidEdgeId" title="variant igraph::error::ErrorKind::InvalidEdgeId"><code>ErrorKind::InvalidEdgeId</code></a> for invalid edges.</p>
+<h5 id="examples-4"><a class="doc-anchor" href="#examples-4">§</a>Examples</h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>igraph::prelude::<span class="kw-2">*</span>;
+
+<span class="comment">// In K4 each edge is in 2 triangles, the most its degree-3 endpoints allow.
+</span><span class="kw">let </span>k4 = Graph::from_edges(<span class="kw-2">&amp;</span>[(<span class="number">0</span>, <span class="number">1</span>), (<span class="number">0</span>, <span class="number">2</span>), (<span class="number">0</span>, <span class="number">3</span>), (<span class="number">1</span>, <span class="number">2</span>), (<span class="number">1</span>, <span class="number">3</span>), (<span class="number">2</span>, <span class="number">3</span>)], <span class="number">4</span>, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+<span class="macro">assert!</span>(k4.ecc(.., <span class="number">3</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>)<span class="question-mark">?</span>.iter().all(|<span class="kw-2">&amp;</span>c| c == <span class="number">1.0</span>));
+<span class="macro">assert_eq!</span>(k4.ecc(<span class="number">0</span>, <span class="number">3</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>)<span class="question-mark">?</span>, <span class="macro">vec!</span>[<span class="number">3.0</span>]); <span class="comment">// 2 triangles, plus one</span></code></pre></div></div></details><details class="toggle method-toggle" open><summary><section id="method.assortativity" class="method"><a class="src rightside" href="../../src/igraph/mixing.rs.html#660-687">Source</a><h4 class="code-header">pub fn <a href="#method.assortativity" class="fn">assortativity</a>(
+    &amp;self,
+    weights: <a class="enum" href="https://doc.rust-lang.org/1.98.1/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;&amp;[<a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.f64.html">f64</a>]&gt;,
+    values: &amp;[<a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.f64.html">f64</a>],
+    values_in: <a class="enum" href="https://doc.rust-lang.org/1.98.1/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;&amp;[<a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.f64.html">f64</a>]&gt;,
+    directed: <a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.bool.html">bool</a>,
+    normalized: <a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.bool.html">bool</a>,
+) -&gt; <a class="type" href="../error/type.Result.html" title="type igraph::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.f64.html">f64</a>&gt;</h4></section></summary><div class="docblock"><p>Assortativity coefficient based on numeric vertex values.</p>
+<p>With <code>normalized = true</code> this is the Pearson correlation of the values
+<code>x</code> found at the two ends of the edges (Newman’s assortativity
+coefficient, in <code>[-1, 1]</code>); with <code>normalized = false</code> it is the
+covariance</p>
+<div class="example-wrap"><pre class="language-text"><code>cov(x_out, x_in) = 1/m Σ_ij (A_ij - k_i^out k_j^in / m) x_i x_j</code></pre></div>
+<p>For directed graphs (with <code>directed = true</code>) the value of the edge
+source is taken from <code>values</code> and the one of the target from
+<code>values_in</code>, if given (otherwise from <code>values</code> as well). Undirected
+graphs (and directed ones with <code>directed = false</code>) are treated as
+directed graphs with every edge reciprocated, so self-loops count
+twice; in that case <code>values_in</code> is ignored, with a warning if given.
+<code>directed</code> is ignored for undirected graphs.</p>
+<p>When <code>weights</code> are given they act as edge multiplicities: <code>m</code> becomes
+the total weight and degrees become strengths.</p>
+<p>Binds <a href="https://igraph.org/c/html/latest/igraph-Structural.html#igraph_assortativity"><code>igraph_assortativity</code></a>.
+See also <a href="../ffi/struct.igraph_t.html#method.assortativity_degree" title="method igraph::ffi::igraph_t::assortativity_degree"><code>Graph::assortativity_degree</code></a> (values = degrees) and
+<a href="../ffi/struct.igraph_t.html#method.strength" title="method igraph::ffi::igraph_t::strength"><code>Graph::strength</code></a> (weighted degrees as values).
+References: M. E. J. Newman, <em>Mixing patterns in networks</em>, Phys. Rev.
+E 67, 026126 (2003); <em>Assortative mixing in networks</em>, Phys. Rev. Lett.
+89, 208701 (2002).</p>
+<p>Time complexity: O(|E|).</p>
+<h5 id="errors-3"><a class="doc-anchor" href="#errors-3">§</a>Errors</h5>
+<p><a href="../error/enum.ErrorKind.html#variant.InvalidValue" title="variant igraph::error::ErrorKind::InvalidValue"><code>ErrorKind::InvalidValue</code></a> if a value
+or weight vector has the wrong length.</p>
+<h5 id="examples-5"><a class="doc-anchor" href="#examples-5">§</a>Examples</h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>igraph::prelude::<span class="kw-2">*</span>;
+
+<span class="comment">// A path 0-1-2-3 with values increasing along it: neighbors are alike.
+</span><span class="kw">let </span>g = Graph::from_edges(<span class="kw-2">&amp;</span>[(<span class="number">0</span>, <span class="number">1</span>), (<span class="number">1</span>, <span class="number">2</span>), (<span class="number">2</span>, <span class="number">3</span>)], <span class="number">4</span>, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+<span class="kw">let </span>r = g.assortativity(<span class="prelude-val">None</span>, <span class="kw-2">&amp;</span>[<span class="number">1.0</span>, <span class="number">2.0</span>, <span class="number">3.0</span>, <span class="number">4.0</span>], <span class="prelude-val">None</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>)<span class="question-mark">?</span>;
+<span class="macro">assert!</span>(r &gt; <span class="number">0.0</span>);
+<span class="comment">// Alternating values: every edge joins a "low" and a "high" vertex.
+</span><span class="kw">let </span>r = g.assortativity(<span class="prelude-val">None</span>, <span class="kw-2">&amp;</span>[<span class="number">0.0</span>, <span class="number">1.0</span>, <span class="number">0.0</span>, <span class="number">1.0</span>], <span class="prelude-val">None</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>)<span class="question-mark">?</span>;
+<span class="macro">assert!</span>((r + <span class="number">1.0</span>).abs() &lt; <span class="number">1e-12</span>);</code></pre></div></div></details><details class="toggle method-toggle" open><summary><section id="method.assortativity_nominal" class="method"><a class="src rightside" href="../../src/igraph/mixing.rs.html#748-767">Source</a><h4 class="code-header">pub fn <a href="#method.assortativity_nominal" class="fn">assortativity_nominal</a>(
+    &amp;self,
+    types: &amp;[<a class="type" href="../ffi/type.igraph_int_t.html" title="type igraph::ffi::igraph_int_t">igraph_int_t</a>],
+    directed: <a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.bool.html">bool</a>,
+    normalized: <a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.bool.html">bool</a>,
+) -&gt; <a class="type" href="../error/type.Result.html" title="type igraph::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.f64.html">f64</a>&gt;</h4></section></summary><div class="docblock"><p>Assortativity coefficient based on vertex categories.</p>
+<p><code>types[v]</code> is the (non-negative integer) category of vertex <code>v</code>. The
+normalized coefficient (<code>normalized = true</code>, the usual choice) is 1 when
+all edges stay within categories, -1 for a perfectly disassortative
+network, and asymptotically 0 for random connections. The unnormalized
+version equals the <a href="../ffi/struct.igraph_t.html#method.modularity" title="method igraph::ffi::igraph_t::modularity">modularity</a> of the partition
+into categories (with resolution 1):</p>
+<div class="example-wrap"><pre class="language-text"><code>Q = 1/m Σ_ij (A_ij - k_i^out k_j^in / m) δ(t_i, t_j)</code></pre></div>
+<p>and the normalized one is <code>Q</code> divided by its largest possible value
+<code>1 - 1/m² Σ_ij k_i^out k_j^in δ(t_i, t_j)</code>, i.e. <code>Q / (1 - Σ_t a_t b_t)</code>
+with <code>a_t</code> (<code>b_t</code>) the fraction of edges starting (ending) in category
+<code>t</code>. (The C documentation of 1.0.1 writes this denominator as
+<code>1/m Σ_ij (m - k_i^out k_j^in δ(t_i, t_j) / m)</code>, which is not what the
+code computes.)</p>
+<p><code>directed</code> says whether to consider edge directions (ignored for
+undirected graphs, which are treated as directed graphs with reciprocal
+edges, so self-loops count twice). The null graph gives <code>NaN</code>.</p>
+<p>Weighted nominal assortativity is not implemented by igraph (1.0.0 and
+1.0.1 fail with <code>IGRAPH_UNIMPLEMENTED</code> when weights are given), so this
+wrapper takes no weights; use <a href="../ffi/struct.igraph_t.html#method.modularity" title="method igraph::ffi::igraph_t::modularity"><code>Graph::modularity</code></a> for the weighted
+unnormalized value.</p>
+<p>Binds <a href="https://igraph.org/c/html/latest/igraph-Structural.html#igraph_assortativity_nominal"><code>igraph_assortativity_nominal</code></a>.
+Reference: M. E. J. Newman, <em>Mixing patterns in networks</em>, Phys. Rev. E
+67, 026126 (2003).</p>
+<p>Time complexity: O(|E| + t), t being the number of categories.</p>
+<p>See also <a href="../ffi/struct.igraph_t.html#method.joint_type_distribution" title="method igraph::ffi::igraph_t::joint_type_distribution"><code>Graph::joint_type_distribution</code></a>, the full mixing matrix of
+the categories.</p>
+<h5 id="errors-4"><a class="doc-anchor" href="#errors-4">§</a>Errors</h5>
+<p><a href="../error/enum.ErrorKind.html#variant.InvalidValue" title="variant igraph::error::ErrorKind::InvalidValue"><code>ErrorKind::InvalidValue</code></a> if <code>types</code>
+does not have one entry per vertex or contains negative values.</p>
+<h5 id="examples-6"><a class="doc-anchor" href="#examples-6">§</a>Examples</h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>igraph::prelude::<span class="kw-2">*</span>;
+
+<span class="comment">// Two triangles joined by one bridge; categories = triangles.
+</span><span class="kw">let </span>g = Graph::from_edges(
+    <span class="kw-2">&amp;</span>[(<span class="number">0</span>, <span class="number">1</span>), (<span class="number">1</span>, <span class="number">2</span>), (<span class="number">2</span>, <span class="number">0</span>), (<span class="number">3</span>, <span class="number">4</span>), (<span class="number">4</span>, <span class="number">5</span>), (<span class="number">5</span>, <span class="number">3</span>), (<span class="number">2</span>, <span class="number">3</span>)], <span class="number">6</span>, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+<span class="kw">let </span>r = g.assortativity_nominal(<span class="kw-2">&amp;</span>[<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>], <span class="bool-val">false</span>, <span class="bool-val">true</span>)<span class="question-mark">?</span>;
+<span class="macro">assert!</span>(r &gt; <span class="number">0.7</span>);
+<span class="comment">// A bipartite labeling of a bipartite graph is perfectly disassortative.
+</span><span class="kw">let </span>square = Graph::from_edges(<span class="kw-2">&amp;</span>[(<span class="number">0</span>, <span class="number">1</span>), (<span class="number">1</span>, <span class="number">2</span>), (<span class="number">2</span>, <span class="number">3</span>), (<span class="number">3</span>, <span class="number">0</span>)], <span class="number">4</span>, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+<span class="kw">let </span>r = square.assortativity_nominal(<span class="kw-2">&amp;</span>[<span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>], <span class="bool-val">false</span>, <span class="bool-val">true</span>)<span class="question-mark">?</span>;
+<span class="macro">assert!</span>((r + <span class="number">1.0</span>).abs() &lt; <span class="number">1e-12</span>);</code></pre></div></div></details><details class="toggle method-toggle" open><summary><section id="method.assortativity_degree" class="method"><a class="src rightside" href="../../src/igraph/mixing.rs.html#804-808">Source</a><h4 class="code-header">pub fn <a href="#method.assortativity_degree" class="fn">assortativity_degree</a>(&amp;self, directed: <a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.bool.html">bool</a>) -&gt; <a class="type" href="../error/type.Result.html" title="type igraph::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.f64.html">f64</a>&gt;</h4></section></summary><div class="docblock"><p>Degree assortativity: do high-degree vertices link to each other?</p>
+<p>The <a href="../ffi/struct.igraph_t.html#method.assortativity" title="method igraph::ffi::igraph_t::assortativity">assortativity</a> coefficient with the vertex
+degrees as values, normalized (Pearson correlation of the degrees at
+the two ends of the edges). With <code>directed = true</code> on a directed graph,
+out-degrees are used for edge sources and in-degrees for edge targets;
+otherwise total degrees are used. Social networks tend to be
+assortative (&gt; 0), technological and biological ones disassortative
+(&lt; 0). For regular graphs the correlation is undefined and the result
+is <code>NaN</code>.</p>
+<p>Binds <a href="https://igraph.org/c/html/latest/igraph-Structural.html#igraph_assortativity_degree"><code>igraph_assortativity_degree</code></a>.
+Loops count twice in the degrees and multi-edges are counted with
+their multiplicity; the unnormalized covariance can be obtained with
+<a href="../ffi/struct.igraph_t.html#method.assortativity" title="method igraph::ffi::igraph_t::assortativity"><code>Graph::assortativity</code></a> and <a href="../ffi/struct.igraph_t.html#method.strength" title="method igraph::ffi::igraph_t::strength"><code>Graph::strength</code></a> values.</p>
+<p>See also <a href="../ffi/struct.igraph_t.html#method.avg_nearest_neighbor_degree" title="method igraph::ffi::igraph_t::avg_nearest_neighbor_degree"><code>Graph::avg_nearest_neighbor_degree</code></a> and
+<a href="../ffi/struct.igraph_t.html#method.degree_correlation_vector" title="method igraph::ffi::igraph_t::degree_correlation_vector"><code>Graph::degree_correlation_vector</code></a>, which show the degree correlation
+as a function of the degree instead of summarizing it in one number.</p>
+<p>Time complexity: O(|E| + |V|).</p>
+<h5 id="examples-7"><a class="doc-anchor" href="#examples-7">§</a>Examples</h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>igraph::prelude::<span class="kw-2">*</span>;
+
+<span class="comment">// In a star, the hub is only linked to leaves: perfectly disassortative.
+</span><span class="kw">let </span>star = Graph::from_edges(<span class="kw-2">&amp;</span>[(<span class="number">0</span>, <span class="number">1</span>), (<span class="number">0</span>, <span class="number">2</span>), (<span class="number">0</span>, <span class="number">3</span>), (<span class="number">0</span>, <span class="number">4</span>)], <span class="number">5</span>, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+<span class="macro">assert!</span>((star.assortativity_degree(<span class="bool-val">false</span>)<span class="question-mark">? </span>+ <span class="number">1.0</span>).abs() &lt; <span class="number">1e-12</span>);
+<span class="comment">// A cycle is regular: the coefficient is undefined.
+</span><span class="kw">let </span>c = Graph::from_edges(<span class="kw-2">&amp;</span>[(<span class="number">0</span>, <span class="number">1</span>), (<span class="number">1</span>, <span class="number">2</span>), (<span class="number">2</span>, <span class="number">0</span>)], <span class="number">3</span>, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+<span class="macro">assert!</span>(c.assortativity_degree(<span class="bool-val">false</span>)<span class="question-mark">?</span>.is_nan());</code></pre></div></div></details><details class="toggle method-toggle" open><summary><section id="method.joint_degree_matrix" class="method"><a class="src rightside" href="../../src/igraph/mixing.rs.html#861-879">Source</a><h4 class="code-header">pub fn <a href="#method.joint_degree_matrix" class="fn">joint_degree_matrix</a>(
+    &amp;self,
+    weights: <a class="enum" href="https://doc.rust-lang.org/1.98.1/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;&amp;[<a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.f64.html">f64</a>]&gt;,
+    max_out_degree: <a class="enum" href="https://doc.rust-lang.org/1.98.1/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.usize.html">usize</a>&gt;,
+    max_in_degree: <a class="enum" href="https://doc.rust-lang.org/1.98.1/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.usize.html">usize</a>&gt;,
+) -&gt; <a class="type" href="../error/type.Result.html" title="type igraph::error::Result">Result</a>&lt;<a class="type" href="../matrix/type.Matrix.html" title="type igraph::matrix::Matrix">Matrix</a>&gt;</h4></section></summary><div class="docblock"><p>Joint degree matrix: number (or total weight) of edges between degree classes.</p>
+<p>Entry <code>(i - 1, j - 1)</code> of the result holds <code>J_ij</code>, the number of edges
+(or the total weight, if <code>weights</code> are given) between vertices of
+(out-)degree <code>i</code> and vertices of (in-)degree <code>j</code>. Each edge, self-loops
+included, is counted exactly once: for ordered degree pairs <code>(i, j)</code> in
+directed graphs, whose entries then sum to the number of edges <code>m</code> (or
+total weight), and for unordered pairs in undirected graphs, whose
+matrix is symmetric and whose upper triangle (diagonal included) sums
+to <code>m</code> (without limits; with limits, only the part that fits).
+<code>J_ij / m</code> is the probability that a random edge joins degrees <code>i</code> and
+<code>j</code>.</p>
+<p><code>max_out_degree</code> / <code>max_in_degree</code> set the number of rows / columns;
+<code>None</code> uses the largest (out-/in-)degree of the graph. Edges whose
+degree pair falls outside the matrix are not counted. Unlike
+<a href="../ffi/struct.igraph_t.html#method.joint_degree_distribution" title="method igraph::ffi::igraph_t::joint_degree_distribution"><code>joint_degree_distribution</code></a>, there
+is no row or column for degree zero, and undirected same-degree
+connections are counted once instead of twice.</p>
+<p>Binds <a href="https://igraph.org/c/html/latest/igraph-Structural.html#igraph_joint_degree_matrix"><code>igraph_joint_degree_matrix</code></a>.
+It is a finer description of a network than its degree sequence:
+degree-preserving <a href="../ffi/struct.igraph_t.html#method.rewire" title="method igraph::ffi::igraph_t::rewire">rewiring</a> keeps the degrees but in
+general changes this matrix. See also
+<a href="../ffi/struct.igraph_t.html#method.joint_degree_distribution" title="method igraph::ffi::igraph_t::joint_degree_distribution"><code>joint_degree_distribution</code></a>.
+Reference: I. Stanton and A. Pinar, <em>Constructing and sampling graphs
+with a prescribed joint degree distribution</em>, ACM J. Exp. Algorithmics
+17, 3.5 (2012).</p>
+<p>Time complexity: O(|E|).</p>
+<h5 id="errors-5"><a class="doc-anchor" href="#errors-5">§</a>Errors</h5>
+<p><a href="../error/enum.ErrorKind.html#variant.InvalidValue" title="variant igraph::error::ErrorKind::InvalidValue"><code>ErrorKind::InvalidValue</code></a> if the
+weight vector has the wrong length or a limit does not fit an <code>i64</code>.</p>
+<h5 id="examples-8"><a class="doc-anchor" href="#examples-8">§</a>Examples</h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>igraph::prelude::<span class="kw-2">*</span>;
+
+<span class="comment">// A star with 3 leaves: 3 edges between degree 3 and degree 1.
+</span><span class="kw">let </span>star = Graph::from_edges(<span class="kw-2">&amp;</span>[(<span class="number">0</span>, <span class="number">1</span>), (<span class="number">0</span>, <span class="number">2</span>), (<span class="number">0</span>, <span class="number">3</span>)], <span class="number">4</span>, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+<span class="kw">let </span>j = star.joint_degree_matrix(<span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>)<span class="question-mark">?</span>;
+<span class="macro">assert_eq!</span>(j.to_rows(), <span class="macro">vec!</span>[
+    <span class="macro">vec!</span>[<span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">3.0</span>],
+    <span class="macro">vec!</span>[<span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>],
+    <span class="macro">vec!</span>[<span class="number">3.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>],
+]);</code></pre></div></div></details><details class="toggle method-toggle" open><summary><section id="method.joint_degree_distribution" class="method"><a class="src rightside" href="../../src/igraph/mixing.rs.html#935-987">Source</a><h4 class="code-header">pub fn <a href="#method.joint_degree_distribution" class="fn">joint_degree_distribution</a>(
+    &amp;self,
+    weights: <a class="enum" href="https://doc.rust-lang.org/1.98.1/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;&amp;[<a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.f64.html">f64</a>]&gt;,
+    options: &amp;<a class="struct" href="../mixing/struct.JointDegreeDistributionOptions.html" title="struct igraph::mixing::JointDegreeDistributionOptions">JointDegreeDistributionOptions</a>,
+) -&gt; <a class="type" href="../error/type.Result.html" title="type igraph::error::Result">Result</a>&lt;<a class="type" href="../matrix/type.Matrix.html" title="type igraph::matrix::Matrix">Matrix</a>&gt;</h4></section></summary><div class="docblock"><p>Joint degree distribution <code>P_ij</code> of connected vertex pairs.</p>
+<p>Entry <code>(i, j)</code> is the probability that a randomly chosen <em>ordered</em> pair
+of connected vertices <code>u -&gt; v</code> has degrees <code>i</code> (for <code>u</code>, computed with
+<a href="../mixing/struct.JointDegreeDistributionOptions.html#structfield.from_mode" title="field igraph::mixing::JointDegreeDistributionOptions::from_mode"><code>from_mode</code></a>) and <code>j</code> (for
+<code>v</code>, computed with <a href="../mixing/struct.JointDegreeDistributionOptions.html#structfield.to_mode" title="field igraph::mixing::JointDegreeDistributionOptions::to_mode"><code>to_mode</code></a>).
+An undirected graph behaves like the directed graph with all edges
+reciprocated. Without normalization the entries are connection counts
+(or total weights): without degree limits they sum to the number of
+edges of a directed graph (twice that with <code>directed_neighbors = false</code>) and to twice that of an undirected one. Rows and columns for
+degree 0 are included.</p>
+<p>Related quantities: the degree correlation function is
+<code>k_nn(k) = Σ_j j P_kj / Σ_j P_kj</code> and the unnormalized degree
+assortativity is <code>Σ_ij i j (P_ij - q_i r_j)</code> with <code>q</code> and <code>r</code> the row
+and column sums. Compare with <a href="../ffi/struct.igraph_t.html#method.joint_degree_matrix" title="method igraph::ffi::igraph_t::joint_degree_matrix"><code>joint_degree_matrix</code></a>,
+whose undirected diagonal is half of the unnormalized <code>P_ii</code>.</p>
+<p>When connections are counted in both directions (undirected graphs,
+or <code>directed_neighbors = false</code>), each reverse connection <code>v -&gt; u</code>
+contributes to entry <code>(deg_from(v), deg_to(u))</code> if it falls within
+the matrix, and normalization divides by the total weight of the
+connections that fall within it. In the cases where igraph 1.0.0 and
+1.0.1 would index out of bounds (non-square limits, or
+<code>from_mode != to_mode</code> without <code>directed_neighbors</code>), this wrapper
+computes the matrix in Rust with exactly these semantics.</p>
+<p>Binds <a href="https://igraph.org/c/html/latest/igraph-Structural.html#igraph_joint_degree_distribution"><code>igraph_joint_degree_distribution</code></a>.
+See also <a href="../ffi/struct.igraph_t.html#method.degree_correlation_vector" title="method igraph::ffi::igraph_t::degree_correlation_vector"><code>Graph::degree_correlation_vector</code></a>, which computes <code>k_nn(k)</code>
+directly, and <a href="../ffi/struct.igraph_t.html#method.assortativity" title="method igraph::ffi::igraph_t::assortativity"><code>Graph::assortativity</code></a> with degree values.</p>
+<p>Time complexity: O(|E|).</p>
+<h5 id="errors-6"><a class="doc-anchor" href="#errors-6">§</a>Errors</h5>
+<p><a href="../error/enum.ErrorKind.html#variant.InvalidValue" title="variant igraph::error::ErrorKind::InvalidValue"><code>ErrorKind::InvalidValue</code></a> if the
+weight vector has the wrong length or a degree limit is <code>i64::MAX</code> or
+more.</p>
+<h5 id="examples-9"><a class="doc-anchor" href="#examples-9">§</a>Examples</h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>igraph::mixing::JointDegreeDistributionOptions;
+<span class="kw">use </span>igraph::prelude::<span class="kw-2">*</span>;
+
+<span class="kw">let </span>star = Graph::from_edges(<span class="kw-2">&amp;</span>[(<span class="number">0</span>, <span class="number">1</span>), (<span class="number">0</span>, <span class="number">2</span>), (<span class="number">0</span>, <span class="number">3</span>)], <span class="number">4</span>, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+<span class="kw">let </span>p = star.joint_degree_distribution(<span class="prelude-val">None</span>, <span class="kw-2">&amp;</span>JointDegreeDistributionOptions::default())<span class="question-mark">?</span>;
+<span class="macro">assert_eq!</span>(p.shape(), (<span class="number">4</span>, <span class="number">4</span>));
+<span class="comment">// Half of the ordered pairs go hub -&gt; leaf, half leaf -&gt; hub.
+</span><span class="macro">assert_eq!</span>(p[(<span class="number">3</span>, <span class="number">1</span>)], <span class="number">0.5</span>);
+<span class="macro">assert_eq!</span>(p[(<span class="number">1</span>, <span class="number">3</span>)], <span class="number">0.5</span>);</code></pre></div></div></details><details class="toggle method-toggle" open><summary><section id="method.joint_type_distribution" class="method"><a class="src rightside" href="../../src/igraph/mixing.rs.html#1037-1077">Source</a><h4 class="code-header">pub fn <a href="#method.joint_type_distribution" class="fn">joint_type_distribution</a>(
+    &amp;self,
+    weights: <a class="enum" href="https://doc.rust-lang.org/1.98.1/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;&amp;[<a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.f64.html">f64</a>]&gt;,
+    from_types: &amp;[<a class="type" href="../ffi/type.igraph_int_t.html" title="type igraph::ffi::igraph_int_t">igraph_int_t</a>],
+    to_types: <a class="enum" href="https://doc.rust-lang.org/1.98.1/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;&amp;[<a class="type" href="../ffi/type.igraph_int_t.html" title="type igraph::ffi::igraph_int_t">igraph_int_t</a>]&gt;,
+    directed: <a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.bool.html">bool</a>,
+    normalized: <a class="primitive" href="https://doc.rust-lang.org/1.98.1/std/primitive.bool.html">bool</a>,
+) -&gt; <a class="type" href="../error/type.Result.html" title="type igraph::error::Result">Result</a>&lt;<a class="type" href="../matrix/type.Matrix.html" title="type igraph::matrix::Matrix">Matrix</a>&gt;</h4></section></summary><div class="docblock"><p>Mixing matrix of vertex categories.</p>
+<p>Entry <code>(i, j)</code> is proportional to the probability that a randomly
+chosen ordered pair of connected vertices <code>u -&gt; v</code> has <code>from_types[u] = i</code>
+and <code>to_types[v] = j</code> (<code>to_types = None</code> reuses <code>from_types</code>). Types
+must be non-negative integers; the matrix has one more row/column than
+the largest source/target type, so re-index sparse labels first.
+Undirected graphs (or <code>directed = false</code>) count each edge in both
+directions. With <code>normalized = true</code> the entries sum to 1; otherwise
+they are connection counts (or total weights). When connections are
+counted in both directions, the reverse connection <code>v -&gt; u</code> of an edge
+contributes to <code>(from_types[v], to_types[u])</code>; with distinct
+<code>to_types</code> this case is computed in Rust, because igraph 1.0.0 and
+1.0.1 would index out of bounds.</p>
+<p>With a single normalized categorization <code>M</code>, row sums <code>a</code> and column
+sums <code>b</code>, the <a href="../ffi/struct.igraph_t.html#method.modularity" title="method igraph::ffi::igraph_t::modularity">modularity</a> of the partition is
+<code>Q = Σ_i M_ii - Σ_i a_i b_i</code> and the
+<a href="../ffi/struct.igraph_t.html#method.assortativity_nominal" title="method igraph::ffi::igraph_t::assortativity_nominal">nominal assortativity</a> is
+<code>Q / (1 - Σ_i a_i b_i)</code>.</p>
+<p>Binds <a href="https://igraph.org/c/html/latest/igraph-Structural.html#igraph_joint_type_distribution"><code>igraph_joint_type_distribution</code></a>.</p>
+<p>Time complexity: O(|E|).</p>
+<h5 id="errors-7"><a class="doc-anchor" href="#errors-7">§</a>Errors</h5>
+<p><a href="../error/enum.ErrorKind.html#variant.InvalidValue" title="variant igraph::error::ErrorKind::InvalidValue"><code>ErrorKind::InvalidValue</code></a> if the
+weight vector or a type vector has the wrong length, or a type vector
+contains negative values (checked on the Rust side for <code>to_types</code> too,
+which igraph 1.0.0 and 1.0.1 themselves forget to validate).</p>
+<h5 id="examples-10"><a class="doc-anchor" href="#examples-10">§</a>Examples</h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>igraph::prelude::<span class="kw-2">*</span>;
+
+<span class="comment">// igraph's unit test: a small undirected multigraph with loops and 3 types.
+</span><span class="kw">let </span>g = Graph::from_flat_edges(
+    <span class="kw-2">&amp;</span>[<span class="number">3</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">3</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">1</span>, <span class="number">5</span>, <span class="number">5</span>, <span class="number">4</span>, <span class="number">2</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">5</span>, <span class="number">1</span>], <span class="number">6</span>, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+<span class="kw">let </span>m = g.joint_type_distribution(<span class="prelude-val">None</span>, <span class="kw-2">&amp;</span>[<span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">2</span>], <span class="prelude-val">None</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+<span class="macro">assert_eq!</span>(m.to_rows(), <span class="macro">vec!</span>[
+    <span class="macro">vec!</span>[<span class="number">6.0</span>, <span class="number">4.0</span>, <span class="number">1.0</span>],
+    <span class="macro">vec!</span>[<span class="number">4.0</span>, <span class="number">0.0</span>, <span class="number">1.0</span>],
+    <span class="macro">vec!</span>[<span class="number">1.0</span>, <span class="number">1.0</span>, <span class="number">2.0</span>],
+]);</code></pre></div></div></details></div></details></div><h2 id="trait-implementations" class="section-header">Trait Implementations<a href="#trait-implementations" class="anchor">§</a></h2><div id="trait-implementations-list"><details class="toggle implementors-toggle" open><summary><section id="impl-AsRef%3Cigraph_t%3E-for-igraph_t" class="impl"><a class="src rightside" href="../../src/igraph/layout.rs.html#2059-2063">Source</a><a href="#impl-AsRef%3Cigraph_t%3E-for-igraph_t" class="anchor">§</a><h3 class="code-header">impl <a class="trait" href="https://doc.rust-lang.org/1.98.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="struct" href="../ffi/struct.igraph_t.html" title="struct igraph::ffi::igraph_t">igraph_t</a>&gt; for <a class="type" href="type.Graph.html" title="type igraph::graph::Graph">Graph</a></h3><div class="docblock"><p>A graph is trivially a reference to itself: this lets functions taking
+several graphs, like <a href="../layout/fn.layout_merge_dla.html" title="fn igraph::layout::layout_merge_dla"><code>layout_merge_dla</code></a>, accept collections of graphs
+(<code>Vec&lt;Graph&gt;</code>, <code>&amp;[Graph]</code>) as well as of references (<code>&amp;[&amp;Graph]</code>).</p>
+</div></section></summary><div class="impl-items"><details class="toggle method-toggle" open><summary><section id="method.as_ref" class="method trait-impl"><a class="src rightside" href="../../src/igraph/layout.rs.html#2060-2062">Source</a><a href="#method.as_ref" class="anchor">§</a><h4 class="code-header">fn <a href="https://doc.rust-lang.org/1.98.1/core/convert/trait.AsRef.html#tymethod.as_ref" class="fn">as_ref</a>(&amp;self) -&gt; &amp;<a class="type" href="type.Graph.html" title="type igraph::graph::Graph">Graph</a></h4></section></summary><div class='docblock'>Converts this type into a shared reference of the (usually inferred) input type.</div></details></div></details></div><script src="../../type.impl/igraph/ffi/struct.igraph_t.js" data-self-path="igraph::graph::Graph" async></script></section></div></main></body></html>

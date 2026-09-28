@@ -1,0 +1,78 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Cocitation, bibliographic coupling and vertex similarity (`igraph_cocitation.h`)."><title>igraph::cocitation - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-1ed95124.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="igraph" data-themes="" data-resource-suffix="" data-rustdoc-version="1.98.1 (48a229cea 2026-09-01)" data-channel="1.98.1" data-search-js="search-9944d736.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../static.files/main-417ebf0a.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Module cocitation</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../igraph/index.html">igraph</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module cocitation</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#example" title="Example">Example</a></li><li><a href="#provided-functionality" title="Provided functionality">Provided functionality</a></li><li><a href="#differences-from-the-c-functions" title="Differences from the C functions">Differences from the C functions</a></li><li><a href="#see-also" title="See also">See also</a></li></ul></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="../index.html">In crate igraph</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../index.html">igraph</a></div><h1>Module <span>cocitation</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/igraph/cocitation.rs.html#1-558">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Cocitation, bibliographic coupling and vertex similarity
+(<code>igraph_cocitation.h</code>).</p>
+<p>This module binds the functions of igraph’s <code>igraph_cocitation.h</code> header
+(documented in the
+<a href="https://igraph.org/c/html/latest/igraph-Structural.html#similarity-measures">Similarity measures</a>
+section of the Structural chapter of the C manual) as methods of <a href="../graph/type.Graph.html" title="type igraph::graph::Graph"><code>Graph</code></a>. They all measure how
+<em>similar</em> two vertices are by looking at the neighbors they share:</p>
+<ul>
+<li><strong>cocitation</strong>: how many vertices cite (point to) <em>both</em> of them;</li>
+<li><strong>bibliographic coupling</strong>: how many vertices <em>both</em> of them cite;</li>
+<li><strong>Jaccard</strong> similarity: <code>|N(u) ∩ N(v)| / |N(u) ∪ N(v)|</code>;</li>
+<li><strong>Dice</strong> similarity: <code>2 |N(u) ∩ N(v)| / (|N(u)| + |N(v)|)</code>, a monotone
+function of the Jaccard one (<code>D = 2J / (1 + J)</code>);</li>
+<li><strong>inverse log-weighted</strong> similarity (Adamic–Adar): common neighbors,
+each weighted by <code>1 / ln(degree)</code>, so that sharing a rare neighbor
+counts more than sharing a hub.</li>
+</ul>
+<p>Such scores are the classic baseline for <em>link prediction</em>: two
+non-adjacent vertices with many common neighbors are likely to become
+connected.</p>
+<h2 id="example"><a class="doc-anchor" href="#example">§</a>Example</h2>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>igraph::prelude::<span class="kw-2">*</span>;
+
+<span class="comment">// The citation network of igraph's own example: 0 -&gt; 1, 2 -&gt; 1, 2 -&gt; 0, 3 -&gt; 0.
+</span><span class="kw">let </span>g = Graph::from_edges(<span class="kw-2">&amp;</span>[(<span class="number">0</span>, <span class="number">1</span>), (<span class="number">2</span>, <span class="number">1</span>), (<span class="number">2</span>, <span class="number">0</span>), (<span class="number">3</span>, <span class="number">0</span>)], <span class="number">4</span>, <span class="bool-val">true</span>)<span class="question-mark">?</span>;
+
+<span class="comment">// 0 and 1 are both cited by 2.
+</span><span class="kw">let </span>cocit = g.cocitation(..)<span class="question-mark">?</span>;
+<span class="macro">assert_eq!</span>(cocit[(<span class="number">0</span>, <span class="number">1</span>)], <span class="number">1.0</span>);
+<span class="comment">// 2 and 3 both cite 0; 0 and 2 both cite 1.
+</span><span class="kw">let </span>bib = g.bibcoupling(..)<span class="question-mark">?</span>;
+<span class="macro">assert_eq!</span>((bib[(<span class="number">2</span>, <span class="number">3</span>)], bib[(<span class="number">0</span>, <span class="number">2</span>)]), (<span class="number">1.0</span>, <span class="number">1.0</span>));
+
+<span class="comment">// Ignoring directions, 1 and 2 share the neighbor 0 out of {0, 1, 2}.
+</span><span class="kw">let </span>jac = g.similarity_jaccard(<span class="number">1</span>..<span class="number">3</span>, <span class="number">1</span>..<span class="number">3</span>, NeighborMode::All, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+<span class="macro">assert!</span>((jac[(<span class="number">0</span>, <span class="number">1</span>)] - <span class="number">1.0 </span>/ <span class="number">3.0</span>).abs() &lt; <span class="number">1e-12</span>);
+<span class="kw">let </span>dice = g.similarity_dice_pairs(<span class="kw-2">&amp;</span>[(<span class="number">1</span>, <span class="number">2</span>)], NeighborMode::All, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+<span class="macro">assert!</span>((dice[<span class="number">0</span>] - <span class="number">0.5</span>).abs() &lt; <span class="number">1e-12</span>);</code></pre></div><h2 id="provided-functionality"><a class="doc-anchor" href="#provided-functionality">§</a>Provided functionality</h2><div><table><thead><tr><th>C function</th><th>Method of <a href="../graph/type.Graph.html" title="type igraph::graph::Graph"><code>Graph</code></a></th><th>Result</th></tr></thead><tbody>
+<tr><td><code>igraph_cocitation</code></td><td><a href="../ffi/struct.igraph_t.html#method.cocitation" title="method igraph::ffi::igraph_t::cocitation"><code>cocitation</code></a></td><td><a href="../matrix/type.Matrix.html" title="type igraph::matrix::Matrix"><code>Matrix</code></a>, one row per selected vertex</td></tr>
+<tr><td><code>igraph_bibcoupling</code></td><td><a href="../ffi/struct.igraph_t.html#method.bibcoupling" title="method igraph::ffi::igraph_t::bibcoupling"><code>bibcoupling</code></a></td><td><a href="../matrix/type.Matrix.html" title="type igraph::matrix::Matrix"><code>Matrix</code></a>, one row per selected vertex</td></tr>
+<tr><td><code>igraph_similarity_inverse_log_weighted</code></td><td><a href="../ffi/struct.igraph_t.html#method.similarity_inverse_log_weighted" title="method igraph::ffi::igraph_t::similarity_inverse_log_weighted"><code>similarity_inverse_log_weighted</code></a></td><td><a href="../matrix/type.Matrix.html" title="type igraph::matrix::Matrix"><code>Matrix</code></a>, one row per selected vertex</td></tr>
+<tr><td><code>igraph_similarity_jaccard</code></td><td><a href="../ffi/struct.igraph_t.html#method.similarity_jaccard" title="method igraph::ffi::igraph_t::similarity_jaccard"><code>similarity_jaccard</code></a></td><td><a href="../matrix/type.Matrix.html" title="type igraph::matrix::Matrix"><code>Matrix</code></a> <code>from × to</code></td></tr>
+<tr><td><code>igraph_similarity_jaccard_pairs</code></td><td><a href="../ffi/struct.igraph_t.html#method.similarity_jaccard_pairs" title="method igraph::ffi::igraph_t::similarity_jaccard_pairs"><code>similarity_jaccard_pairs</code></a></td><td><code>Vec&lt;f64&gt;</code>, one value per pair</td></tr>
+<tr><td><code>igraph_similarity_jaccard_es</code></td><td><a href="../ffi/struct.igraph_t.html#method.similarity_jaccard_es" title="method igraph::ffi::igraph_t::similarity_jaccard_es"><code>similarity_jaccard_es</code></a></td><td><code>Vec&lt;f64&gt;</code>, one value per edge</td></tr>
+<tr><td><code>igraph_similarity_dice</code></td><td><a href="../ffi/struct.igraph_t.html#method.similarity_dice" title="method igraph::ffi::igraph_t::similarity_dice"><code>similarity_dice</code></a></td><td><a href="../matrix/type.Matrix.html" title="type igraph::matrix::Matrix"><code>Matrix</code></a> <code>from × to</code></td></tr>
+<tr><td><code>igraph_similarity_dice_pairs</code></td><td><a href="../ffi/struct.igraph_t.html#method.similarity_dice_pairs" title="method igraph::ffi::igraph_t::similarity_dice_pairs"><code>similarity_dice_pairs</code></a></td><td><code>Vec&lt;f64&gt;</code>, one value per pair</td></tr>
+<tr><td><code>igraph_similarity_dice_es</code></td><td><a href="../ffi/struct.igraph_t.html#method.similarity_dice_es" title="method igraph::ffi::igraph_t::similarity_dice_es"><code>similarity_dice_es</code></a></td><td><code>Vec&lt;f64&gt;</code>, one value per edge</td></tr>
+</tbody></table>
+</div>
+<p>All the functions of the header are covered.</p>
+<h2 id="differences-from-the-c-functions"><a class="doc-anchor" href="#differences-from-the-c-functions">§</a>Differences from the C functions</h2>
+<p>These wrappers are safer than the C functions they bind, and give the
+results the C documentation promises in cases where igraph 1.0.1 does not:</p>
+<ul>
+<li><code>igraph_similarity_jaccard</code> and <code>igraph_similarity_dice</code> fill the
+matrix as if <code>from</code> and <code>to</code> were the same vertex list. If they differ,
+the results are wrong, and when <code>from</code> is longer than <code>to</code> the C code
+writes past the end of the matrix. <a href="../ffi/struct.igraph_t.html#method.similarity_jaccard" title="method igraph::ffi::igraph_t::similarity_jaccard"><code>similarity_jaccard</code></a>
+and <a href="../ffi/struct.igraph_t.html#method.similarity_dice" title="method igraph::ffi::igraph_t::similarity_dice"><code>similarity_dice</code></a> call them only when the
+two lists are identical and have no repeated vertex. Otherwise they
+compute every <code>from × to</code> pair with the <code>*_pairs</code> function.</li>
+<li>When a vertex appears several times in <code>vids</code>, <code>igraph_cocitation</code>,
+<code>igraph_bibcoupling</code> and <code>igraph_similarity_inverse_log_weighted</code> fill
+only its last row and leave the other rows at zero. The wrappers fill
+every row.</li>
+<li>On a directed graph, the Jaccard and Dice functions clear igraph’s
+property cache around the C call. Otherwise a cached “no multi-edges”
+flag would count each mutual pair <code>u -&gt; v</code>, <code>v -&gt; u</code> twice with
+<a href="../constants/enum.NeighborMode.html#variant.All" title="variant igraph::constants::NeighborMode::All"><code>NeighborMode::All</code></a> (see <a href="../structural/index.html" title="mod igraph::structural"><code>crate::structural</code></a>).</li>
+</ul>
+<h2 id="see-also"><a class="doc-anchor" href="#see-also">§</a>See also</h2>
+<ul>
+<li>Common neighbors of two vertices: <a href="../ffi/struct.igraph_t.html#method.neighbors" title="method igraph::ffi::igraph_t::neighbors"><code>Graph::neighbors</code></a> (core).</li>
+<li>Other similarity-like structures: <a href="../ffi/struct.igraph_t.html#method.get_adjacency" title="method igraph::ffi::igraph_t::get_adjacency"><code>Graph::get_adjacency</code></a>
+(<a href="../conversion/index.html" title="mod igraph::conversion"><code>conversion</code></a>) and the transitivity functions in
+<a href="../centrality/index.html" title="mod igraph::centrality"><code>centrality</code></a>.</li>
+</ul>
+</div></details></section></div></main></body></html>

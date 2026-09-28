@@ -1,0 +1,106 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Breadth-first and depth-first traversals, with Rust closures as visitors (`igraph_visitor.h`)."><title>igraph::visitor - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-1ed95124.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="igraph" data-themes="" data-resource-suffix="" data-rustdoc-version="1.98.1 (48a229cea 2026-09-01)" data-channel="1.98.1" data-search-js="search-9944d736.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../static.files/main-417ebf0a.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Module visitor</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../igraph/index.html">igraph</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module visitor</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#visitors-are-closures" title="Visitors are closures">Visitors are closures</a></li><li><a href="#rusty-results" title="Rusty results">Rusty results</a></li><li><a href="#differences-from-the-raw-c-functions" title="Differences from the raw C functions">Differences from the raw C functions</a></li><li><a href="#see-also" title="See also">See also</a></li><li><a href="#example" title="Example">Example</a></li></ul><h3><a href="#structs">Module Items</a></h3><ul class="block"><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#enums" title="Enums">Enums</a></li></ul></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="../index.html">In crate igraph</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../index.html">igraph</a></div><h1>Module <span>visitor</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/igraph/visitor.rs.html#1-1037">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Breadth-first and depth-first traversals, with Rust closures as visitors
+(<code>igraph_visitor.h</code>).</p>
+<p>This module binds the three graph traversal functions of igraph’s
+<a href="https://igraph.org/c/html/latest/igraph-Visitors.html">Visitors</a> chapter:</p>
+<div><table><thead><tr><th>Rust method</th><th>C function</th><th>What you get</th></tr></thead><tbody>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.bfs" title="method igraph::ffi::igraph_t::bfs"><code>Graph::bfs</code></a></td><td><a href="https://igraph.org/c/html/latest/igraph-Visitors.html#igraph_bfs"><code>igraph_bfs</code></a></td><td><a href="struct.BfsResult.html" title="struct igraph::visitor::BfsResult"><code>BfsResult</code></a>: order, rank, parents, pred, succ, dist</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.bfs_with" title="method igraph::ffi::igraph_t::bfs_with"><code>Graph::bfs_with</code></a></td><td><code>igraph_bfs</code> + <code>igraph_bfshandler_t</code></td><td>same, calling a closure on every visited vertex (<a href="struct.BfsVisit.html" title="struct igraph::visitor::BfsVisit"><code>BfsVisit</code></a>)</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.bfs_simple" title="method igraph::ffi::igraph_t::bfs_simple"><code>Graph::bfs_simple</code></a></td><td><a href="https://igraph.org/c/html/latest/igraph-Visitors.html#igraph_bfs_simple"><code>igraph_bfs_simple</code></a></td><td><a href="struct.BfsSimpleResult.html" title="struct igraph::visitor::BfsSimpleResult"><code>BfsSimpleResult</code></a>: order, distance layers, parents</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.dfs" title="method igraph::ffi::igraph_t::dfs"><code>Graph::dfs</code></a></td><td><a href="https://igraph.org/c/html/latest/igraph-Visitors.html#igraph_dfs"><code>igraph_dfs</code></a></td><td><a href="struct.DfsResult.html" title="struct igraph::visitor::DfsResult"><code>DfsResult</code></a>: discovery and finishing orders, parents, dist</td></tr>
+<tr><td><a href="../ffi/struct.igraph_t.html#method.dfs_with" title="method igraph::ffi::igraph_t::dfs_with"><code>Graph::dfs_with</code></a></td><td><code>igraph_dfs</code> + <code>igraph_dfshandler_t</code> (in and out)</td><td>same, calling a closure on every <a href="enum.DfsEvent.html" title="enum igraph::visitor::DfsEvent"><code>DfsEvent</code></a></td></tr>
+</tbody></table>
+</div>
+<p>Traversal parameters are grouped in <a href="struct.BfsOptions.html" title="struct igraph::visitor::BfsOptions"><code>BfsOptions</code></a> and <a href="struct.DfsOptions.html" title="struct igraph::visitor::DfsOptions"><code>DfsOptions</code></a>
+(edge direction to follow, whether to restart from unreachable vertices,
+and, for BFS, an optional restricted vertex set).</p>
+<h2 id="visitors-are-closures"><a class="doc-anchor" href="#visitors-are-closures">§</a>Visitors are closures</h2>
+<p>The callback variants accept any <code>FnMut</code> closure returning
+<a href="https://doc.rust-lang.org/1.98.1/core/ops/control_flow/enum.ControlFlow.html" title="enum core::ops::control_flow::ControlFlow"><code>ControlFlow&lt;()&gt;</code></a>: return
+<a href="https://doc.rust-lang.org/1.98.1/core/ops/control_flow/enum.ControlFlow.html#variant.Continue" title="variant core::ops::control_flow::ControlFlow::Continue"><code>ControlFlow::Continue(())</code></a> to go on,
+or <a href="https://doc.rust-lang.org/1.98.1/core/ops/control_flow/enum.ControlFlow.html#variant.Break" title="variant core::ops::control_flow::ControlFlow::Break"><code>ControlFlow::Break(())</code></a> to stop the
+traversal early. Stopping is <em>not</em> an error (it maps to igraph’s
+<code>IGRAPH_STOP</code>): the wrapper returns <code>Ok</code> with the partial results computed
+so far and sets the <code>stopped</code> flag of the result. If the closure panics,
+the traversal is aborted inside igraph (no unwinding crosses the FFI
+boundary) and the panic is then resumed in the calling Rust code.</p>
+<h2 id="rusty-results"><a class="doc-anchor" href="#rusty-results">§</a>Rusty results</h2>
+<p>Where igraph stores negative sentinels (<code>-1</code> for “root”, <code>-2</code> for “not
+visited”), the result structs use <a href="https://doc.rust-lang.org/1.98.1/core/option/enum.Option.html" title="enum core::option::Option"><code>Option</code></a>s instead, and the visiting
+orders only contain the vertices that were actually reached (igraph pads
+them with <code>-1</code>).</p>
+<h2 id="differences-from-the-raw-c-functions"><a class="doc-anchor" href="#differences-from-the-raw-c-functions">§</a>Differences from the raw C functions</h2>
+<p>The bindings smooth over a few rough edges of <code>src/graph/visitors.c</code>,
+which are present in igraph 1.0.0 and 1.0.1 (the file is unchanged
+between the two releases):</p>
+<ul>
+<li><code>igraph_dfs</code> reports a wrong depth to its out-callback (one less than
+the depth given at discovery) and, after a restart with <code>unreachable</code>,
+its depth counter is not reset: the roots of later trees still get
+depth 0, but the other vertices of the second tree get one less than
+their true depth, those of the third tree two less, and so on (the raw
+<code>dist</code> output can even become <code>-1</code>, the “not visited” sentinel).
+<a href="enum.DfsEvent.html" title="enum igraph::visitor::DfsEvent"><code>DfsEvent</code></a> and <a href="struct.DfsResult.html#structfield.dist" title="field igraph::visitor::DfsResult::dist"><code>DfsResult::dist</code></a> carry the true depths, tracked on
+the Rust side.</li>
+<li><code>igraph_bfs</code> with <code>unreachable = true</code> reads out of bounds on the null
+graph: the bindings answer that case without calling igraph.</li>
+<li><code>igraph_bfs_simple</code> does not validate its root, and <code>igraph_dfs</code>
+reports an invalid root as <code>IGRAPH_EINVAL</code>: both methods check the
+root first and report <a href="../error/enum.ErrorKind.html#variant.InvalidVertexId" title="variant igraph::error::ErrorKind::InvalidVertexId"><code>ErrorKind::InvalidVertexId</code></a>, like
+<a href="../ffi/struct.igraph_t.html#method.bfs" title="method igraph::ffi::igraph_t::bfs"><code>Graph::bfs</code></a>.</li>
+<li>After an early stop, <code>igraph_bfs</code> has already assigned a parent to the
+vertices waiting in its queue; <a href="struct.BfsResult.html#structfield.parents" title="field igraph::visitor::BfsResult::parents"><code>BfsResult::parents</code></a> only describes
+the vertices that were actually visited.</li>
+</ul>
+<h2 id="see-also"><a class="doc-anchor" href="#see-also">§</a>See also</h2>
+<p>Many questions that can be answered with a hand-written traversal have a
+dedicated (and usually faster) function elsewhere in the crate:</p>
+<ul>
+<li>distances and shortest paths: <a href="../ffi/struct.igraph_t.html#method.distances" title="method igraph::ffi::igraph_t::distances"><code>Graph::distances</code></a>,
+<a href="../ffi/struct.igraph_t.html#method.get_shortest_path" title="method igraph::ffi::igraph_t::get_shortest_path"><code>Graph::get_shortest_path</code></a>, <a href="../ffi/struct.igraph_t.html#method.get_shortest_paths" title="method igraph::ffi::igraph_t::get_shortest_paths"><code>Graph::get_shortest_paths</code></a>,
+<a href="../ffi/struct.igraph_t.html#method.eccentricity" title="method igraph::ffi::igraph_t::eccentricity"><code>Graph::eccentricity</code></a> (all in <a href="../paths/index.html" title="mod igraph::paths"><code>crate::paths</code></a>);</li>
+<li>reachability and components: <a href="../ffi/struct.igraph_t.html#method.subcomponent" title="method igraph::ffi::igraph_t::subcomponent"><code>Graph::subcomponent</code></a> (the vertices a
+BFS from one root reaches), <a href="../ffi/struct.igraph_t.html#method.connected_components" title="method igraph::ffi::igraph_t::connected_components"><code>Graph::connected_components</code></a>,
+<a href="../ffi/struct.igraph_t.html#method.neighborhood" title="method igraph::ffi::igraph_t::neighborhood"><code>Graph::neighborhood</code></a> (vertices within a given number of hops);</li>
+<li>DAGs and cycles: <a href="../ffi/struct.igraph_t.html#method.topological_sorting" title="method igraph::ffi::igraph_t::topological_sorting"><code>Graph::topological_sorting</code></a>, <a href="../ffi/struct.igraph_t.html#method.is_dag" title="method igraph::ffi::igraph_t::is_dag"><code>Graph::is_dag</code></a>,
+<a href="../ffi/struct.igraph_t.html#method.find_cycle" title="method igraph::ffi::igraph_t::find_cycle"><code>Graph::find_cycle</code></a> (in <a href="../cycles/index.html" title="mod igraph::cycles"><code>crate::cycles</code></a>);</li>
+<li>trees: <a href="../ffi/struct.igraph_t.html#method.unfold_tree" title="method igraph::ffi::igraph_t::unfold_tree"><code>Graph::unfold_tree</code></a> (unrolls a graph into a BFS tree),
+<a href="../ffi/struct.igraph_t.html#method.kary_tree" title="associated function igraph::ffi::igraph_t::kary_tree"><code>Graph::kary_tree</code></a> and <a href="../ffi/struct.igraph_t.html#method.famous" title="associated function igraph::ffi::igraph_t::famous"><code>Graph::famous</code></a> to build test inputs;</li>
+<li>low-level neighbor access for your own traversals: <a href="../adjlist/index.html" title="mod igraph::adjlist"><code>crate::adjlist</code></a>.</li>
+</ul>
+<h2 id="example"><a class="doc-anchor" href="#example">§</a>Example</h2>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>igraph::prelude::<span class="kw-2">*</span>;
+<span class="kw">use </span>igraph::visitor::{BfsOptions, DfsOptions};
+<span class="kw">use </span>std::ops::ControlFlow;
+
+<span class="comment">// A small binary tree:      0
+//                         /   \
+//                        1     2
+//                       / \   /
+//                      3   4 5
+</span><span class="kw">let </span>tree = Graph::kary_tree(<span class="number">6</span>, <span class="number">2</span>, TreeMode::Undirected)<span class="question-mark">?</span>;
+
+<span class="kw">let </span>bfs = tree.bfs(<span class="kw-2">&amp;</span>[<span class="number">0</span>], <span class="kw-2">&amp;</span>BfsOptions::default())<span class="question-mark">?</span>;
+<span class="macro">assert_eq!</span>(bfs.order, [<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>]);
+<span class="macro">assert_eq!</span>(bfs.dist, [<span class="prelude-val">Some</span>(<span class="number">0</span>), <span class="prelude-val">Some</span>(<span class="number">1</span>), <span class="prelude-val">Some</span>(<span class="number">1</span>), <span class="prelude-val">Some</span>(<span class="number">2</span>), <span class="prelude-val">Some</span>(<span class="number">2</span>), <span class="prelude-val">Some</span>(<span class="number">2</span>)]);
+<span class="macro">assert_eq!</span>(bfs.path_to(<span class="number">5</span>), <span class="prelude-val">Some</span>(<span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">2</span>, <span class="number">5</span>]));
+
+<span class="kw">let </span>dfs = tree.dfs(<span class="number">0</span>, <span class="kw-2">&amp;</span>DfsOptions::default())<span class="question-mark">?</span>;
+<span class="macro">assert_eq!</span>(dfs.order, [<span class="number">0</span>, <span class="number">1</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">2</span>, <span class="number">5</span>]);     <span class="comment">// pre-order
+</span><span class="macro">assert_eq!</span>(dfs.order_out, [<span class="number">3</span>, <span class="number">4</span>, <span class="number">1</span>, <span class="number">5</span>, <span class="number">2</span>, <span class="number">0</span>]); <span class="comment">// post-order
+
+// Stop as soon as a vertex at distance 2 is found.
+</span><span class="kw">let </span><span class="kw-2">mut </span>first_deep = <span class="prelude-val">None</span>;
+<span class="kw">let </span>partial = tree.bfs_with(<span class="kw-2">&amp;</span>[<span class="number">0</span>], <span class="kw-2">&amp;</span>BfsOptions::default(), |visit| {
+    <span class="kw">if </span>visit.dist == <span class="number">2 </span>{
+        first_deep = <span class="prelude-val">Some</span>(visit.vid);
+        <span class="kw">return </span>ControlFlow::Break(());
+    }
+    ControlFlow::Continue(())
+})<span class="question-mark">?</span>;
+<span class="macro">assert_eq!</span>(first_deep, <span class="prelude-val">Some</span>(<span class="number">3</span>));
+<span class="macro">assert!</span>(partial.stopped);
+
+<span class="comment">// In an unweighted graph, BFS distances are shortest-path lengths.
+</span><span class="kw">let </span>d = tree.distances(<span class="number">0</span>, .., <span class="prelude-val">None</span>, NeighborMode::All)<span class="question-mark">?</span>;
+<span class="macro">assert_eq!</span>(d.to_rows()[<span class="number">0</span>], [<span class="number">0.0</span>, <span class="number">1.0</span>, <span class="number">1.0</span>, <span class="number">2.0</span>, <span class="number">2.0</span>, <span class="number">2.0</span>]);</code></pre></div></div></details><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.BfsOptions.html" title="struct igraph::visitor::BfsOptions">BfsOptions</a></dt><dd>Parameters of a breadth-first search (<a href="../ffi/struct.igraph_t.html#method.bfs" title="method igraph::ffi::igraph_t::bfs"><code>Graph::bfs</code></a>, <a href="../ffi/struct.igraph_t.html#method.bfs_with" title="method igraph::ffi::igraph_t::bfs_with"><code>Graph::bfs_with</code></a>).</dd><dt><a class="struct" href="struct.BfsResult.html" title="struct igraph::visitor::BfsResult">BfsResult</a></dt><dd>Results of a breadth-first search (<a href="../ffi/struct.igraph_t.html#method.bfs" title="method igraph::ffi::igraph_t::bfs"><code>Graph::bfs</code></a>, <a href="../ffi/struct.igraph_t.html#method.bfs_with" title="method igraph::ffi::igraph_t::bfs_with"><code>Graph::bfs_with</code></a>).</dd><dt><a class="struct" href="struct.BfsSimpleResult.html" title="struct igraph::visitor::BfsSimpleResult">BfsSimple<wbr>Result</a></dt><dd>Results of <a href="../ffi/struct.igraph_t.html#method.bfs_simple" title="method igraph::ffi::igraph_t::bfs_simple"><code>Graph::bfs_simple</code></a>.</dd><dt><a class="struct" href="struct.BfsVisit.html" title="struct igraph::visitor::BfsVisit">BfsVisit</a></dt><dd>What a breadth-first search visitor sees each time a vertex is visited
+(the arguments of igraph’s <code>igraph_bfshandler_t</code>).</dd><dt><a class="struct" href="struct.DfsOptions.html" title="struct igraph::visitor::DfsOptions">DfsOptions</a></dt><dd>Parameters of a depth-first search (<a href="../ffi/struct.igraph_t.html#method.dfs" title="method igraph::ffi::igraph_t::dfs"><code>Graph::dfs</code></a>, <a href="../ffi/struct.igraph_t.html#method.dfs_with" title="method igraph::ffi::igraph_t::dfs_with"><code>Graph::dfs_with</code></a>).</dd><dt><a class="struct" href="struct.DfsResult.html" title="struct igraph::visitor::DfsResult">DfsResult</a></dt><dd>Results of a depth-first search (<a href="../ffi/struct.igraph_t.html#method.dfs" title="method igraph::ffi::igraph_t::dfs"><code>Graph::dfs</code></a>, <a href="../ffi/struct.igraph_t.html#method.dfs_with" title="method igraph::ffi::igraph_t::dfs_with"><code>Graph::dfs_with</code></a>).</dd></dl><h2 id="enums" class="section-header">Enums<a href="#enums" class="anchor">§</a></h2><dl class="item-table"><dt><a class="enum" href="enum.DfsEvent.html" title="enum igraph::visitor::DfsEvent">DfsEvent</a></dt><dd>An event reported to a depth-first search visitor (<a href="../ffi/struct.igraph_t.html#method.dfs_with" title="method igraph::ffi::igraph_t::dfs_with"><code>Graph::dfs_with</code></a>).</dd></dl></section></div></main></body></html>

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["RngType"],"fn":["binomial","bits","boolean","exponential","gamma","geometric","integer","max","name","normal","poisson","seed","shuffle","uniform","uniform01"],"type":["Rng"]};

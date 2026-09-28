@@ -1,0 +1,160 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Reading and writing graphs in foreign file formats (`igraph_foreign.h`)."><title>igraph::foreign - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-1ed95124.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="igraph" data-themes="" data-resource-suffix="" data-rustdoc-version="1.98.1 (48a229cea 2026-09-01)" data-channel="1.98.1" data-search-js="search-9944d736.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../static.files/main-417ebf0a.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Module foreign</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../igraph/index.html">igraph</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module foreign</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#example" title="Example">Example</a></li><li><a href="#supported-formats" title="Supported formats">Supported formats</a></li><li><a href="#attributes" title="Attributes">Attributes</a></li><li><a href="#locale-and-threads" title="Locale and threads">Locale and threads</a></li><li><a href="#see-also" title="See also">See also</a></li></ul><h3><a href="#structs">Module Items</a></h3><ul class="block"><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#enums" title="Enums">Enums</a></li><li><a href="#functions" title="Functions">Functions</a></li></ul></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="../index.html">In crate igraph</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../index.html">igraph</a></div><h1>Module <span>foreign</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/igraph/foreign.rs.html#1-1964">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Reading and writing graphs in foreign file formats (<code>igraph_foreign.h</code>).</p>
+<p>igraph can exchange graphs with other software through a number of
+textual (and one binary) file formats. This module wraps all of them, in
+two flavours:</p>
+<ul>
+<li><strong>file based</strong>: <code>Graph::read_graph_*(path, ...)</code> and
+<code>graph.write_graph_*(path, ...)</code> take anything implementing
+<a href="https://doc.rust-lang.org/1.98.1/std/path/struct.Path.html" title="struct std::path::Path"><code>AsRef&lt;Path&gt;</code></a> and open/close the file themselves
+(the file handle is always closed, also on errors, and write errors
+detected when flushing are reported);</li>
+<li><strong>in memory</strong>: <code>Graph::read_graph_*_from_str(&amp;str, ...)</code> parses a string
+and <code>graph.write_graph_*_to_string(...)</code> returns the serialization as a
+<a href="https://doc.rust-lang.org/1.98.1/alloc/string/struct.String.html" title="struct alloc::string::String"><code>String</code></a>, without touching the file system (they use the POSIX
+<code>fmemopen</code>/<code>open_memstream</code> streams under the hood). igraph copies
+string attributes byte by byte, so a <code>_to_string</code> writer replaces
+invalid UTF-8 (only possible in attributes read from files in another
+encoding, e.g. Latin-1 Pajek labels) with U+FFFD: use the file based
+writer to keep the exact bytes.</li>
+</ul>
+<p>On top of that, <a href="enum.GraphFormat.html" title="enum igraph::foreign::GraphFormat"><code>GraphFormat</code></a> together with <a href="../ffi/struct.igraph_t.html#method.read_graph" title="associated function igraph::ffi::igraph_t::read_graph"><code>Graph::read_graph</code></a> and
+<a href="../ffi/struct.igraph_t.html#method.write_graph" title="method igraph::ffi::igraph_t::write_graph"><code>Graph::write_graph</code></a> offers a format-agnostic entry point, able to guess
+the format from the file extension (<a href="enum.GraphFormat.html#method.from_path" title="associated function igraph::foreign::GraphFormat::from_path"><code>GraphFormat::from_path</code></a>).</p>
+<h2 id="example"><a class="doc-anchor" href="#example">§</a>Example</h2>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>igraph::{foreign::GmlWriteOptions, prelude::<span class="kw-2">*</span>};
+
+<span class="comment">// A directed triangle with a pendant vertex, serialized as an edge list...
+</span><span class="kw">let </span>g = Graph::from_edges(<span class="kw-2">&amp;</span>[(<span class="number">0</span>, <span class="number">1</span>), (<span class="number">1</span>, <span class="number">2</span>), (<span class="number">2</span>, <span class="number">0</span>), (<span class="number">2</span>, <span class="number">3</span>)], <span class="number">4</span>, <span class="bool-val">true</span>).unwrap();
+<span class="kw">let </span>text = g.write_graph_edgelist_to_string().unwrap();
+<span class="macro">assert_eq!</span>(text, <span class="string">"0 1\n1 2\n2 0\n2 3\n"</span>);
+
+<span class="comment">// ...and parsed back: exactly the same graph.
+</span><span class="kw">let </span>h = Graph::read_graph_edgelist_from_str(<span class="kw-2">&amp;</span>text, <span class="number">0</span>, <span class="bool-val">true</span>).unwrap();
+<span class="macro">assert!</span>(g.is_same_graph(<span class="kw-2">&amp;</span>h).unwrap());
+
+<span class="comment">// GML round trip of Zachary's karate club, through a temporary file.
+</span><span class="kw">let </span>karate = Graph::famous(<span class="string">"Zachary"</span>).unwrap();
+<span class="kw">let </span>path = std::env::temp_dir().join(<span class="macro">format!</span>(<span class="string">"igraph-doc-foreign-{}.gml"</span>, std::process::id()));
+karate.write_graph_gml(<span class="kw-2">&amp;</span>path, <span class="kw-2">&amp;</span>GmlWriteOptions::default()).unwrap();
+<span class="kw">let </span>k = Graph::read_graph_gml(<span class="kw-2">&amp;</span>path).unwrap();
+std::fs::remove_file(<span class="kw-2">&amp;</span>path).unwrap();
+<span class="macro">assert!</span>(!k.is_directed());
+<span class="macro">assert_eq!</span>(k, karate); <span class="comment">// GML keeps vertex ids and edges</span></code></pre></div><h2 id="supported-formats"><a class="doc-anchor" href="#supported-formats">§</a>Supported formats</h2><div><table><thead><tr><th>Format</th><th>Read</th><th>Write</th><th>Attributes (after <a href="../attributes/fn.enable.html" title="fn igraph::attributes::enable"><code>attributes::enable</code></a>)</th><th>Notes</th></tr></thead><tbody>
+<tr><td>Edge list</td><td><a href="../ffi/struct.igraph_t.html#method.read_graph_edgelist" title="associated function igraph::ffi::igraph_t::read_graph_edgelist"><code>read_graph_edgelist</code></a></td><td><a href="../ffi/struct.igraph_t.html#method.write_graph_edgelist" title="method igraph::ffi::igraph_t::write_graph_edgelist"><code>write_graph_edgelist</code></a></td><td>none</td><td>whitespace separated 0-based vertex ids</td></tr>
+<tr><td>NCOL</td><td><a href="../ffi/struct.igraph_t.html#method.read_graph_ncol" title="associated function igraph::ffi::igraph_t::read_graph_ncol"><code>read_graph_ncol</code></a></td><td><a href="../ffi/struct.igraph_t.html#method.write_graph_ncol" title="method igraph::ffi::igraph_t::write_graph_ncol"><code>write_graph_ncol</code></a></td><td>vertex <code>name</code>, edge <code>weight</code></td><td>symbolic (named) weighted edge list of the LGL software</td></tr>
+<tr><td>LGL</td><td><a href="../ffi/struct.igraph_t.html#method.read_graph_lgl" title="associated function igraph::ffi::igraph_t::read_graph_lgl"><code>read_graph_lgl</code></a></td><td><a href="../ffi/struct.igraph_t.html#method.write_graph_lgl" title="method igraph::ffi::igraph_t::write_graph_lgl"><code>write_graph_lgl</code></a></td><td>vertex <code>name</code>, edge <code>weight</code></td><td>adjacency-list-like, <code># vertex</code> headers</td></tr>
+<tr><td>Pajek</td><td><a href="../ffi/struct.igraph_t.html#method.read_graph_pajek" title="associated function igraph::ffi::igraph_t::read_graph_pajek"><code>read_graph_pajek</code></a></td><td><a href="../ffi/struct.igraph_t.html#method.write_graph_pajek" title="method igraph::ffi::igraph_t::write_graph_pajek"><code>write_graph_pajek</code></a></td><td><code>name</code>, <code>x</code>/<code>y</code>/<code>z</code>, <code>color</code>, bipartite <code>type</code>, edge <code>weight</code>, …</td><td><code>.net</code> files, 1-based ids</td></tr>
+<tr><td>GraphML</td><td><a href="../ffi/struct.igraph_t.html#method.read_graph_graphml" title="associated function igraph::ffi::igraph_t::read_graph_graphml"><code>read_graph_graphml</code></a></td><td><a href="../ffi/struct.igraph_t.html#method.write_graph_graphml" title="method igraph::ffi::igraph_t::write_graph_graphml"><code>write_graph_graphml</code></a>, <a href="../ffi/struct.igraph_t.html#method.write_graph_graphml_with" title="method igraph::ffi::igraph_t::write_graph_graphml_with"><code>write_graph_graphml_with</code></a></td><td>all (typed, with defaults), node ids as vertex <code>id</code></td><td>XML; reading requires igraph built with libxml2; the in-memory writer <a href="../ffi/struct.igraph_t.html#method.write_graph_graphml_to_string" title="method igraph::ffi::igraph_t::write_graph_graphml_to_string"><code>write_graph_graphml_to_string</code></a> takes the <code>prefixattr</code> flag of <code>write_graph_graphml_with</code></td></tr>
+<tr><td>GML</td><td><a href="../ffi/struct.igraph_t.html#method.read_graph_gml" title="associated function igraph::ffi::igraph_t::read_graph_gml"><code>read_graph_gml</code></a></td><td><a href="../ffi/struct.igraph_t.html#method.write_graph_gml" title="method igraph::ffi::igraph_t::write_graph_gml"><code>write_graph_gml</code></a></td><td>numeric and string ones, numeric vertex <code>id</code></td><td>see <a href="struct.GmlWriteOptions.html" title="struct igraph::foreign::GmlWriteOptions"><code>GmlWriteOptions</code></a></td></tr>
+<tr><td>DIMACS flow</td><td><a href="../ffi/struct.igraph_t.html#method.read_graph_dimacs_flow" title="associated function igraph::ffi::igraph_t::read_graph_dimacs_flow"><code>read_graph_dimacs_flow</code></a></td><td><a href="../ffi/struct.igraph_t.html#method.write_graph_dimacs_flow" title="method igraph::ffi::igraph_t::write_graph_dimacs_flow"><code>write_graph_dimacs_flow</code></a></td><td>none (capacities in <a href="struct.DimacsFlow.html" title="struct igraph::foreign::DimacsFlow"><code>DimacsFlow</code></a>)</td><td>max-flow / edge problems</td></tr>
+<tr><td>graph database</td><td><a href="../ffi/struct.igraph_t.html#method.read_graph_graphdb" title="associated function igraph::ffi::igraph_t::read_graph_graphdb"><code>read_graph_graphdb</code></a></td><td>—</td><td>none</td><td>binary, see <a href="../ffi/struct.igraph_t.html#method.read_graph_graphdb_from_bytes" title="associated function igraph::ffi::igraph_t::read_graph_graphdb_from_bytes"><code>read_graph_graphdb_from_bytes</code></a></td></tr>
+<tr><td>UCINET DL</td><td><a href="../ffi/struct.igraph_t.html#method.read_graph_dl" title="associated function igraph::ffi::igraph_t::read_graph_dl"><code>read_graph_dl</code></a></td><td>—</td><td>vertex <code>name</code>, edge <code>weight</code></td><td>full matrix, edge list and node list forms</td></tr>
+<tr><td>Graphviz DOT</td><td>—</td><td><a href="../ffi/struct.igraph_t.html#method.write_graph_dot" title="method igraph::ffi::igraph_t::write_graph_dot"><code>write_graph_dot</code></a></td><td>all</td><td>output only</td></tr>
+<tr><td>LEDA</td><td>—</td><td><a href="../ffi/struct.igraph_t.html#method.write_graph_leda" title="method igraph::ffi::igraph_t::write_graph_leda"><code>write_graph_leda</code></a></td><td>one vertex and one edge attribute</td><td>output only</td></tr>
+</tbody></table>
+</div>
+<p>Every file based function has an in-memory twin with the <code>_from_str</code> /
+<code>_to_string</code> suffix (<code>_from_bytes</code> for the binary graph database format),
+taking the same arguments but the path. The one exception is GraphML:
+<a href="../ffi/struct.igraph_t.html#method.write_graph_graphml_to_string" title="method igraph::ffi::igraph_t::write_graph_graphml_to_string"><code>write_graph_graphml_to_string(prefixattr)</code></a>
+is the twin of
+<a href="../ffi/struct.igraph_t.html#method.write_graph_graphml_with" title="method igraph::ffi::igraph_t::write_graph_graphml_with"><code>write_graph_graphml_with(path, prefixattr)</code></a>
+(pass <code>false</code> for the behaviour of
+<a href="../ffi/struct.igraph_t.html#method.write_graph_graphml" title="method igraph::ffi::igraph_t::write_graph_graphml"><code>write_graph_graphml(path)</code></a>).
+<a href="struct.SafeLocale.html" title="struct igraph::foreign::SafeLocale"><code>SafeLocale</code></a> and <a href="fn.with_safe_locale.html" title="fn igraph::foreign::with_safe_locale"><code>with_safe_locale</code></a> bind igraph’s locale helpers.</p>
+<h2 id="attributes"><a class="doc-anchor" href="#attributes">§</a>Attributes</h2>
+<p>Many formats carry vertex names, edge weights and other attributes. igraph
+stores them through a pluggable, <strong>process-wide</strong> <em>attribute handler</em>,
+which is off by default and is turned on by
+<a href="../attributes/fn.enable.html" title="fn igraph::attributes::enable"><code>attributes::enable</code></a> (see the
+<a href="../attributes/index.html" title="mod igraph::attributes"><code>attributes</code></a> module for the typed accessors):</p>
+<ul>
+<li><strong>without</strong> the handler, readers parse attributes (validating their
+syntax) but discard them: only the structure of the graph is returned.
+The options asking to store names or weights (<a href="struct.NcolLglOptions.html" title="struct igraph::foreign::NcolLglOptions"><code>NcolLglOptions</code></a>) are
+accepted and harmless. Writers see no attribute: those asked to export a
+named one (e.g. the <code>names</code>/<code>weights</code> arguments of
+<a href="../ffi/struct.igraph_t.html#method.write_graph_ncol" title="method igraph::ffi::igraph_t::write_graph_ncol"><code>write_graph_ncol</code></a>) emit an igraph <em>warning</em>
+(see <a href="../error/fn.take_warnings.html" title="fn igraph::error::take_warnings"><code>take_warnings</code></a>) and fall back to
+plain vertex ids, and GraphML/GML/DOT files are written without
+attributes;</li>
+<li><strong>with</strong> the handler (call <a href="../attributes/fn.enable.html" title="fn igraph::attributes::enable"><code>enable</code></a>
+<em>before</em> reading), readers store what they find in the file as graph,
+vertex and edge attributes (the “Attributes” column above), and the
+writers export the attributes of the graph. Values missing for some
+elements are NaN for numeric attributes, <code>""</code> for strings and <code>false</code>
+for booleans, unless the format has its own defaults (a missing
+NCOL/LGL weight is 1, a GraphML <code>&lt;key&gt;</code> may declare a <code>&lt;default&gt;</code>,
+Pajek parameters take Pajek’s defaults, see the readers); GraphML and
+GML omit NaN values when writing.</li>
+</ul>
+<p>What each format keeps, with the handler on (the individual readers and
+writers have the details):</p>
+<div><table><thead><tr><th>Format</th><th>Read into attributes</th><th>Written from attributes</th></tr></thead><tbody>
+<tr><td>Edge list, DIMACS, graph database</td><td>nothing</td><td>nothing</td></tr>
+<tr><td>NCOL, LGL</td><td>vertex <code>name</code> (string), edge <code>weight</code> (numeric), as selected by <a href="struct.NcolLglOptions.html" title="struct igraph::foreign::NcolLglOptions"><code>NcolLglOptions</code></a></td><td>the vertex / edge attributes named by the <code>names</code> / <code>weights</code> arguments</td></tr>
+<tr><td>UCINET DL</td><td>vertex <code>name</code> (labels), edge <code>weight</code> (values)</td><td>—</td></tr>
+<tr><td>Pajek</td><td>vertex <code>name</code>, <code>x</code>/<code>y</code>/<code>z</code>, <code>color</code>, shapes and the other Pajek parameters, bipartite <code>type</code> (boolean), edge <code>weight</code> and edge parameters</td><td>the attributes named after Pajek parameters; other attributes are ignored</td></tr>
+<tr><td>GraphML</td><td>every <code>&lt;key&gt;</code>, typed (boolean, numeric, string), for graph, vertices and edges; the node <code>id</code>s as the string vertex attribute <code>id</code></td><td>every graph, vertex and edge attribute (typed keys), optionally prefixed (<code>g_</code>/<code>v_</code>/<code>e_</code>, <a href="../ffi/struct.igraph_t.html#method.write_graph_graphml_with" title="method igraph::ffi::igraph_t::write_graph_graphml_with"><code>write_graph_graphml_with</code></a>)</td></tr>
+<tr><td>GML</td><td>every numeric or string field of the graph, node and edge records, including the numeric node <code>id</code></td><td>numeric and string attributes (booleans as 0/1); a numeric vertex <code>id</code> supplies the node ids</td></tr>
+<tr><td>DOT</td><td>—</td><td>every graph, vertex and edge attribute</td></tr>
+<tr><td>LEDA</td><td>—</td><td>one vertex and one edge attribute, named in the call</td></tr>
+</tbody></table>
+</div>
+<p>Two GraphML caveats: the node ids land in a string <code>id</code> vertex
+attribute (unless a vertex key already defines an attribute named <code>id</code>), which the
+GraphML writer then exports as an ordinary <code>&lt;key&gt;</code>, so a second round
+trip carries it as data; and when the <code>&lt;edge&gt;</code> elements have <code>id</code>s, igraph
+1.0.0 and 1.0.1 also create a string <code>id</code> <em>edge</em> attribute but, because
+of a bug in <code>src/io/graphml.c</code>, fill it with the <em>node</em> ids (in node
+order, padded with <code>""</code> if there are more edges than nodes): don’t rely on it
+(delete it with
+<a href="../ffi/struct.igraph_t.html#method.remove_edge_attr" title="method igraph::ffi::igraph_t::remove_edge_attr"><code>remove_edge_attr</code></a> if it gets in the way). See
+<a href="../ffi/struct.igraph_t.html#method.read_graph_graphml" title="associated function igraph::ffi::igraph_t::read_graph_graphml"><code>read_graph_graphml</code></a>.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>igraph::{attributes, foreign::NcolLglOptions, prelude::<span class="kw-2">*</span>};
+
+attributes::enable().unwrap(); <span class="comment">// before reading!
+</span><span class="kw">let </span>text = <span class="string">"rome paris 1420\nparis london 460\nlondon rome\n"</span>;
+<span class="kw">let </span>g = Graph::read_graph_ncol_from_str(text, <span class="kw-2">&amp;</span>[], <span class="kw-2">&amp;</span>NcolLglOptions::default()).unwrap();
+<span class="macro">assert_eq!</span>(g.vertex_attr_str_values(<span class="string">"name"</span>, ..).unwrap(), [<span class="string">"rome"</span>, <span class="string">"paris"</span>, <span class="string">"london"</span>]);
+<span class="comment">// A missing weight defaults to 1 when at least one edge has an explicit weight.
+</span><span class="macro">assert_eq!</span>(g.edge_attr_numeric_values(<span class="string">"weight"</span>, ..).unwrap(), [<span class="number">1420.0</span>, <span class="number">460.0</span>, <span class="number">1.0</span>]);
+<span class="comment">// Writers use the attributes they are asked for.
+</span><span class="kw">let </span>out = g.write_graph_ncol_to_string(<span class="prelude-val">Some</span>(<span class="string">"name"</span>), <span class="prelude-val">Some</span>(<span class="string">"weight"</span>)).unwrap();
+<span class="macro">assert_eq!</span>(out, <span class="string">"rome paris 1420\nparis london 460\nrome london 1\n"</span>);</code></pre></div>
+<p>Data that igraph returns through explicit output arguments does not need
+the handler, e.g. the capacities and source/target vertices of a DIMACS
+file, returned in <a href="struct.DimacsFlow.html" title="struct igraph::foreign::DimacsFlow"><code>DimacsFlow</code></a>. When only the vertex naming of an NCOL
+file matters, the <code>predefnames</code> argument of
+<a href="../ffi/struct.igraph_t.html#method.read_graph_ncol" title="associated function igraph::ffi::igraph_t::read_graph_ncol"><code>read_graph_ncol</code></a> fixes it without attributes:
+vertex <code>i</code> then is the <code>i</code>-th predefined name.</p>
+<h2 id="locale-and-threads"><a class="doc-anchor" href="#locale-and-threads">§</a>Locale and threads</h2>
+<p>The parsers and writers assume that the C locale uses a decimal <em>point</em>.
+Rust programs start in the <code>"C"</code> locale, so nothing needs to be done unless
+some library called <code>setlocale</code>; in that case wrap the I/O with
+<a href="struct.SafeLocale.html" title="struct igraph::foreign::SafeLocale"><code>SafeLocale</code></a> or <a href="fn.with_safe_locale.html" title="fn igraph::foreign::with_safe_locale"><code>with_safe_locale</code></a>.</p>
+<p>All the functions can be called from several threads at once (but see
+<a href="struct.SafeLocale.html" title="struct igraph::foreign::SafeLocale"><code>SafeLocale</code></a> for platforms without per-thread locales). The GML
+reader of igraph 1.0.0 and 1.0.1 is not reentrant (it uses static
+buffers), and so is the default GML <code>Creator</code> line (it uses <code>ctime</code>): these
+wrappers serialize them internally with a process-wide lock.</p>
+<h2 id="see-also"><a class="doc-anchor" href="#see-also">§</a>See also</h2>
+<ul>
+<li><a href="../ffi/struct.igraph_t.html#method.from_edges" title="associated function igraph::ffi::igraph_t::from_edges"><code>Graph::from_edges</code></a> and <a href="../ffi/struct.igraph_t.html#method.famous" title="associated function igraph::ffi::igraph_t::famous"><code>Graph::famous</code></a> (in
+<a href="../constructors/index.html" title="mod igraph::constructors"><code>constructors</code></a>) to build graphs in code;</li>
+<li><a href="../ffi/struct.igraph_t.html#method.get_adjacency" title="method igraph::ffi::igraph_t::get_adjacency"><code>Graph::get_adjacency</code></a> and the rest of the
+<a href="../conversion/index.html" title="mod igraph::conversion"><code>conversion</code></a> module to export graphs as matrices;</li>
+<li><a href="../ffi/struct.igraph_t.html#method.is_same_graph" title="method igraph::ffi::igraph_t::is_same_graph"><code>Graph::is_same_graph</code></a> to check that a round trip kept the vertex ids,
+<a href="../ffi/struct.igraph_t.html#method.isomorphic" title="method igraph::ffi::igraph_t::isomorphic"><code>Graph::isomorphic</code></a> when a format (NCOL, LGL, bipartite Pajek)
+relabels the vertices;</li>
+<li><a href="../ffi/struct.igraph_t.html#method.maxflow" title="method igraph::ffi::igraph_t::maxflow"><code>Graph::maxflow</code></a> and <a href="../ffi/struct.igraph_t.html#method.st_mincut" title="method igraph::ffi::igraph_t::st_mincut"><code>Graph::st_mincut</code></a> to solve the problems read
+from DIMACS files.</li>
+</ul>
+<p>The C documentation of the whole chapter is at
+<a href="https://igraph.org/c/html/latest/igraph-Foreign.html">https://igraph.org/c/html/latest/igraph-Foreign.html</a>.</p>
+</div></details><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.DimacsFlow.html" title="struct igraph::foreign::DimacsFlow">Dimacs<wbr>Flow</a></dt><dd>The content of a DIMACS flow file, as returned by
+<a href="../ffi/struct.igraph_t.html#method.read_graph_dimacs_flow" title="associated function igraph::ffi::igraph_t::read_graph_dimacs_flow"><code>Graph::read_graph_dimacs_flow</code></a>.</dd><dt><a class="struct" href="struct.GmlWriteOptions.html" title="struct igraph::foreign::GmlWriteOptions">GmlWrite<wbr>Options</a></dt><dd>Options of the GML writer (<a href="../ffi/struct.igraph_t.html#method.write_graph_gml" title="method igraph::ffi::igraph_t::write_graph_gml"><code>Graph::write_graph_gml</code></a>).</dd><dt><a class="struct" href="struct.NcolLglOptions.html" title="struct igraph::foreign::NcolLglOptions">Ncol<wbr>LglOptions</a></dt><dd>Options of the NCOL and LGL readers (<a href="../ffi/struct.igraph_t.html#method.read_graph_ncol" title="associated function igraph::ffi::igraph_t::read_graph_ncol"><code>Graph::read_graph_ncol</code></a>,
+<a href="../ffi/struct.igraph_t.html#method.read_graph_lgl" title="associated function igraph::ffi::igraph_t::read_graph_lgl"><code>Graph::read_graph_lgl</code></a>).</dd><dt><a class="struct" href="struct.SafeLocale.html" title="struct igraph::foreign::SafeLocale">Safe<wbr>Locale</a></dt><dd>RAII guard temporarily switching the numeric locale to <code>"C"</code>
+(<code>igraph_enter_safelocale</code> / <code>igraph_exit_safelocale</code>).</dd></dl><h2 id="enums" class="section-header">Enums<a href="#enums" class="anchor">§</a></h2><dl class="item-table"><dt><a class="enum" href="enum.DimacsProblem.html" title="enum igraph::foreign::DimacsProblem">Dimacs<wbr>Problem</a></dt><dd>The problem described by a DIMACS file, see <a href="struct.DimacsFlow.html" title="struct igraph::foreign::DimacsFlow"><code>DimacsFlow</code></a>.</dd><dt><a class="enum" href="enum.GraphFormat.html" title="enum igraph::foreign::GraphFormat">Graph<wbr>Format</a></dt><dd>Graph file formats known to igraph, for the format-agnostic
+<a href="../ffi/struct.igraph_t.html#method.read_graph" title="associated function igraph::ffi::igraph_t::read_graph"><code>Graph::read_graph</code></a> and <a href="../ffi/struct.igraph_t.html#method.write_graph" title="method igraph::ffi::igraph_t::write_graph"><code>Graph::write_graph</code></a>.</dd></dl><h2 id="functions" class="section-header">Functions<a href="#functions" class="anchor">§</a></h2><dl class="item-table"><dt><a class="fn" href="fn.with_safe_locale.html" title="fn igraph::foreign::with_safe_locale">with_<wbr>safe_<wbr>locale</a></dt><dd>Runs <code>f</code> with the <code>"C"</code> numeric locale in effect, see <a href="struct.SafeLocale.html" title="struct igraph::foreign::SafeLocale"><code>SafeLocale</code></a>.</dd></dl></section></div></main></body></html>
